@@ -1,0 +1,58 @@
+{
+  "name": "mlts",
+  "version": "0.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "lint": "tslint --config tslint.json --project . --format stylish",
+    "test": "export RNG=`node -e 'console.log(Math.random())'` && echo $RNG && jest",
+    "prepush": "npm run -s lint && npm test",
+    "file": "NODE_PATH=src ts-node",
+    "tsc": "tsc",
+    "start": "npm run -s file src/index.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testMatch": [
+      "**/tests/**/*.test.ts?(x)"
+    ],
+    "moduleDirectories": [
+      "node_modules",
+      "./src"
+    ],
+    "moduleFileExtensions": [
+      "js",
+      "ts"
+    ],
+    "testEnvironment": "node"
+  },
+  "devDependencies": {
+    "@types/jest": "^22.2.3",
+    "@types/seed-random": "^2.2.0",
+    "husky": "^0.14.3",
+    "jest": "^22.4.3",
+    "seed-random": "^2.2.0",
+    "ts-jest": "^22.4.4",
+    "ts-node": "^6.0.2",
+    "tslint": "^5.9.1",
+    "typescript": "^2.9.1"
+  },
+  "dependencies": {
+    "@tensorflow/tfjs": "^0.12.6",
+    "@tensorflow/tfjs-node": "^0.1.14",
+    "@types/lodash": "^4.14.108",
+    "@types/node": "^10.0.3",
+    "@types/node-fetch": "^1.6.9",
+    "fast-csv": "^2.4.1",
+    "lodash": "^4.17.10",
+    "maybetyped": "^1.5.0",
+    "node-fetch": "^2.1.2",
+    "simplytyped": "^1.4.0",
+    "type-level-schema": "^1.4.0",
+    "validtyped": "^2.0.0"
+  }
+}
