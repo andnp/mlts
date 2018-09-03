@@ -4,12 +4,13 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
+    "build": "tsc",
     "lint": "tslint --config tslint.json --project . --format stylish",
     "test": "export RNG=`node -e 'console.log(Math.random())'` && echo $RNG && jest",
     "prepush": "npm run -s lint && npm test",
     "file": "NODE_PATH=src ts-node",
     "tsc": "tsc",
-    "start": "npm run -s file src/index.ts"
+    "start": "npm run -s build; NODE_PATH=dist node dist/index.js"
   },
   "author": "",
   "license": "ISC",
@@ -56,5 +57,9 @@
     "simplytyped": "^1.4.0",
     "type-level-schema": "^1.4.0",
     "validtyped": "^2.0.0"
+  },
+  "peerDependencies": {
+    "@tensorflow/tfjs-node": "^0.1.14",
+    "@tensorflow/tfjs-node-gpu": "^0.1.14"
   }
 }
