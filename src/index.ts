@@ -5,7 +5,7 @@ import { TwoStageDictionaryLearning } from 'algorithms/TwoStageDictionaryLearnin
 import { loadCsv } from 'utils/csv';
 import { download } from 'utils/downloader';
 
-const iterations = 1000;
+const iterations = 25000;
 
 const dataRemoteLocation = 'https://rawgit.com/andnp/ml_data/master/deterding.tar.gz';
 const dataLocation = 'tmp';
@@ -25,7 +25,11 @@ async function execute() {
 
     console.log('Samples:', samples, 'Features:', features, 'Classes:', classes); // tslint:disable-line no-console
 
-    const tsdl = new TwoStageDictionaryLearning(features, classes, hidden, samples);
+    const tsdl = new TwoStageDictionaryLearning(features, classes, hidden, samples, {
+        stage1: {
+            regD: 0.001,
+        }
+    });
     tsdl.train(X_dat, Y_dat, {
         iterations,
     });
@@ -34,4 +38,6 @@ async function execute() {
     console.log(Y_hat); // tslint:disable-line no-console
 }
 
-execute().catch(e => console.log('uncaught error', e));
+execute()
+    .then(() => process.exit(0))
+    .catch(e => console.log('uncaught error', e));
