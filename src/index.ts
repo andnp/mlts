@@ -40,4 +40,4 @@ async function execute() {
 
 execute()
     .then(() => process.exit(0))
-    .catch(e => console.log('uncaught error', e));
+    .catch(e => console.log('uncaught error', e)); // tslint:disable-line no-console

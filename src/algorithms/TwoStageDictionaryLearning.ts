@@ -8,7 +8,7 @@ import { DeepPartial } from 'simplytyped';
 interface TrainOptions {
     learningRate: number;
     iterations: number;
-};
+}
 
 interface TwoStageDictionaryLearningOptions {
     stage1: Partial<DictLayerOptions>;
