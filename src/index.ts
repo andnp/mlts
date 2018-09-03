@@ -1,14 +1,21 @@
 import '@tensorflow/tfjs-node';
+import * as path from 'path';
 
 import { TwoStageDictionaryLearning } from 'algorithms/TwoStageDictionaryLearning';
 import { loadCsv } from 'utils/csv';
+import { download } from 'utils/downloader';
 
 const iterations = 1000;
 
+const dataRemoteLocation = 'https://rawgit.com/andnp/ml_data/master/deterding.tar.gz';
+const dataLocation = 'tmp';
+
 async function execute() {
-    const X_dat = await loadCsv('../ml_data/deterding_X.csv');
-    const Y_dat = await loadCsv('../ml_data/deterding_Y.csv');
-    const T_dat = await loadCsv('../ml_data/deterding_T.csv');
+    await download(dataRemoteLocation, dataLocation);
+
+    const X_dat = await loadCsv(path.join(dataLocation, 'deterding/deterding_X.csv'));
+    const Y_dat = await loadCsv(path.join(dataLocation, 'deterding/deterding_Y.csv'));
+    const T_dat = await loadCsv(path.join(dataLocation, 'deterding/deterding_T.csv'));
 
     const samples = X_dat.cols;
     const features = X_dat.rows;
@@ -27,4 +34,4 @@ async function execute() {
     console.log(Y_hat); // tslint:disable-line no-console
 }
 
-execute();
+execute().catch(e => console.log('uncaught error', e));
