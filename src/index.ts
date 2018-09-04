@@ -1,29 +1,22 @@
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-node';
 
-import * as tfUtil from 'utils/tensorflow';
-
-import * as deterding from 'data/deterding';
-import * as cifar from 'data/gray_cifar10';
+import { GreyCifar10 } from 'data/tensorflow/GreyCifar10';
+import { Deterding } from 'data/tensorflow/Deterding';
 import { TwoStageDictionaryLearning } from 'algorithms/TwoStageDictionaryLearning';
 import { getClassificationError } from 'analysis/classification';
-import { testLoad } from 'utils/csv';
+import { TensorflowDataset } from 'data/tensorflow/TensorflowDataset';
 
 const iterations = 20000;
 
 async function execute() {
-    await testLoad('.tmp/cifar10.csv');
+    const dataset = await Deterding.load();
 
-    process.exit(0);
+    // TwoStageDictionaryLearning expects the data to be in [features, samples] format instead of [samples, features]
+    dataset.transpose();
 
-    const dataset = tfUtil.oneHotDataset(await cifar.load());
-    console.log('loaded dataset');
-
-    const transposed = tfUtil.transposeDataset(dataset);
-    console.log('transposed dataset');
-
-    const [ X, Y ] = transposed.train;
-    const [ T, TY ] = transposed.test;
+    const [ X, Y ] = dataset.train;
+    const [ T, TY ] = dataset.test;
 
     const samples = X.shape[1];
     const features = X.shape[0];
@@ -38,6 +31,7 @@ async function execute() {
             regD: 0.01,
         }
     });
+
     tsdl.train(X, Y, {
         iterations,
     });

@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import * as fs from 'fs';
 import * as csv from 'fast-csv';
-import { RawMatrix, Matrix } from 'utils/matrix';
+import { Buffer, Matrix } from 'utils/matrix';
 import { Writable } from 'stream';
 
 class LineCollector extends Writable {
@@ -21,21 +21,19 @@ class LineCollector extends Writable {
         }
         done();
     }
-
-    _read() {
-
-    }
 }
 
 interface CSVParserOptions {
     skipFirst: boolean;
 }
 
-class CSVParser {
+class CSVParser<B extends Buffer> {
     protected o: CSVParserOptions;
     private skippedFirst = false;
+    private i = 0;
 
     constructor(
+        private buffer: B,
         opts?: Partial<CSVParserOptions>,
     ) {
         this.o = _.merge({
@@ -43,55 +41,51 @@ class CSVParser {
         }, opts);
     }
 
-    listen = (data: string) => {
+    listen = (line: string) => {
+        if (this.o.skipFirst && !this.skippedFirst) {
+            this.skippedFirst = true;
+            return;
+        }
 
+        const arr = line.split(',').map(x => parseFloat(x));
+        arr.forEach(d => this.buffer[this.i++] = d);
     }
 }
 
-export function testLoad(path: string) {
-    return new Promise((resolve) => fs.createReadStream(path)
-        .pipe(new LineCollector())
-        .on('data', d => {
-            const data = d.split(',').map('')
-        })
-        .on('finish', resolve));
-}
-
-type Buffer = Uint8Array | Uint16Array;
 interface LoadCsvParams<B extends Buffer> {
     path: string;
-    buffers: B[];
-    arrayToBuffer: (x: number[]) => B;
+    buffer: B;
 }
-export function loadCsvToBuffer<B extends Buffer>(params: LoadCsvParams<B>): Promise<B[]> {
-    const { path, buffers, arrayToBuffer } = params;
+export function loadCsvToBuffer<B extends Buffer>(params: LoadCsvParams<B>): Promise<B> {
+    const { path, buffer } = params;
 
-    const stream = csv.fromPath(path);
-    return new Promise<B[]>((resolve, reject) => {
+    const parser = new CSVParser(buffer);
+
+    const stream = fs.createReadStream(path)
+        .pipe(new LineCollector());
+
+    return new Promise<B>((resolve, reject) => {
         stream.on('error', reject);
-        stream.on('end', () => resolve(buffers));
-
-        stream.on('data', d => {
-            buffers.push(arrayToBuffer(d));
-        });
-    });
-}
-
-export function loadCsv(path: string): Promise<Matrix> {
-    const rawData: RawMatrix = [];
-
-    return new Promise<Matrix>((resolve, reject) => {
-        csv.fromPath(path)
-            .on('data', d => rawData.push(d))
-            .on('end', () => resolve(new Matrix(rawData)))
-            .on('error', reject);
+        stream.on('finish', () => resolve(buffer));
+        stream.on('data', parser.listen);
     });
 }
 
 export function writeCsv(path: string, m: Matrix) {
-    const stream = csv.writeToPath(path, m.raw);
-    return new Promise<void>((resolve, reject) => {
-        stream.on('finish', resolve);
-        stream.on('error', reject);
-    });
+    const stream = fs.createWriteStream(path);
+
+    for (let i = 0; i < m.rows; ++i) {
+        for (let j = 0; j < m.cols; ++j) {
+            stream.write(m.get(i, j));
+
+            // no trailing commas
+            if (j !== m.cols - 1) stream.write(',');
+        }
+        // trailing spaces are okay
+        stream.write('\n');
+    }
+
+    stream.end();
+
+    return Promise.resolve();
 }

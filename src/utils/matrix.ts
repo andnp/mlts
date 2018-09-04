@@ -1,40 +1,30 @@
 import * as tf from '@tensorflow/tfjs';
 
-export type RawMatrix = number[][];
+export type Buffer = Uint8Array | Int32Array | Float32Array;
 
 export class Matrix {
-    private data: RawMatrix;
+    private data: Buffer;
     private r: number;
     private c: number;
 
-    constructor(data: RawMatrix) {
-        this.c = data[0].length;
-        this.r = data.length;
+    constructor(rows: number, columns: number, data: Buffer) {
+        this.c = columns;
+        this.r = rows;
 
-        data.forEach(row => {
-            if (row.length !== this.c) throw new Error(`Expected matrix to be rectangular: expected <${this.c}>, got <${row.length}>`);
-        });
+        if (data.length !== rows * columns) throw new Error(`Expected buffer to be length <${rows * columns}>, got <${data.length}>`);
 
         this.data = data;
     }
 
-    static fromArray(rows: number, cols: number, data: number[] | Float32Array | Int32Array | Uint8Array) {
-        const raw: RawMatrix = [];
-        for (let i = 0; i < rows; ++i) {
-            const row: number[] = [];
-            for (let j = 0; j < cols; ++j) {
-                row.push(data[i * cols + j]);
-            }
-            raw.push(row);
-        }
-        return new Matrix(raw);
+    get(i: number, j: number) {
+        return this.data[i * this.c + j];
     }
 
     static fromTensor(X: tf.Tensor2D): Promise<Matrix> {
-        return X.data().then(d => Matrix.fromArray(X.shape[0], X.shape[1], d));
+        return X.data().then(d => new Matrix(X.shape[0], X.shape[1], d));
     }
 
-    get raw(): RawMatrix {
+    get raw(): Buffer {
         return this.data;
     }
 
