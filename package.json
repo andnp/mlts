@@ -10,7 +10,7 @@
     "prepush": "npm run -s lint && npm test",
     "file": "NODE_PATH=src ts-node",
     "tsc": "tsc",
-    "start": "npm run -s build; NODE_PATH=dist node dist/index.js"
+    "start": "npm run -s build; NODE_PATH=dist node --max-old-space-size=8192 dist/index.js"
   },
   "author": "",
   "license": "ISC",
@@ -40,7 +40,7 @@
     "ts-jest": "^22.4.4",
     "ts-node": "^6.0.2",
     "tslint": "^5.9.1",
-    "typescript": "^2.9.1"
+    "typescript": "^3.0.3"
   },
   "dependencies": {
     "@tensorflow/tfjs": "^0.12.6",

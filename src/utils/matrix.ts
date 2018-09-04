@@ -1,3 +1,5 @@
+import * as tf from '@tensorflow/tfjs';
+
 export type RawMatrix = number[][];
 
 export class Matrix {
@@ -26,6 +28,10 @@ export class Matrix {
             raw.push(row);
         }
         return new Matrix(raw);
+    }
+
+    static fromTensor(X: tf.Tensor2D): Promise<Matrix> {
+        return X.data().then(d => Matrix.fromArray(X.shape[0], X.shape[1], d));
     }
 
     get raw(): RawMatrix {

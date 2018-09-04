@@ -1,9 +1,9 @@
 import * as _ from 'lodash';
 import * as tf from '@tensorflow/tfjs';
-
-import { Matrix } from 'utils/matrix';
-import { printProgress } from 'utils/printer';
 import { DeepPartial } from 'simplytyped';
+
+import { printProgress } from 'utils/printer';
+import { autoDispose } from 'utils/tensorflow';
 
 interface TrainOptions {
     learningRate: number;
@@ -48,26 +48,22 @@ export class TwoStageDictionaryLearning {
         return s1_loss.add(s2_loss);
     }
 
-    train(X_dat: Matrix, Y_dat: Matrix, opts?: Partial<TrainOptions>) {
+    train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<TrainOptions>) {
         const o = this.getDefaults(opts);
-
-        const X = tf.tensor2d(X_dat.raw);
-        const Y = tf.tensor2d(Y_dat.raw);
 
         this.stage1.train(X, { ...o, trainDictionary: true });
         this.stage2.setH(this.stage1.H);
         this.stage2.train(Y, o);
     }
 
-    predict(T_dat: Matrix, opts?: Partial<TrainOptions>) {
+    predict(T: tf.Tensor2D, opts?: Partial<TrainOptions>) {
         const o = this.getDefaults(opts);
 
-        const stage3 = new DictLayer(T_dat.rows, this.hidden, T_dat.cols);
+        const stage3 = new DictLayer(T.shape[0], this.hidden, T.shape[1]);
 
-        const T = tf.tensor2d(T_dat.raw);
         stage3.train(T, {...o, trainDictionary: false});
-        const Y_hat = this.stage2.predict(stage3.H).greater(tf.tensor(.5));
-        return Y_hat.data().then(d => Matrix.fromArray(this.classes, T_dat.cols, d));
+        const Y_hat = this.stage2.predict(stage3.H);
+        return Y_hat;
     }
 }
 
@@ -102,13 +98,13 @@ class DictLayer {
         this.opts = this.getDefaults(opts);
     }
 
-    loss = (X: tf.Tensor2D) => {
+    loss = autoDispose((X: tf.Tensor2D) => {
         const X_hat = tf.matMul(this.D, this.H);
         const mse = tf.losses.meanSquaredError(X, X_hat);
         const regD = tf.norm(this.D, 1).mul(tf.tensor(this.opts.regD));
         const loss: tf.Tensor<tf.Rank.R0> = mse.add(regD);
         return loss;
-    }
+    })
 
     train(X: tf.Tensor2D, o: TrainOptions & DictLayerTrainOptions) {
         const optimizer = tf.train.adadelta(o.learningRate);
@@ -145,11 +141,11 @@ class WeightLayer {
         private samples: number,
     ) {}
 
-    loss = (Y: tf.Tensor2D) => {
+    loss = autoDispose((Y: tf.Tensor2D) => {
         const Y_hat = this.predict(this.H);
         const loss: tf.Tensor<tf.Rank.R0> = tf.losses.sigmoidCrossEntropy(Y, Y_hat);
         return loss;
-    }
+    });
 
     train(Y: tf.Tensor2D, o: TrainOptions) {
         const optimizer = tf.train.adadelta(o.learningRate);
@@ -169,7 +165,7 @@ class WeightLayer {
     }
 
     predict(H: tf.Tensor2D) {
-        return tf.sigmoid(tf.matMul(this.W, this.H));
+        return tf.sigmoid(tf.matMul(this.W, H));
     }
 
     get W() { return this._W; }
