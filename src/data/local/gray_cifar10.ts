@@ -2,7 +2,7 @@ import * as path from 'path';
 
 import * as downloader from 'utils/downloader';
 import { loadCsvToBuffer } from 'utils/csv';
-import { Data } from './Data';
+import { Data } from 'data/local/Data';
 import { Matrix } from 'utils/matrix';
 
 const dataRemoteLocation = 'https://rawgit.com/andnp/ml_data/master/gs_cifar10.tar.gz';

@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as mkdirp from 'mkdirp';
 import { promisify } from 'util';
-import { printProgressAsync } from './printer';
+import { printProgressAsync } from 'utils/printer';
 
 const mkdir = promisify(mkdirp);
 const fileExists = promisify(fs.exists);

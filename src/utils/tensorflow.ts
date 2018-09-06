@@ -3,6 +3,7 @@ import * as tf from '@tensorflow/tfjs';
 import { AnyFunc } from 'simplytyped';
 import { Data } from 'data/local/Data';
 import { Matrix } from 'utils/matrix';
+import { writeCsv, loadCsvToBuffer } from 'utils/csv';
 
 export function autoDispose<F extends AnyFunc>(f: F): F {
     const g = (...args: any[]) => {
@@ -14,27 +15,6 @@ export function autoDispose<F extends AnyFunc>(f: F): F {
     return g as F;
 }
 
-export const oneHotDataset = autoDispose((dataset: Data) => {
-    const [X, Y] = dataset.train;
-    const [T, TY] = dataset.test;
-
-    const transformedY = new Matrix(Y.rows, 1, tf.oneHot(Y.raw, 10).dataSync());
-    const transformedTY = new Matrix(TY.rows, 1, tf.oneHot(TY.raw, 10).dataSync());
-
-    return new Data(X, transformedY, T, transformedTY);
-});
-
-export const transposeDataset = autoDispose((dataset: Data) => {
-    const data = dataset.train.concat(dataset.test);
-
-    const transposed = data.map(d => tf.tensor2d(d.raw, [d.rows, d.cols]).transpose());
-
-    return {
-        train: [ transposed[0], transposed[1] ],
-        test:  [ transposed[2], transposed[3] ],
-    };
-});
-
 export const matrixToTensor = (m: Matrix) => tf.tensor2d(m.raw, [ m.rows, m.cols ]);
 
 export const datasetToTFDataset = (dataset: Data) => {
@@ -43,3 +23,19 @@ export const datasetToTFDataset = (dataset: Data) => {
         test: dataset.test.map(matrixToTensor),
     };
 };
+
+export async function writeTensorToCsv(location: string, tensor: tf.Tensor2D) {
+    const buf = await tensor.data();
+    return writeCsv(location, new Matrix(tensor.shape[0], tensor.shape[1], buf));
+}
+
+type BufferConstructor = Float32ArrayConstructor | Int32ArrayConstructor | Uint8ArrayConstructor;
+export async function loadTensorFromCsv(location: string, shape: [number, number] , Buffer: BufferConstructor = Float32Array) {
+    const buffer = new Buffer(shape[0] * shape[1]);
+    const data = await loadCsvToBuffer({
+        buffer,
+        path: location,
+    });
+
+    return tf.tensor2d(data, shape);
+}

@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as csv from 'fast-csv';
 import { Buffer, Matrix } from 'utils/matrix';
 import { Writable } from 'stream';
+import { createFolder } from 'utils/files';
 
 class LineCollector extends Writable {
     private buf = '';
@@ -71,21 +72,26 @@ export function loadCsvToBuffer<B extends Buffer>(params: LoadCsvParams<B>): Pro
     });
 }
 
-export function writeCsv(path: string, m: Matrix) {
+interface Indexed2D {
+    rows: number;
+    cols: number;
+    get: (i: number, j: number) => number;
+}
+export async function writeCsv(path: string, m: Indexed2D) {
+    await createFolder(path);
     const stream = fs.createWriteStream(path);
 
     for (let i = 0; i < m.rows; ++i) {
+        let line = '';
         for (let j = 0; j < m.cols; ++j) {
-            stream.write(m.get(i, j));
+            line += m.get(i, j);
 
             // no trailing commas
-            if (j !== m.cols - 1) stream.write(',');
+            if (j !== m.cols - 1) line += ',';
         }
         // trailing spaces are okay
-        stream.write('\n');
+        stream.write(line + '\n');
     }
 
     stream.end();
-
-    return Promise.resolve();
 }

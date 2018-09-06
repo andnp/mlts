@@ -1,22 +1,38 @@
+import * as path from 'path';
 import * as _ from 'lodash';
 import * as tf from '@tensorflow/tfjs';
+import * as v from 'validtyped';
 import { DeepPartial } from 'simplytyped';
 
-import { printProgress } from 'utils/printer';
-import { autoDispose } from 'utils/tensorflow';
-
-interface TrainOptions {
-    learningRate: number;
-    iterations: number;
-}
+import { writeJson, readJson } from 'utils/files';
+import { Algorithm } from 'algorithms/Algorithm';
+import { OptimizationParameters } from 'optimization/Optimizer';
+import { MatrixFactorization, MatrixFactorizationMetaParameters } from 'algorithms/MatrixFactorization';
+import { LogisticRegression } from 'algorithms/LogisticRegression';
+import { LinearRegression } from 'algorithms/LinearRegression';
 
 interface TwoStageDictionaryLearningOptions {
-    stage1: Partial<DictLayerOptions>;
+    stage1: Partial<MatrixFactorizationMetaParameters>;
 }
 
-export class TwoStageDictionaryLearning {
-    private stage1: DictLayer;
-    private stage2: WeightLayer;
+const ActiveStageSchema = v.string(['stage1', 'stage2', 'complete']);
+const SaveSchema = v.object({
+    activeStage: ActiveStageSchema,
+    features: v.number(),
+    classes: v.number(),
+    hidden: v.number(),
+    samples: v.number(),
+});
+
+type ActiveStage = v.ValidType<typeof ActiveStageSchema>;
+type SaveData = v.ValidType<typeof SaveSchema>;
+
+export class TwoStageDictionaryLearning extends Algorithm {
+    protected readonly name = TwoStageDictionaryLearning.name;
+    private stage1: MatrixFactorization;
+    private stage2: LogisticRegression;
+
+    private activeStage: ActiveStage = 'stage1';
 
     protected opts: TwoStageDictionaryLearningOptions;
 
@@ -27,16 +43,18 @@ export class TwoStageDictionaryLearning {
         protected samples: number,
         opts?: DeepPartial<TwoStageDictionaryLearningOptions>,
     ) {
+        super();
         this.opts = _.merge({
             stage1: {}
         }, opts);
 
-        this.stage1 = new DictLayer(this.features, this.hidden, this.samples, this.opts.stage1);
-        this.stage2 = new WeightLayer(this.classes, this.hidden, this.samples);
+        this.stage1 = new MatrixFactorization(this.features, this.hidden, this.samples, this.opts.stage1);
+        this.stage2 = new LogisticRegression(this.classes, this.hidden, this.samples);
     }
 
-    private getDefaults(opts?: Partial<TrainOptions>) {
+    private getDefaults(opts?: Partial<OptimizationParameters>): OptimizationParameters {
         return _.merge({
+            type: 'adadelta',
             learningRate: 2.0,
             iterations: 10,
         }, opts);
@@ -48,134 +66,72 @@ export class TwoStageDictionaryLearning {
         return s1_loss.add(s2_loss);
     }
 
-    train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<TrainOptions>) {
+    async train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>) {
         const o = this.getDefaults(opts);
 
-        this.stage1.train(X, { ...o, trainDictionary: true });
-        this.stage2.setH(this.stage1.H);
-        this.stage2.train(Y, o);
+        // start making backup files
+        this.startBackup();
+        if (this.activeStage === 'stage1') {
+            await this.stage1.train(X, { ...o, trainDictionary: true });
+            this.stage2.setH(this.stage1.H);
+            this.activeStage = 'stage2';
+        }
+        if (this.activeStage === 'stage2') {
+            await this.stage2.train(Y, o);
+            this.activeStage = 'complete';
+        }
+        this.stopBackup();
     }
 
-    predict(T: tf.Tensor2D, opts?: Partial<TrainOptions>) {
+    async predict(T: tf.Tensor2D, opts?: Partial<OptimizationParameters>) {
         const o = this.getDefaults(opts);
 
-        const stage3 = new DictLayer(T.shape[0], this.hidden, T.shape[1]);
+        const stage3 = new LinearRegression(T.shape[0], this.hidden, T.shape[1]);
 
-        stage3.train(T, {...o, trainDictionary: false});
+        await stage3.train(T, {...o, trainDictionary: false});
         const Y_hat = this.stage2.predict(stage3.H);
         return Y_hat;
     }
-}
 
-interface DictLayerTrainOptions {
-    trainDictionary: boolean;
-}
+    protected async _saveState(location: string) {
+        const state: SaveData = {
+            activeStage: this.activeStage,
+            features: this.features,
+            classes: this.classes,
+            hidden: this.hidden,
+            samples: this.samples,
+        };
 
-interface DictLayerOptions {
-    regularizer: 'l1';
-    regD: number;
-}
+        const saveTasks = [
+            this.stage1.saveState(location),
+            this.stage2.saveState(location),
+        ];
 
-class DictLayer {
-    private _D = tf.variable(tf.randomNormal<tf.Rank.R2>([this.features, this.hidden]));
-    private _H = tf.variable(tf.randomNormal<tf.Rank.R2>([this.hidden, this.samples]));
+        // write the state to a json file
+        await writeJson(path.join(location, 'state.json'), state);
 
-    private opts: DictLayerOptions;
-
-    private getDefaults(opts?: Partial<DictLayerOptions>): DictLayerOptions {
-        return _.merge({
-            regularizer: 'l1',
-            regD: 0,
-        }, opts);
+        return Promise.all(saveTasks);
     }
 
-    constructor (
-        private features: number,
-        private hidden: number,
-        private samples: number,
-        opts?: Partial<DictLayerOptions>,
-    ) {
-        this.opts = this.getDefaults(opts);
-    }
+    static async fromSavedState(location: string): Promise<TwoStageDictionaryLearning> {
+        const subfolder = await this.findSavedState(location, this.name);
+        const saveData = await readJson(path.join(subfolder, 'state.json'), SaveSchema);
+        const alg = new TwoStageDictionaryLearning(
+            saveData.features,
+            saveData.classes,
+            saveData.hidden,
+            saveData.samples,
+        );
 
-    loss = autoDispose((X: tf.Tensor2D) => {
-        const X_hat = tf.matMul(this.D, this.H);
-        const mse = tf.losses.meanSquaredError(X, X_hat);
-        const regD = tf.norm(this.D, 1).mul(tf.tensor(this.opts.regD));
-        const loss: tf.Tensor<tf.Rank.R0> = mse.add(regD);
-        return loss;
-    })
+        const [ stage1, stage2 ] = await Promise.all([
+            MatrixFactorization.fromSavedState(subfolder),
+            LogisticRegression.fromSavedState(subfolder),
+        ]);
 
-    train(X: tf.Tensor2D, o: TrainOptions & DictLayerTrainOptions) {
-        const optimizer = tf.train.adadelta(o.learningRate);
+        alg.stage1 = stage1;
+        alg.stage2 = stage2;
+        alg.activeStage = saveData.activeStage;
 
-        const varList = o.trainDictionary
-            ? [ this.D, this.H ]
-            : [ this.H ];
-
-        printProgress(printer => {
-            for (let i = 0; i < o.iterations; ++i) {
-                const lossTensor = optimizer.minimize(
-                    _.partial(this.loss, X, o),
-                    /* return cost */ true,
-                    varList,
-                );
-                const loss = lossTensor!.get();
-                if (i % 20 === 0) printer(loss);
-            }
-        });
-
-    }
-
-    get D() { return this._D; }
-    get H() { return this._H; }
-}
-
-class WeightLayer {
-    private _W = tf.variable(tf.randomNormal<tf.Rank.R2>([this.classes, this.hidden]));
-    private _H = tf.variable(tf.randomNormal<tf.Rank.R2>([this.hidden, this.samples]));
-
-    constructor (
-        private classes: number,
-        private hidden: number,
-        private samples: number,
-    ) {}
-
-    loss = autoDispose((Y: tf.Tensor2D) => {
-        const Y_hat = this.predict(this.H);
-        const loss: tf.Tensor<tf.Rank.R0> = tf.losses.sigmoidCrossEntropy(Y, Y_hat);
-        return loss;
-    });
-
-    train(Y: tf.Tensor2D, o: TrainOptions) {
-        const optimizer = tf.train.adadelta(o.learningRate);
-
-        printProgress(printer => {
-            for (let i = 0; i < o.iterations; ++i) {
-                const lossTensor = optimizer.minimize(
-                    _.partial(this.loss, Y),
-                    /* return cost */ true,
-                    /* var list */ [ this.W ],
-                );
-                const loss = lossTensor!.get();
-                printer(loss);
-            }
-        });
-
-    }
-
-    predict(H: tf.Tensor2D) {
-        return tf.sigmoid(tf.matMul(this.W, H));
-    }
-
-    get W() { return this._W; }
-    get H() { return this._H; }
-    setW(W: tf.Variable) {
-        this._W.assign(W.as2D(this.classes, this.hidden));
-        return this;
-    }
-    setH(H: tf.Variable) {
-        this._H.assign(H.as2D(this.hidden, this.samples));
-        return this;
+        return alg;
     }
 }

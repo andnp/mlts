@@ -7,13 +7,13 @@ export class Matrix {
     private r: number;
     private c: number;
 
-    constructor(rows: number, columns: number, data: Buffer) {
+    constructor(rows: number, columns: number, data?: Buffer) {
         this.c = columns;
         this.r = rows;
 
-        if (data.length !== rows * columns) throw new Error(`Expected buffer to be length <${rows * columns}>, got <${data.length}>`);
+        this.data = data || new Float32Array(rows * columns);
 
-        this.data = data;
+        if (this.data.length !== rows * columns) throw new Error(`Expected buffer to be length <${rows * columns}>, got <${this.data.length}>`);
     }
 
     get(i: number, j: number) {
