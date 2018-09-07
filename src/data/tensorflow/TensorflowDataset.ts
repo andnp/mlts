@@ -3,6 +3,7 @@ import { Dataset, Data } from 'data/local/Data';
 import { tuple } from 'utils/tsUtil';
 import * as tfUtil from 'utils/tensorflow';
 
+// TODO: consider that not all datasets will necessarily have in-sample and out-sample data
 export class TensorflowDataset implements Dataset<tf.Tensor2D> {
     constructor(
         protected _x: tf.Tensor2D,
@@ -38,6 +39,11 @@ export class TensorflowDataset implements Dataset<tf.Tensor2D> {
         return tuple(this._t, this._ty);
     }
 
+    get features() { return this._x.shape[1]; }
+    get samples() { return this._x.shape[0]; }
+    get classes() { return this._y.shape[1]; }
+    get testSamples() { return this._t.shape[0]; }
+
     static fromDataset(dataset: Data): TensorflowDataset {
         return new TensorflowDataset(
             tfUtil.matrixToTensor(dataset.train[0]),
@@ -45,5 +51,9 @@ export class TensorflowDataset implements Dataset<tf.Tensor2D> {
             tfUtil.matrixToTensor(dataset.test[0]),
             tfUtil.matrixToTensor(dataset.test[1]),
         );
+    }
+
+    static async load(): Promise<TensorflowDataset> {
+        throw new Error('Should implement the static "load" method for all datasets extending TensorflowDataset');
     }
 }

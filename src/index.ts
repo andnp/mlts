@@ -3,19 +3,27 @@ import '@tensorflow/tfjs-node';
 
 import { GreyCifar10 } from 'data/tensorflow/GreyCifar10';
 import { Deterding } from 'data/tensorflow/Deterding';
-import { TwoStageDictionaryLearning } from 'algorithms/TwoStageDictionaryLearning';
+import { TwoStageDictionaryLearning, TwoStageDictionaryLearningMetaParametersSchema } from 'algorithms/TwoStageDictionaryLearning';
 import { getClassificationError } from 'analysis/classification';
-import { fileExists } from 'utils/files';
+import { registerAlgorithm, registerDataset, Experiment } from 'experiments/Experiment';
 
-const iterations = 20000;
+const iterations = 4000;
 
-const saveLocation = 'savedModels';
+registerAlgorithm('twostage', TwoStageDictionaryLearning, TwoStageDictionaryLearningMetaParametersSchema);
+registerDataset('cifar', GreyCifar10);
+registerDataset('deterding', Deterding);
 
 async function execute() {
-    const dataset = await Deterding.load();
+    if (!process.argv[2]) throw new Error('Expected experiment description JSON for first argument');
+    if (!process.argv[3]) throw new Error('Expected index number for second argument');
+
+    const experiment = await Experiment.fromJson(process.argv[2], parseInt(process.argv[3]));
+
+    const dataset = experiment.dataset;
+    const algorithm = experiment.algorithm;
 
     // TwoStageDictionaryLearning expects the data to be in [features, samples] format instead of [samples, features]
-    dataset.transpose();
+    if (algorithm instanceof TwoStageDictionaryLearning) dataset.transpose();
 
     const [ X, Y ] = dataset.train;
     const [ T, TY ] = dataset.test;
@@ -24,26 +32,15 @@ async function execute() {
     const features = X.shape[0];
     const classes = Y.shape[0];
     const t_samples = T.shape[1];
-    const hidden = 6;
 
     console.log('Samples:', samples, 'Features:', features, 'Classes:', classes); // tslint:disable-line no-console
 
-    const exists = await fileExists(saveLocation);
-
-    const tsdl = exists
-        ? await TwoStageDictionaryLearning.fromSavedState(saveLocation)
-        : new TwoStageDictionaryLearning(features, classes, hidden, samples, {
-            stage1: {
-                regD: 0.01,
-            }
-        });
-
-    await tsdl.train(X, Y, {
+    await algorithm.train(X, Y, {
         iterations,
     });
 
-    const TY_hat = await tsdl.predict(T, { iterations });
-    const Y_hat = await tsdl.predict(X, { iterations });
+    const TY_hat = await algorithm.predict(T, { iterations });
+    const Y_hat = await algorithm.predict(X, { iterations });
 
     const trainError = getClassificationError(Y_hat.transpose(), Y.transpose());
     const testError = getClassificationError(TY_hat.transpose(), TY.transpose());

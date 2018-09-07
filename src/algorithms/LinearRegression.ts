@@ -9,8 +9,8 @@ import { OptimizationParameters } from 'optimization/Optimizer';
 // it is nearly the same as LinearRegression, but there are a few subtle differences
 // and I'd rather avoid the the code-coupling here
 export class LinearRegression extends MatrixFactorization {
-    async train(X: tf.Tensor2D, o: OptimizationParameters & MatrixFactorizationTrainOptions) {
-        return super.train(X, {
+    async train(X: tf.Tensor2D, Y: tf.Tensor2D, o: OptimizationParameters & MatrixFactorizationTrainOptions) {
+        return super.train(X, Y, {
             ...o,
             trainDictionary: false,
         });

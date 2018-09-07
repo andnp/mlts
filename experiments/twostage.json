@@ -1,0 +1,14 @@
+{
+    "algorithm": "twostage",
+    "dataset": "deterding",
+    "metaParameters": {
+        "stage1": {
+            "regularizerD": { "type": ["l1"], "weight": [0, 0.001, 0.01] },
+            "regularizerH": { "type": ["l1"], "weight": [0, 0.001, 0.01] }
+        },
+        "stage2": {
+            "regularizer": { "type": ["l2"], "weight": [0] }
+        },
+        "hidden": [15]
+    }
+}

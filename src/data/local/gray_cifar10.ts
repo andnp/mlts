@@ -27,8 +27,6 @@ export async function load(location = '.tmp') {
         buffer: y_buf,
     });
 
-    console.log('loaded');
-
     const x = dataX.slice(0, 1024 * 50000);
     const y = dataY.slice(0, 50000);
     const t = dataX.slice(1024 * 50000, 1024 * 60000);
