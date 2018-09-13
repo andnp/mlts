@@ -15,6 +15,6 @@ export class SusyComplete extends TensorflowDataset {
     static fromDataset(d: Data) {
         const data = SusyComplete.fromTensorflowDataset(super.fromDataset(d));
 
-        return data.scaleColumns();
+        return data.scaleColumns().oneHot(2);
     }
 }
