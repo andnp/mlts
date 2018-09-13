@@ -46,7 +46,7 @@ export class LogisticRegression extends Algorithm {
 
         const history = await printProgressAsync(async (printer) => {
             return this.model.fit(X, Y, {
-                batchSize: 1000,
+                batchSize: o.batchSize || X.shape[0],
                 epochs: o.iterations,
                 shuffle: true,
                 yieldEvery: 'epoch',

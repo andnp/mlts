@@ -20,7 +20,8 @@ const AdadeltaParametersSchema = v.object({
 const OptimizationParametersSchema = v.object({
     threshold: v.number(),
     iterations: v.number(),
-}, { optional: ['threshold'] }).and(AdadeltaParametersSchema);
+    batchSize: v.number(),
+}, { optional: ['threshold', 'batchSize'] }).and(AdadeltaParametersSchema);
 
 export type AdadeltaParameters = v.ValidType<typeof AdadeltaParametersSchema>;
 export type OptimizationParameters = v.ValidType<typeof OptimizationParametersSchema>;
