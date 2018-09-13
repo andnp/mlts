@@ -4,34 +4,18 @@ import * as tf from '@tensorflow/tfjs';
 import * as v from 'validtyped';
 import { DeepPartial } from 'simplytyped';
 
-import { writeJson, readJson } from 'utils/files';
+import { readJson } from 'utils/files';
 import { Algorithm } from 'algorithms/Algorithm';
 import { OptimizationParameters } from 'optimization/Optimizer';
 import { MatrixFactorization, MatrixFactorizationMetaParametersSchema } from 'algorithms/MatrixFactorization';
 import { LogisticRegression, LogisticRegressionMetaParameterSchema } from 'algorithms/LogisticRegression';
-import { LinearRegression } from 'algorithms/LinearRegression';
 import { SupervisedDictionaryLearningDatasetDescription, SupervisedDictionaryLearningDatasetDescriptionSchema } from 'data/DatasetDescription';
+import { History } from 'analysis/History';
+import { RepresentationAlgorithm } from 'algorithms/interfaces/RepresentationAlgorithm';
+import { LinearRegression } from './LinearRegression';
+import { writeTensorToCsv } from 'utils/tensorflow';
 
-export const TwoStageDictionaryLearningMetaParametersSchema = v.object({
-    stage1: v.partial(MatrixFactorizationMetaParametersSchema),
-    stage2: v.partial(LogisticRegressionMetaParameterSchema),
-    hidden: v.number(),
-});
-
-export type TwoStageDictionaryLearningMetaParameters = v.ValidType<typeof TwoStageDictionaryLearningMetaParametersSchema>;
-
-const ActiveStageSchema = v.string(['stage1', 'stage2', 'complete']);
-const SaveSchema = v.object({
-    state: v.object({
-        activeStage: ActiveStageSchema,
-    }),
-    datasetDescription: SupervisedDictionaryLearningDatasetDescriptionSchema,
-    metaParameters: TwoStageDictionaryLearningMetaParametersSchema,
-});
-
-type ActiveStage = v.ValidType<typeof ActiveStageSchema>;
-
-export class TwoStageDictionaryLearning extends Algorithm {
+export class TwoStageDictionaryLearning extends Algorithm implements RepresentationAlgorithm {
     protected readonly name = TwoStageDictionaryLearning.name;
     private stage1: MatrixFactorization;
     private stage2: LogisticRegression;
@@ -66,38 +50,62 @@ export class TwoStageDictionaryLearning extends Algorithm {
         }, opts);
     }
 
+    // --------
+    // Training
+    // --------
+
     loss(X: tf.Tensor2D, Y: tf.Tensor2D) {
         const s1_loss = this.stage1.loss(X);
-        const s2_loss = this.stage2.loss(X, Y);
+        const s2_loss = this.stage2.loss(X.transpose(), Y.transpose());
         return s1_loss.add(s2_loss);
     }
 
     async train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>) {
         const o = this.getDefaults(opts);
 
+        const jointHistory = new History(this.name, this.opts, []);
         // start making backup files
         this.startBackup(this.saveLocation);
         if (this.state.activeStage === 'stage1') {
-            await this.stage1.train(X, Y, { ...o, trainDictionary: true });
+            const history = await this.stage1.train(X, tf.zeros([0, 0]), o);
             this.state.activeStage = 'stage2';
+            jointHistory.loss = jointHistory.loss.concat(history.loss);
+            await writeTensorToCsv('twostage-originalH_susy-train.csv', this.stage1.H.transpose());
         }
         if (this.state.activeStage === 'stage2') {
-            await this.stage2.train(this.stage1.H, Y, o);
+            const history = await this.stage2.train(this.stage1.H, Y, o);
             this.state.activeStage = 'complete';
+            jointHistory.loss = jointHistory.loss.concat(history.loss);
         }
         this.stopBackup();
+
+        return jointHistory;
     }
 
     async predict(T: tf.Tensor2D, opts?: Partial<OptimizationParameters>) {
         const o = this.getDefaults(opts);
 
-        const stage3 = new LinearRegression({ features: T.shape[0], samples: T.shape[1] }, { hidden: this.opts.hidden });
+        const H = await this.getRepresentation(T, o);
 
-        await stage3.train(T, tf.zeros([0, 0]), {...o, trainDictionary: false});
-        const Y_hat = this.stage2.predict(stage3.H);
+        const Y_hat = this.stage2.predict(H);
         return Y_hat;
     }
 
+    // ------------------------
+    // Representation Algorithm
+    // ------------------------
+    async getRepresentation(X: tf.Tensor2D, opts?: Partial<OptimizationParameters>) {
+        // a new representation can be calculated as a linear regression optimization over H.
+        // X = argmin_H (X - DH) so the "inputs" to the linear regressor are "D" and the targets are "X"
+        const stage3 = new LinearRegression({ features: this.opts.hidden, classes: X.shape[0] });
+        await stage3.train(this.stage1.D.transpose(), X.transpose(), opts);
+        const H = stage3.W.transpose();
+        return H;
+    }
+
+    // ----------------
+    // Saving / Loading
+    // ----------------
     protected async _saveState(location: string) {
         const saveTasks = [
             this.stage1.saveState(location),
@@ -124,3 +132,22 @@ export class TwoStageDictionaryLearning extends Algorithm {
         return alg;
     }
 }
+
+export const TwoStageDictionaryLearningMetaParametersSchema = v.object({
+    stage1: v.partial(MatrixFactorizationMetaParametersSchema),
+    stage2: v.partial(LogisticRegressionMetaParameterSchema),
+    hidden: v.number(),
+});
+
+export type TwoStageDictionaryLearningMetaParameters = v.ValidType<typeof TwoStageDictionaryLearningMetaParametersSchema>;
+
+const ActiveStageSchema = v.string(['stage1', 'stage2', 'complete']);
+const SaveSchema = v.object({
+    state: v.object({
+        activeStage: ActiveStageSchema,
+    }),
+    datasetDescription: SupervisedDictionaryLearningDatasetDescriptionSchema,
+    metaParameters: TwoStageDictionaryLearningMetaParametersSchema,
+});
+
+type ActiveStage = v.ValidType<typeof ActiveStageSchema>;

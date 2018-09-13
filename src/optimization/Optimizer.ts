@@ -6,6 +6,7 @@ import { printProgressAsync } from 'utils/printer';
 import { repeat } from 'utils/tasks';
 import { assertNever } from 'utils/tsUtil';
 import { writeJson, readJson } from 'utils/files';
+import { History } from 'analysis/History';
 
 // -----------------------
 // Optimization Parameters
@@ -49,11 +50,17 @@ export class Optimizer {
             printProgress: true,
         }, options);
 
+        this.parameters = _.merge({
+            iterations: 100,
+            type: 'adadelta',
+            learningRate: 0.1,
+        }, this.parameters);
+
         this.optimizer = this.constructOptimizer();
     }
 
-    async minimize(lossFunc: () => tf.Tensor<tf.Rank.R0>, vars: tf.Variable[]) {
-        await printProgressAsync(printer => {
+    async minimize(lossFunc: () => tf.Tensor<tf.Rank.R0>, vars: tf.Variable[]): Promise<History> {
+        const losses = await printProgressAsync(printer => {
             return repeat(this.parameters.iterations - this.completedIterations, () => {
                 const lossTensor = this.optimizer.minimize(
                     lossFunc,
@@ -63,8 +70,11 @@ export class Optimizer {
                 const loss = lossTensor!.get();
                 if (this.opts.printProgress) printer(`${this.completedIterations}: ${loss}`);
                 this.completedIterations++;
+                return loss;
             });
         });
+
+        return new History('', {}, losses);
     }
 
     private constructOptimizer(): tf.Optimizer {
@@ -94,6 +104,10 @@ export class Optimizer {
         const optimizer = new Optimizer(saveData.parameters);
         optimizer.completedIterations = saveData.iterations;
         return optimizer;
+    }
+
+    getTfOptimizer() {
+        return this.optimizer;
     }
 }
 

@@ -10,20 +10,22 @@ import { minutes } from 'utils/time';
 import { DatasetDescription } from 'data/DatasetDescription';
 import { writeTensorToCsv, loadTensorFromCsv } from 'utils/tensorflow';
 import { returnVoid } from 'utils/tsUtil';
+import { History } from 'analysis/History';
 
 // TODO: consider making distinctions between Supervised, Unsupervised, etc. algs
 // they will have different function signatures for training methods.
 export abstract class Algorithm {
     protected abstract readonly name: string;
     protected readonly params: Record<string, tf.Variable<tf.Rank.R2>> = {};
-    protected readonly abstract opts: object;
+    protected model: tf.Model | undefined;
+    protected readonly abstract opts: object | undefined;
     protected state: object | undefined;
     protected abstract datasetDescription: DatasetDescription;
 
     // --------
     // Training
     // --------
-    abstract async train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<void>;
+    abstract async train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<History>;
     abstract async predict(T: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<tf.Tensor2D>;
 
     // ------
@@ -55,6 +57,10 @@ export abstract class Algorithm {
             writeJson(path.join(subfolder, 'state.json'), state),
             ...saveTasks,
         ]);
+
+        if (this.model) {
+            await this.model.save(`file://${path.join(subfolder, 'model')}`);
+        }
 
         return this._saveState(subfolder).then(giveBack(subfolder));
     }

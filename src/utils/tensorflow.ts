@@ -4,6 +4,9 @@ import { AnyFunc } from 'simplytyped';
 import { Data } from 'data/local/Data';
 import { Matrix } from 'utils/matrix';
 import { writeCsv, loadCsvToBuffer } from 'utils/csv';
+import { BaseCallback } from '@tensorflow/tfjs-layers/dist/base_callbacks';
+import { Printer } from './printer';
+import { UnresolvedLogs } from '@tensorflow/tfjs-layers/dist/logs';
 
 export function autoDispose<F extends AnyFunc>(f: F): F {
     const g = (...args: any[]) => {
@@ -38,4 +41,20 @@ export async function loadTensorFromCsv(location: string, shape: [number, number
     });
 
     return tf.tensor2d(data, shape);
+}
+
+export function randomInitVariable(shape: [number, number]): tf.Variable<tf.Rank.R2> {
+    return tf.variable(tf.randomNormal(shape));
+}
+
+export class LoggerCallback extends BaseCallback {
+    constructor(private print: Printer) {
+        super();
+    }
+    async onEpochEnd(epoch: number, logs?: UnresolvedLogs) {
+        if (logs) {
+            const lossTensor = logs.loss as tf.Tensor<tf.Rank.R0>;
+            this.print(`${epoch}: ${lossTensor.get()}`);
+        }
+    }
 }

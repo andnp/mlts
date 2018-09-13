@@ -25,8 +25,21 @@ export class TensorflowDataset implements Dataset<tf.Tensor2D> {
         if (this._y.shape[1] !== 1) throw new Error('Expected Y to have only one column');
         if (this._ty.shape[1] !== 1) throw new Error('Expected TY to have only one column');
 
-        this._y = tf.oneHot(this._y.asType('int32').as1D(), depth);
-        this._ty = tf.oneHot(this._ty.asType('int32').as1D(), depth);
+        this._y = tf.oneHot(this._y.asType('int32').as1D(), depth).asType('float32');
+        this._ty = tf.oneHot(this._ty.asType('int32').as1D(), depth).asType('float32');
+
+        return this;
+    });
+
+    scaleColumns = tfUtil.autoDispose(() => {
+        const joint = tf.concat([this._x, this._t]);
+        const max = tf.max(joint, 0);
+        const min = tf.min(joint, 0);
+
+        const minMaxScale = (x: tf.Tensor2D) => tf.div(tf.sub(x, min), tf.sub(max, min)) as tf.Tensor2D;
+
+        this._x = minMaxScale(this._x);
+        this._t = minMaxScale(this._t);
 
         return this;
     });

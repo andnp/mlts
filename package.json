@@ -10,7 +10,7 @@
     "prepush": "npm run -s lint && npm test",
     "file": "NODE_PATH=src ts-node",
     "tsc": "tsc",
-    "start": "npm run -s build; NODE_PATH=dist node --max-old-space-size=8192 dist/index.js"
+    "start": "npm run -s build; NODE_PATH=dist/src node --max-old-space-size=8192 dist/src/index.js"
   },
   "author": "",
   "license": "ISC",
@@ -51,15 +51,12 @@
     "@types/object-hash": "^1.2.0",
     "@types/rimraf": "^2.0.2",
     "axios": "^0.18.0",
-    "fast-csv": "^2.4.1",
     "inly": "^2.0.2",
     "lodash": "^4.17.10",
-    "maybetyped": "^1.5.0",
     "mkdirp": "^0.5.1",
     "object-hash": "^1.3.0",
     "rimraf": "^2.6.2",
     "simplytyped": "^1.4.0",
-    "type-level-schema": "^1.4.0",
     "validtyped": "^2.0.0"
   },
   "peerDependencies": {

@@ -36,4 +36,12 @@ export const regularize = (params: RegularizerParameters, x: tf.Tensor2D): tf.Te
         case 'l2': return tf.mul(l2(x), params.weight);
         default: throw new Error(`I don't know this regularizer yet..`);
     }
-}
+};
+
+export const regularizeLayer = (params: RegularizerParameters) => {
+    switch(params.type) {
+        case 'l1': return tf.regularizers.l1({ l1: params.weight });
+        case 'l2': return tf.regularizers.l2({ l2: params.weight });
+        default: throw new Error(`I don't know this regularizer yet..`);
+    }
+};

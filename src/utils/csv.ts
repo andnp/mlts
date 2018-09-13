@@ -1,9 +1,8 @@
 import * as _ from 'lodash';
 import * as fs from 'fs';
-import * as csv from 'fast-csv';
-import { Buffer, Matrix } from 'utils/matrix';
 import { Writable } from 'stream';
 import { createFolder } from 'utils/files';
+import { BufferArray } from 'utils/buffers';
 
 class LineCollector extends Writable {
     private buf = '';
@@ -22,13 +21,17 @@ class LineCollector extends Writable {
         }
         done();
     }
+    _final(done: () => void) {
+        this.emit('data', this.buf);
+        done();
+    }
 }
 
 interface CSVParserOptions {
     skipFirst: boolean;
 }
 
-class CSVParser<B extends Buffer> {
+class CSVParser<B extends BufferArray> {
     protected o: CSVParserOptions;
     private skippedFirst = false;
     private i = 0;
@@ -53,11 +56,11 @@ class CSVParser<B extends Buffer> {
     }
 }
 
-interface LoadCsvParams<B extends Buffer> {
+interface LoadCsvParams<B extends BufferArray> {
     path: string;
     buffer: B;
 }
-export function loadCsvToBuffer<B extends Buffer>(params: LoadCsvParams<B>): Promise<B> {
+export function loadCsvToBuffer<B extends BufferArray>(params: LoadCsvParams<B>): Promise<B> {
     const { path, buffer } = params;
 
     const parser = new CSVParser(buffer);
@@ -93,5 +96,5 @@ export async function writeCsv(path: string, m: Indexed2D) {
         stream.write(line + '\n');
     }
 
-    stream.end();
+    return new Promise<void>(resolve => stream.end(resolve));
 }

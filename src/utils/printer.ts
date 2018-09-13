@@ -21,13 +21,14 @@ const hasFlushed = () => new Promise((resolve, reject) => {
 });
 
 export interface Printable { toString(): string; }
-export function printProgress<R>(f: (printer: (data: Printable) => void) => R) {
+export type Printer = (data: Printable) => void;
+export function printProgress<R>(f: (printer: Printer) => R) {
     const res = f(print);
     console.log(''); // tslint:disable-line no-console
     return res;
 }
 
-export async function printProgressAsync<R>(f: (printer: (data: Printable) => void) => Promise<R>) {
+export async function printProgressAsync<R>(f: (printer: Printer) => Promise<R>) {
     const res = await f(print);
     await flush();
     console.log(''); // tslint:disable-line no-console

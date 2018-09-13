@@ -4,11 +4,13 @@ import * as _ from 'lodash';
 import * as v from 'validtyped';
 
 import { Algorithm } from "algorithms/Algorithm";
-import { Optimizer, OptimizationParameters } from 'optimization/Optimizer';
-import { autoDispose } from 'utils/tensorflow';
+import { OptimizationParameters } from 'optimization/Optimizer';
 import { readJson } from 'utils/files';
-import { regularize, RegularizerParametersSchema } from 'regularizers/regularizers';
+import { RegularizerParametersSchema, regularizeLayer } from 'regularizers/regularizers';
 import { SupervisedDatasetDescription, SupervisedDatasetDescriptionSchema } from 'data/DatasetDescription';
+import { printProgressAsync } from 'utils/printer';
+import { LoggerCallback } from 'utils/tensorflow';
+import { History } from 'analysis/History';
 
 export const LogisticRegressionMetaParameterSchema = v.object({
     regularizer: RegularizerParametersSchema,
@@ -19,6 +21,7 @@ export type LogisticRegressionMetaParameters = v.ValidType<typeof LogisticRegres
 export class LogisticRegression extends Algorithm {
     protected readonly name = LogisticRegression.name;
     protected readonly opts: LogisticRegressionMetaParameters;
+    protected model: tf.Model;
 
     constructor (
         protected datasetDescription: SupervisedDatasetDescription,
@@ -29,44 +32,62 @@ export class LogisticRegression extends Algorithm {
             regularizer: { type: 'l1', weight: 0 },
         }, opts);
 
-        this.params.W = tf.variable(tf.randomNormal<tf.Rank.R2>([this.datasetDescription.classes, this.datasetDescription.features]));
+        const model = this.model = tf.sequential();
+        model.add(tf.layers.inputLayer({ inputShape: [datasetDescription.features] }));
+        model.add(tf.layers.dense({ units: datasetDescription.classes, activation: 'sigmoid', kernelRegularizer: regularizeLayer(this.opts.regularizer), name: 'W' }));
     }
 
-    loss = autoDispose((X: tf.Tensor2D, Y: tf.Tensor2D) => {
-        const Y_hat = tf.sigmoid(tf.matMul(this.W, X));
-        const loss: tf.Tensor<tf.Rank.R0> = tf.losses.sigmoidCrossEntropy(Y, Y_hat);
-        const reg = regularize(this.opts.regularizer, this.W);
-        return loss.add(reg);
-    });
+    async train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>) {
+        const o = this.getDefaultOptimizationParameters(opts);
+        this.model.compile({
+            optimizer: tf.train.adadelta(0.1),
+            loss: 'categoricalCrossentropy',
+        });
 
-    async train(X: tf.Tensor2D, Y: tf.Tensor2D, o: OptimizationParameters) {
-        const optimizer = new Optimizer(o);
+        const history = await printProgressAsync(async (printer) => {
+            return this.model.fit(X, Y, {
+                batchSize: 1000,
+                epochs: o.iterations,
+                shuffle: true,
+                yieldEvery: 'epoch',
+                callbacks: [new LoggerCallback(printer)],
+            });
+        });
 
-        await optimizer.minimize(_.partial(this.loss, X, Y), [ this.W ]);
+        return History.fromTensorflowHistory(this.name, this.opts, history);
+    }
+
+    loss(X: tf.Tensor2D, Y: tf.Tensor2D) {
+        const Y_hat = this.model.predict(X) as tf.Tensor2D;
+        return tf.losses.sigmoidCrossEntropy(Y, Y_hat);
     }
 
     async predict(X: tf.Tensor2D) {
-        return tf.tidy(() => {
-            return tf.sigmoid(tf.matMul(this.W, X));
-        });
+        return this.model.predict(X) as tf.Tensor2D;
     }
 
     static async fromSavedState(location: string) {
         const subfolder = await this.findSavedState(location);
-
         const state = await readJson(path.join(subfolder, 'state.json'), SaveDataSchema);
-
         const layer = new LogisticRegression(state.datasetDescription, state.metaParameters);
 
-        await layer.loadTensorsFromDisk(subfolder);
+        layer.model = await tf.loadModel('file://' + path.join(subfolder, 'model/model.json'));
 
         return layer;
     }
 
-    get W() { return this.params.W; }
-    setW(W: tf.Variable) {
-        this.params.W.assign(W.as2D(this.datasetDescription.classes, this.datasetDescription.features));
+    get W() { return this.model.getLayer('W').getWeights()[0]; }
+    setW(W: tf.Tensor2D) {
+        this.model.getLayer('W').setWeights([W]);
         return this;
+    }
+
+    private getDefaultOptimizationParameters(o?: Partial<OptimizationParameters>): OptimizationParameters {
+        return _.merge({
+            iterations: 100,
+            type: 'adadelta',
+            learningRate: 0.5,
+        }, o);
     }
 }
 

@@ -1,6 +1,6 @@
 {
     "algorithm": "twostage",
-    "dataset": "deterding",
+    "dataset": "susy",
     "metaParameters": {
         "stage1": {
             "regularizerD": { "type": ["l1"], "weight": [0, 0.001, 0.01] },
@@ -9,6 +9,6 @@
         "stage2": {
             "regularizer": { "type": ["l2"], "weight": [0] }
         },
-        "hidden": [15]
+        "hidden": [2]
     }
 }

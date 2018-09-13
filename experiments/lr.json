@@ -1,0 +1,10 @@
+{
+    "algorithm": "logisticRegression",
+    "dataset": "deterding",
+    "metaParameters": {
+        "regularizer": {
+            "type": ["l1"],
+            "weight": [0]
+        }
+    }
+}

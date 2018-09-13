@@ -1,13 +1,12 @@
 import * as tf from '@tensorflow/tfjs';
-
-export type Buffer = Uint8Array | Int32Array | Float32Array;
+import { BufferArray } from 'utils/buffers';
 
 export class Matrix {
-    private data: Buffer;
+    private data: BufferArray;
     private r: number;
     private c: number;
 
-    constructor(rows: number, columns: number, data?: Buffer) {
+    constructor(rows: number, columns: number, data?: BufferArray) {
         this.c = columns;
         this.r = rows;
 
@@ -24,7 +23,7 @@ export class Matrix {
         return X.data().then(d => new Matrix(X.shape[0], X.shape[1], d));
     }
 
-    get raw(): Buffer {
+    get raw(): BufferArray {
         return this.data;
     }
 
