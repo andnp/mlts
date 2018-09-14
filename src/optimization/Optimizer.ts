@@ -17,7 +17,7 @@ const AdadeltaParametersSchema = v.object({
     learningRate: v.number(),
 });
 
-const OptimizationParametersSchema = v.object({
+export const OptimizationParametersSchema = v.object({
     threshold: v.number(),
     iterations: v.number(),
     batchSize: v.number(),

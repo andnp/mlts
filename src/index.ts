@@ -1,5 +1,6 @@
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-node';
+import * as path from 'path';
 
 import { GreyCifar10 } from 'data/tensorflow/GreyCifar10';
 import { Deterding } from 'data/tensorflow/Deterding';
@@ -11,8 +12,8 @@ import { SupervisedDictionaryLearning, SupervisedDictionaryLearningMetaParameter
 import { LogisticRegression, LogisticRegressionMetaParameterSchema } from 'algorithms/LogisticRegression';
 import { isRepresentationAlgorithm } from 'algorithms/interfaces/RepresentationAlgorithm';
 import { writeTensorToCsv } from 'utils/tensorflow';
-
-const iterations = 3000;
+import { csvStringFromObject } from 'utils/csv';
+import { writeFile } from 'utils/files';
 
 registerAlgorithm('twostage', TwoStageDictionaryLearning, TwoStageDictionaryLearningMetaParametersSchema);
 registerAlgorithm('sdl', SupervisedDictionaryLearning, SupervisedDictionaryLearningMetaParameterSchema);
@@ -40,28 +41,37 @@ async function execute() {
 
     console.log('Samples:', samples, 'Features:', features, 'Classes:', classes); // tslint:disable-line no-console
 
-    const history = await algorithm.train(X, Y, {
-        iterations,
-    });
+    const optimizationParams = experiment.optimization;
 
-    if (isRepresentationAlgorithm(algorithm)) {
-        const H = await algorithm.getRepresentation(X, { iterations });
-        const Ht = await algorithm.getRepresentation(T, { iterations });
-        await Promise.all([
-            writeTensorToCsv('twostage-newH_susy-train.csv', H.transpose()),
-            writeTensorToCsv('twostage-H_susy-test.csv', Ht.transpose()),
-            writeTensorToCsv('susy-trainLabels.csv', tf.argMax(Y.transpose()).as2D(1, samples)),
-            writeTensorToCsv('susy-testLabels.csv', tf.argMax(TY.transpose()).as2D(1, t_samples)),
-        ]);
-    }
+    const history = await algorithm.train(X, Y, optimizationParams);
+
+    // if (isRepresentationAlgorithm(algorithm)) {
+    //     const H = await algorithm.getRepresentation(X, { iterations });
+    //     const Ht = await algorithm.getRepresentation(T, { iterations });
+    //     await Promise.all([
+    //         writeTensorToCsv('twostage-newH_deterding-train.csv', H.transpose()),
+    //         writeTensorToCsv('twostage-H_deterding-test.csv', Ht.transpose()),
+    //         writeTensorToCsv('deterding-trainLabels.csv', tf.argMax(Y.transpose()).as2D(1, samples)),
+    //         writeTensorToCsv('deterding-testLabels.csv', tf.argMax(TY.transpose()).as2D(1, t_samples)),
+    //     ]);
+    // }
 
 
-    const TY_hat = await algorithm.predict(T, { iterations });
-    const Y_hat = await algorithm.predict(X, { iterations });
+    const TY_hat = await algorithm.predict(T, optimizationParams);
+    const Y_hat = await algorithm.predict(X, optimizationParams);
+
+    const originalHOpts = { ...optimizationParams, useOriginalH: true };
+
+    const originalH_Y_hat = await algorithm.predict(X, originalHOpts);
 
     const trainError = getClassificationError(Y_hat, Y);
+    const originalHTrainError = getClassificationError(originalH_Y_hat, Y);
     const testError = getClassificationError(TY_hat, TY);
-    console.log('test:', testError.get(), 'train:', trainError.get());
+    const paramsCsvString = csvStringFromObject(algorithm.getParameters());
+    const resultString = paramsCsvString + `, ${originalHTrainError.get()}, ${trainError.get()}, ${testError.get()}`;
+    console.log(paramsCsvString, 'originalH', originalHTrainError.get(), 'test:', testError.get(), 'train:', trainError.get());
+
+    await writeFile(path.join('results', experiment.path, 'result.txt'), resultString);
 }
 
 execute()

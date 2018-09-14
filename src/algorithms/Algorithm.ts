@@ -11,6 +11,7 @@ import { DatasetDescription } from 'data/DatasetDescription';
 import { writeTensorToCsv, loadTensorFromCsv } from 'utils/tensorflow';
 import { returnVoid } from 'utils/tsUtil';
 import { History } from 'analysis/History';
+import { flatten } from 'utils/flatten';
 
 // TODO: consider making distinctions between Supervised, Unsupervised, etc. algs
 // they will have different function signatures for training methods.
@@ -18,7 +19,7 @@ export abstract class Algorithm {
     protected abstract readonly name: string;
     protected readonly params: Record<string, tf.Variable<tf.Rank.R2>> = {};
     protected model: tf.Model | undefined;
-    protected readonly abstract opts: object | undefined;
+    protected opts: object | undefined;
     protected state: object | undefined;
     protected abstract datasetDescription: DatasetDescription;
 
@@ -27,6 +28,13 @@ export abstract class Algorithm {
     // --------
     abstract async train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<History>;
     abstract async predict(T: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<tf.Tensor2D>;
+
+    // ----------
+    // Parameters
+    // ----------
+    getParameters() {
+        return flatten(this.opts);
+    }
 
     // ------
     // Saving

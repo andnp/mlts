@@ -7,6 +7,8 @@ import * as hash from 'object-hash';
 import { Algorithm } from "algorithms/Algorithm";
 import { readJson, fileExists } from 'utils/files';
 import { TensorflowDataset } from 'data/tensorflow/TensorflowDataset';
+import { flattenToArray } from 'utils/flatten';
+import { OptimizationParametersSchema, OptimizationParameters } from 'optimization/Optimizer';
 
 const algorithmRegistry: Record<string, { constructor: ConstructorFor<Algorithm>, schema: v.Validator<any> }> = {};
 const datasetRegistry: Record<string, typeof TensorflowDataset> = {};
@@ -23,6 +25,7 @@ const ExperimentSchema = v.object({
     algorithm: v.string(),
     dataset: v.string(),
     metaParameters: v.any(),
+    optimization: OptimizationParametersSchema,
 });
 
 type ExperimentJson = v.ValidType<typeof ExperimentSchema>;
@@ -32,6 +35,8 @@ export class Experiment {
         readonly description: ExperimentJson,
         readonly algorithm: Algorithm,
         readonly dataset: TensorflowDataset,
+        readonly optimization: OptimizationParameters,
+        readonly path: string,
     ) {}
 
     static async fromJson(location: string, index: number) {
@@ -57,7 +62,8 @@ export class Experiment {
         };
 
         const run = Math.floor(index / getNumberOfRuns(data.metaParameters));
-        const saveLocation = path.join('savedModels', hash({ ...data, metaParameters }), `${run}`);
+        const expLocation = path.join(hash({ ...data, metaParameters }), `${run}`);
+        const saveLocation = path.join('savedModels', expLocation);
 
         const exists = await fileExists(saveLocation);
 
@@ -65,43 +71,13 @@ export class Experiment {
             ? await (algData.constructor as any as typeof Algorithm).fromSavedState(saveLocation)
             : new algData.constructor(datasetDescriptor, metaParameters, saveLocation);
 
-        return new Experiment(data, algorithm, dataset);
+        return new Experiment(data, algorithm, dataset, data.optimization, expLocation);
     }
 }
 
 // --------------------------------------------
 // Compute the MetaParameters used for this run
 // --------------------------------------------
-
-function flattenToArray(thing: any): Array<[ string, any[] ]> {
-    const accum: any[] = [];
-    function inner(thing: any, path = ''): void {
-        if (Array.isArray(thing)) {
-            // does this contain deeper objects?
-            // if so, we need to keep going
-            if (typeof thing[0] === 'object') {
-               thing.forEach((v, i) => inner(v, `${path}[${i}]`));
-               return;
-            }
-
-            accum.push([ path, thing ]);
-            return;
-        }
-        if (typeof thing === 'object') {
-            const keys = Object.keys(thing);
-
-            keys.forEach(key => {
-                inner(thing[key], path ? `${path}.${key}` : key);
-            });
-            return;
-        }
-
-        throw new Error(`Shouldn't be finding something of any other type. <${typeof thing}>`);
-    }
-
-    inner(thing);
-    return accum;
-}
 
 function reconstructParameters(params: Record<string, any>) {
     const res: Record<string, any> = {};

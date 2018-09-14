@@ -70,7 +70,7 @@ export class TwoStageDictionaryLearning extends Algorithm implements Representat
             const history = await this.stage1.train(X, tf.zeros([0, 0]), o);
             this.state.activeStage = 'stage2';
             jointHistory.loss = jointHistory.loss.concat(history.loss);
-            await writeTensorToCsv('twostage-originalH_susy-train.csv', this.stage1.H.transpose());
+            await writeTensorToCsv('twostage-originalH_deterding-train.csv', this.stage1.H.transpose());
         }
         if (this.state.activeStage === 'stage2') {
             const history = await this.stage2.train(this.stage1.H, Y, o);
@@ -82,12 +82,14 @@ export class TwoStageDictionaryLearning extends Algorithm implements Representat
         return jointHistory;
     }
 
-    async predict(T: tf.Tensor2D, opts?: Partial<OptimizationParameters>) {
+    async predict(T: tf.Tensor2D, opts?: Partial<OptimizationParameters> & { useOriginalH?: boolean }) {
         const o = this.getDefaults(opts);
 
-        const H = await this.getRepresentation(T, o);
+        const H = opts && opts.useOriginalH
+            ? this.stage1.H
+            : await this.getRepresentation(T, o);
 
-        const Y_hat = this.stage2.predict(H);
+        const Y_hat = await this.stage2.predict(H);
         return Y_hat;
     }
 

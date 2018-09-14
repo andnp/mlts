@@ -5,7 +5,7 @@ import * as v from 'validtyped';
 import * as rmrf from 'rimraf';
 import { promisify } from 'util';
 
-export const writeFile = promisify(fs.writeFile);
+export const writeFile = (location: string, data: string) => createFolder(location).then(() => promisify(fs.writeFile)(location, data));
 export const readFile = promisify(fs.readFile);
 export const fileExists = promisify(fs.exists);
 export const readdir = promisify(fs.readdir);
@@ -16,8 +16,7 @@ const mkdir = promisify(mkdirp);
 export const createFolder = (location: string) => mkdir(path.dirname(location));
 
 export function writeJson(location: string, obj: object) {
-    return createFolder(location)
-        .then(() => writeFile(location, JSON.stringify(obj, undefined, 2)));
+    return writeFile(location, JSON.stringify(obj, undefined, 2));
 }
 
 export async function readJson<T>(location: string, schema: v.Validator<T>): Promise<T> {

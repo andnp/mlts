@@ -6,3 +6,4 @@ savedModels
 *.csv
 *.jpg
 *.eps
+results/

@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import { Writable } from 'stream';
 import { createFolder } from 'utils/files';
 import { BufferArray } from 'utils/buffers';
+import { PlainObject } from 'simplytyped';
 
 class LineCollector extends Writable {
     private buf = '';
@@ -97,4 +98,10 @@ export async function writeCsv(path: string, m: Indexed2D) {
     }
 
     return new Promise<void>(resolve => stream.end(resolve));
+}
+
+
+export function csvStringFromObject(obj: PlainObject): string {
+    const keys = Object.keys(obj);
+    return keys.reduce((str, key, i) => i === 0 ? `${obj[key]}` : `${str}, ${obj[key]}`, '');
 }
