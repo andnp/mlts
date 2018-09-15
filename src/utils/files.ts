@@ -5,7 +5,7 @@ import * as v from 'validtyped';
 import * as rmrf from 'rimraf';
 import { promisify } from 'util';
 
-export const writeFile = (location: string, data: string) => createFolder(location).then(() => promisify(fs.writeFile)(location, data));
+export const writeFile = (location: string, data: any) => createFolder(location).then(() => promisify(fs.writeFile)(location, data));
 export const readFile = promisify(fs.readFile);
 export const fileExists = promisify(fs.exists);
 export const readdir = promisify(fs.readdir);

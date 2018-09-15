@@ -102,6 +102,6 @@ export async function writeCsv(path: string, m: Indexed2D) {
 
 
 export function csvStringFromObject(obj: PlainObject): string {
-    const keys = Object.keys(obj);
+    const keys = Object.keys(obj).sort();
     return keys.reduce((str, key, i) => i === 0 ? `${obj[key]}` : `${str}, ${obj[key]}`, '');
 }

@@ -13,7 +13,7 @@ import { LogisticRegression, LogisticRegressionMetaParameterSchema } from 'algor
 import { isRepresentationAlgorithm } from 'algorithms/interfaces/RepresentationAlgorithm';
 import { writeTensorToCsv } from 'utils/tensorflow';
 import { csvStringFromObject } from 'utils/csv';
-import { writeFile } from 'utils/files';
+import { writeFile, writeJson } from 'utils/files';
 
 registerAlgorithm('twostage', TwoStageDictionaryLearning, TwoStageDictionaryLearningMetaParametersSchema);
 registerAlgorithm('sdl', SupervisedDictionaryLearning, SupervisedDictionaryLearningMetaParameterSchema);
@@ -45,9 +45,11 @@ async function execute() {
 
     const history = await algorithm.train(X, Y, optimizationParams);
 
+    const resultsPath = path.join('results', experiment.path);
+
     // if (isRepresentationAlgorithm(algorithm)) {
-    //     const H = await algorithm.getRepresentation(X, { iterations });
-    //     const Ht = await algorithm.getRepresentation(T, { iterations });
+    //     const H = await algorithm.getRepresentation(X, optimizationParams);
+    //     const Ht = await algorithm.getRepresentation(T, optimizationParams);
     //     await Promise.all([
     //         writeTensorToCsv('twostage-newH_deterding-train.csv', H.transpose()),
     //         writeTensorToCsv('twostage-H_deterding-test.csv', Ht.transpose()),
@@ -67,11 +69,17 @@ async function execute() {
     const trainError = getClassificationError(Y_hat, Y);
     const originalHTrainError = getClassificationError(originalH_Y_hat, Y);
     const testError = getClassificationError(TY_hat, TY);
-    const paramsCsvString = csvStringFromObject(algorithm.getParameters());
-    const resultString = paramsCsvString + `, ${originalHTrainError.get()}, ${trainError.get()}, ${testError.get()}`;
-    console.log(paramsCsvString, 'originalH', originalHTrainError.get(), 'test:', testError.get(), 'train:', trainError.get());
 
-    await writeFile(path.join('results', experiment.path, 'result.txt'), resultString);
+    const params = algorithm.getParameters();
+
+    await writeFile(path.join(resultsPath, 'test.txt'), testError.get());
+    await writeFile(path.join(resultsPath, 'train.txt'), trainError.get());
+    await writeFile(path.join(resultsPath, 'originalH.txt'), originalHTrainError.get());
+    await writeJson(path.join(resultsPath, 'params.json'), params);
+    await writeJson(path.join(resultsPath, 'experiment.json'), experiment.description);
+
+    const paramsCsvString = csvStringFromObject(algorithm.getParameters());
+    console.log(paramsCsvString, 'originalH', originalHTrainError.get(), 'test:', testError.get(), 'train:', trainError.get());
 }
 
 execute()
