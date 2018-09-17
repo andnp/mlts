@@ -59,6 +59,7 @@
     "object-hash": "^1.3.0",
     "rimraf": "^2.6.2",
     "simplytyped": "^1.4.0",
+    "tsplot": "git+https://github.com/andnp/tsplot.git",
     "validtyped": "^2.0.0"
   },
   "peerDependencies": {
