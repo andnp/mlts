@@ -1,3 +1,4 @@
+// tslint:disable no-console
 import { AnyFunc } from 'simplytyped';
 import { invoke } from 'utils/fp';
 

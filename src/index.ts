@@ -79,7 +79,7 @@ async function execute() {
     await writeJson(path.join(resultsPath, 'experiment.json'), experiment.description);
 
     const paramsCsvString = csvStringFromObject(algorithm.getParameters());
-    console.log(paramsCsvString, 'originalH', originalHTrainError.get(), 'test:', testError.get(), 'train:', trainError.get());
+    console.log(paramsCsvString, 'originalH', originalHTrainError.get(), 'test:', testError.get(), 'train:', trainError.get()); // tslint:disable-line no-console
 }
 
 execute()
