@@ -17,11 +17,16 @@ const AdadeltaParametersSchema = v.object({
     learningRate: v.number(),
 });
 
+const AdagradParametersSchema = v.object({
+    type: v.string(['adagrad']),
+    learningRate: v.number(),
+});
+
 export const OptimizationParametersSchema = v.object({
     threshold: v.number(),
     iterations: v.number(),
     batchSize: v.number(),
-}, { optional: ['threshold', 'batchSize'] }).and(AdadeltaParametersSchema);
+}, { optional: ['threshold', 'batchSize'] }).and(AdadeltaParametersSchema.or(AdagradParametersSchema));
 
 export type AdadeltaParameters = v.ValidType<typeof AdadeltaParametersSchema>;
 export type OptimizationParameters = v.ValidType<typeof OptimizationParametersSchema>;
@@ -82,8 +87,11 @@ export class Optimizer {
         if (this.parameters.type === 'adadelta') {
             return tf.train.adadelta(this.parameters.learningRate);
         }
+        if (this.parameters.type === 'adagrad') {
+            return tf.train.adagrad(this.parameters.learningRate);
+        }
 
-        assertNever(this.parameters.type);
+        assertNever(this.parameters);
         throw new Error('Unexpected line reached');
     }
 
