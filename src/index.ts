@@ -14,13 +14,19 @@ import { isRepresentationAlgorithm } from 'algorithms/interfaces/RepresentationA
 import { writeTensorToCsv } from 'utils/tensorflow';
 import { csvStringFromObject } from 'utils/csv';
 import { writeFile, writeJson } from 'utils/files';
+import { Mnist } from 'data/tensorflow/mnist';
+import { SupervisedAutoencoder, SupervisedAutoencoderMetaParameterSchema } from 'algorithms/SupervisedAutoencoder';
+import { TwoStageAutoencoder, TwoStageAutoencoderMetaParameterSchema } from 'algorithms/TwoStageAutoencoder';
 
 registerAlgorithm('twostage', TwoStageDictionaryLearning, TwoStageDictionaryLearningMetaParametersSchema);
 registerAlgorithm('sdl', SupervisedDictionaryLearning, SupervisedDictionaryLearningMetaParameterSchema);
 registerAlgorithm('logisticRegression', LogisticRegression, LogisticRegressionMetaParameterSchema);
+registerAlgorithm('sae', SupervisedAutoencoder, SupervisedAutoencoderMetaParameterSchema);
+registerAlgorithm('twostage-ae', TwoStageAutoencoder, TwoStageAutoencoderMetaParameterSchema);
 registerDataset('cifar', GreyCifar10);
 registerDataset('deterding', Deterding);
 registerDataset('susy', SusyComplete);
+registerDataset('mnist', Mnist);
 
 async function execute() {
     if (!process.argv[2]) throw new Error('Expected experiment description JSON for first argument');

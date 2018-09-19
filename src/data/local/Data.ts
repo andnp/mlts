@@ -22,4 +22,20 @@ export class Data implements Dataset<Matrix> {
     get test() {
         return tuple(this._t, this._ty);
     }
+
+    get features() {
+        return this._x.cols;
+    }
+
+    get trainSamples() {
+        return this._x.rows;
+    }
+
+    get testSamples() {
+        return this._t.rows;
+    }
+
+    get classes() {
+        return this._y.cols;
+    }
 }

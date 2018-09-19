@@ -1,0 +1,15 @@
+{
+    "algorithm": "twostage-ae",
+    "dataset": "mnist",
+    "metaParameters": {
+        "layers": [
+            { "type": ["dense"], "units": [200], "activation": ["relu"], "regularizer": { "type": ["l1"], "weight": [0.00001] } }
+        ]
+    },
+    "optimization": {
+        "iterations": 25,
+        "type": "adadelta",
+        "learningRate": 0.1,
+        "batchSize": 1000
+    }
+}

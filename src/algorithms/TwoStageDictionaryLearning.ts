@@ -73,7 +73,7 @@ export class TwoStageDictionaryLearning extends Algorithm implements Representat
             await writeTensorToCsv('twostage-originalH_deterding-train.csv', this.stage1.H.transpose());
         }
         if (this.state.activeStage === 'stage2') {
-            const history = await this.stage2.train(this.stage1.H, Y, o);
+            const history = await this.stage2.train(this.stage1.H, Y, {...o, iterations: o.iterations * 2});
             this.state.activeStage = 'complete';
             jointHistory.loss = jointHistory.loss.concat(history.loss);
         }
@@ -99,7 +99,7 @@ export class TwoStageDictionaryLearning extends Algorithm implements Representat
     async getRepresentation(X: tf.Tensor2D, opts?: Partial<OptimizationParameters>) {
         // a new representation can be calculated as a linear regression optimization over H.
         // X = argmin_H (X - DH) so the "inputs" to the linear regressor are "D" and the targets are "X"
-        const stage3 = new LinearRegression({ features: this.opts.hidden, classes: X.shape[0] });
+        const stage3 = new LinearRegression({ features: this.opts.hidden, classes: X.shape[0] }, { regularizer: this.opts.stage1.regularizerH });
         await stage3.train(this.stage1.D.transpose(), X.transpose(), opts);
         const H = stage3.W.transpose();
         return H;

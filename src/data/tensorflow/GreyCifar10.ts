@@ -14,6 +14,6 @@ export class GreyCifar10 extends TensorflowDataset {
 
     static fromDataset(d: Data) {
         const data = GreyCifar10.fromTensorflowDataset(super.fromDataset(d));
-        return data.oneHot(10);
+        return data.scaleByConstant(255).oneHot(10);
     }
 }

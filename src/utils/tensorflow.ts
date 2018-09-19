@@ -48,13 +48,28 @@ export function randomInitVariable(shape: [number, number]): tf.Variable<tf.Rank
 }
 
 export class LoggerCallback extends BaseCallback {
+    private epoch: number = 0;
     constructor(private print: Printer) {
         super();
     }
-    async onEpochEnd(epoch: number, logs?: UnresolvedLogs) {
+    async onBatchEnd(batch: number, logs?: UnresolvedLogs) {
         if (logs) {
-            const lossTensor = logs.loss as tf.Tensor<tf.Rank.R0>;
-            this.print(`${epoch}: ${lossTensor.get()}`);
+            const keys = Object.keys(logs);
+            const logValues = keys.filter(k => k !== 'batch' && k !== 'size').map(key => {
+                const log = logs[key];
+                const value = log instanceof tf.Tensor
+                    ? log.get()
+                    : log;
+
+                return { name: key, value };
+            });
+
+            const printStr = logValues.map(v => `${v.name.substr(-4)}: ${v.value.toPrecision(4)}`).join(' ');
+            this.print(`${this.epoch}- ${printStr}`);
         }
+    }
+
+    async onEpochEnd() {
+        this.epoch++;
     }
 }

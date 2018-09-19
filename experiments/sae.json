@@ -1,0 +1,15 @@
+{
+    "algorithm": "sae",
+    "dataset": "mnist",
+    "metaParameters": {
+        "layers": [
+            { "type": ["dense"], "units": [2], "activation": ["relu"], "regularizer": { "type": ["l1"], "weight": [0.00001] } }
+        ]
+    },
+    "optimization": {
+        "iterations": 10,
+        "type": "adadelta",
+        "learningRate": 0.1,
+        "batchSize": 1000
+    }
+}

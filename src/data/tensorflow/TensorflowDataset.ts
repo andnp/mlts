@@ -44,6 +44,12 @@ export class TensorflowDataset implements Dataset<tf.Tensor2D> {
         return this;
     });
 
+    scaleByConstant = tfUtil.autoDispose((constant: number) => {
+        this._x = this._x.asType('float32').div(tf.scalar(constant, 'float32'));
+        this._t = this._t.asType('float32').div(tf.scalar(constant, 'float32'));
+        return this;
+    });
+
     get train() {
         return tuple(this._x, this._y);
     }

@@ -43,8 +43,8 @@
     "typescript": "^3.0.3"
   },
   "dependencies": {
-    "@tensorflow/tfjs": "^0.12.6",
-    "@tensorflow/tfjs-node": "^0.1.14",
+    "@tensorflow/tfjs": "^0.12.7",
+    "@tensorflow/tfjs-node": "^0.1.17",
     "@types/glob": "^5.0.35",
     "@types/lodash": "^4.14.108",
     "@types/mkdirp": "^0.5.2",
