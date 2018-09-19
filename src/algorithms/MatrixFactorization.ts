@@ -38,7 +38,7 @@ class DictLayer extends tf.layers.Layer {
     }
 
     call(inputs: tf.Tensor) {
-        return tf.matMul(this.H.read() as tf.Tensor2D, this.D.read() as tf.Tensor2D);
+        return tf.tidy(() => tf.matMul(this.H.read() as tf.Tensor2D, this.D.read() as tf.Tensor2D));
     }
 
     getClassName() {

@@ -12,19 +12,21 @@ import { LoggerCallback } from 'utils/tensorflow';
 import { History } from 'analysis/History';
 import { constructTFNetwork, LayerMetaParametersSchema } from 'algorithms/utils/layers';
 import * as arrays from 'utils/arrays';
+import { RepresentationAlgorithm } from 'algorithms/interfaces/RepresentationAlgorithm';
 
 export const TwoStageAutoencoderMetaParameterSchema = v.object({
     layers: v.array(LayerMetaParametersSchema),
+    retrainRepresentation: v.boolean(),
 });
 
 export type TwoStageAutoencoderMetaParameters = v.ValidType<typeof TwoStageAutoencoderMetaParameterSchema>;
 
-export class TwoStageAutoencoder extends Algorithm {
+export class TwoStageAutoencoder extends Algorithm implements RepresentationAlgorithm {
     protected readonly name = TwoStageAutoencoder.name;
     protected readonly opts: TwoStageAutoencoderMetaParameters;
     protected model: tf.Model;
 
-    protected innerLayer: tf.SymbolicTensor;
+    protected representationLayer: tf.SymbolicTensor;
     protected inputs: tf.SymbolicTensor;
     protected predictionModel: tf.Model;
 
@@ -37,7 +39,8 @@ export class TwoStageAutoencoder extends Algorithm {
     ) {
         super();
         this.opts = _.merge({
-            layers: [{ units: 25, regularizer: { type: 'l1', weight: 0 }, activation: 'sigmoid', type: 'dense' }]
+            layers: [{ units: 25, regularizer: { type: 'l1', weight: 0 }, activation: 'sigmoid', type: 'dense' }],
+            retrainRepresentation: false,
         }, opts);
 
         arrays.middleItem(this.opts.layers).name = 'innerLayer';
@@ -46,7 +49,7 @@ export class TwoStageAutoencoder extends Algorithm {
 
         const network = constructTFNetwork(this.opts.layers, this.inputs);
 
-        this.innerLayer = arrays.middleItem(network);
+        this.representationLayer = arrays.middleItem(network);
 
         const outputs_x = tf.layers.dense({ units: datasetDescription.features, activation: 'linear', name: 'out_x' }).apply(_.last(network)!) as tf.SymbolicTensor;
 
@@ -56,7 +59,7 @@ export class TwoStageAutoencoder extends Algorithm {
         });
 
         const predictionLayer = tf.layers.dense({ units: this.datasetDescription.classes, activation: 'sigmoid' });
-        const predictionOutputs = predictionLayer.apply(this.innerLayer) as tf.SymbolicTensor;
+        const predictionOutputs = predictionLayer.apply(this.representationLayer) as tf.SymbolicTensor;
 
         this.predictionModel = tf.model({
             inputs: [this.inputs],
@@ -87,6 +90,12 @@ export class TwoStageAutoencoder extends Algorithm {
             });
         });
 
+        this.predictionModel.layers.forEach((layer, i) => {
+            if (i === this.predictionModel.layers.length - 1) return;
+            layer.setWeights(this.model.getLayer(undefined, i).getWeights());
+            layer.trainable = this.opts.retrainRepresentation;
+        });
+
         this.predictionModel.compile({
             optimizer: new Optimizer(o).getTfOptimizer(),
             loss: 'categoricalCrossentropy',
@@ -108,6 +117,17 @@ export class TwoStageAutoencoder extends Algorithm {
     loss(X: tf.Tensor2D, Y: tf.Tensor2D) {
         const X_hat = this.model.predict(X) as tf.Tensor2D;
         return tf.losses.meanSquaredError(X, X_hat);
+    }
+
+    async getRepresentation(X: tf.Tensor2D) {
+        const representationModel = tf.model({
+            inputs: [this.inputs],
+            outputs: [this.representationLayer],
+        });
+
+        representationModel.layers.forEach((layer, i) => layer.setWeights(this.model.getLayer(undefined, i).getWeights()));
+
+        return representationModel.predictOnBatch(X) as tf.Tensor2D;
     }
 
     reconstructionLoss(X: tf.Tensor2D) {

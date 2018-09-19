@@ -25,6 +25,9 @@ export class SupervisedAutoencoder extends Algorithm implements RepresentationAl
     protected readonly opts: SupervisedAutoencoderMetaParameters;
     protected model: tf.Model;
 
+    protected representationLayer: tf.SymbolicTensor;
+    protected inputs: tf.SymbolicTensor;
+
     // ----------------
     // Model Definition
     // ----------------
@@ -37,17 +40,17 @@ export class SupervisedAutoencoder extends Algorithm implements RepresentationAl
             layers: [{ units: 25, regularizer: { type: 'l1', weight: 0 }, activation: 'sigmoid', type: 'dense' }]
         }, opts);
 
-        const inputs = tf.layers.input({ shape: [datasetDescription.features ] });
+        this.inputs = tf.layers.input({ shape: [datasetDescription.features ] });
 
-        const network = constructTFNetwork(this.opts.layers, inputs);
+        const network = constructTFNetwork(this.opts.layers, this.inputs);
 
-        const innerLayer = arrays.middleItem(network);
+        this.representationLayer = arrays.middleItem(network);
 
-        const outputs_y = tf.layers.dense({ units: datasetDescription.classes, activation: 'sigmoid', name: 'out_y' }).apply(innerLayer) as tf.SymbolicTensor;
+        const outputs_y = tf.layers.dense({ units: datasetDescription.classes, activation: 'sigmoid', name: 'out_y' }).apply(this.representationLayer) as tf.SymbolicTensor;
         const outputs_x = tf.layers.dense({ units: datasetDescription.features, activation: 'linear', name: 'out_x' }).apply(_.last(network)!) as tf.SymbolicTensor;
 
         this.model = tf.model({
-            inputs: [inputs],
+            inputs: [this.inputs],
             outputs: [outputs_y, outputs_x],
         });
 
@@ -84,9 +87,15 @@ export class SupervisedAutoencoder extends Algorithm implements RepresentationAl
     }
 
     async getRepresentation(X: tf.Tensor2D) {
-        const X_hat_batches = X.split(10).map(d => (this.model.predictOnBatch(d) as tf.Tensor2D[])[0]);
-        const X_hat = tf.concat(X_hat_batches, 0);
-        return X_hat;
+        const model = tf.model({
+            inputs: [this.inputs],
+            outputs: [this.representationLayer],
+        });
+
+        model.layers.forEach((layer, i) => layer.setWeights(this.model.getLayer(undefined, i).getWeights()));
+
+        const H = model.predictOnBatch(X) as tf.Tensor2D;
+        return H;
     }
 
     reconstructionLoss(X: tf.Tensor2D) {

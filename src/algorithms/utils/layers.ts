@@ -33,4 +33,4 @@ export const constructTFNetwork = (layerDefs: LayerMetaParameters[], input: tf.S
         prevLayer = layer.apply(prevLayer) as tf.SymbolicTensor;
         return prevLayer;
     });
-}
+};
