@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 import * as v from 'validtyped';
 
 import { Algorithm } from "algorithms/Algorithm";
-import { OptimizationParameters } from 'optimization/Optimizer';
+import { OptimizationParameters, Optimizer } from 'optimization/Optimizer';
 import { readJson } from 'utils/files';
 import { SupervisedDatasetDescription, SupervisedDatasetDescriptionSchema } from 'data/DatasetDescription';
 import { printProgressAsync } from 'utils/printer';
@@ -62,21 +62,21 @@ export class SupervisedAutoencoder extends Algorithm implements RepresentationAl
     // --------
     async train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>) {
         const o = this.getDefaultOptimizationParameters(opts);
+        this.optimizer = this.optimizer || new Optimizer(o);
+
         this.model.compile({
-            optimizer: tf.train.adadelta(o.learningRate),
+            optimizer: this.optimizer.getTfOptimizer(),
             loss: ['categoricalCrossentropy', 'meanSquaredError'],
             metrics: { out_y: 'accuracy' },
         });
 
-        const history = await printProgressAsync(async (printer) => {
-            return this.model.fit(X, [Y, X], {
-                batchSize: o.batchSize || X.shape[0],
-                epochs: o.iterations,
-                shuffle: true,
-                yieldEvery: 'epoch',
-                callbacks: [new LoggerCallback(printer)],
-            });
+        const history = await this.optimizer.fit(this.model, X, [Y, X], {
+            batchSize: o.batchSize,
+            epochs: o.iterations,
+            shuffle: true,
         });
+
+        this.optimizer = undefined;
 
         return History.fromTensorflowHistory(this.name, this.opts, history);
     }

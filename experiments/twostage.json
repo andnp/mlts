@@ -1,6 +1,6 @@
 {
     "algorithm": "twostage",
-    "dataset": "mnist",
+    "dataset": "deterding",
     "metaParameters": {
         "stage1": {
             "regularizerD": { "type": ["l1"], "weight": [0.001] },
@@ -9,10 +9,10 @@
         "stage2": {
             "regularizer": { "type": ["l2"], "weight": [0] }
         },
-        "hidden": [1000]
+        "hidden": [25]
     },
     "optimization": {
-        "iterations": 250,
+        "iterations": 10000,
         "type": "adadelta",
         "learningRate": 1.0
     }

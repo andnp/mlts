@@ -46,9 +46,9 @@ export class SupervisedDictionaryLearning extends Algorithm {
     });
 
     async train(X: tf.Tensor2D, Y: tf.Tensor2D, o: OptimizationParameters) {
-        const optimizer = new Optimizer(this.getDefaultOptimizerParameters(o));
+        this.optimizer = this.optimizer || new Optimizer(this.getDefaultOptimizerParameters(o));
 
-        return optimizer.minimize(_.partial(this.loss, X, Y), [ this.W, this.D, this.H ]);
+        return this.optimizer.minimize(_.partial(this.loss, X, Y), [ this.W, this.D, this.H ]);
     }
 
     async predict(X: tf.Tensor2D, o?: Partial<OptimizationParameters>) {

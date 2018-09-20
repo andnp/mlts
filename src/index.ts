@@ -53,16 +53,16 @@ async function execute() {
 
     const resultsPath = path.join('results', experiment.path);
 
-    // if (isRepresentationAlgorithm(algorithm)) {
-    //     const H = await algorithm.getRepresentation(X, optimizationParams);
-    //     const Ht = await algorithm.getRepresentation(T, optimizationParams);
-    //     await Promise.all([
-    //         writeTensorToCsv('twostage-newH_deterding-train.csv', H.transpose()),
-    //         writeTensorToCsv('twostage-H_deterding-test.csv', Ht.transpose()),
-    //         writeTensorToCsv('deterding-trainLabels.csv', tf.argMax(Y.transpose()).as2D(1, samples)),
-    //         writeTensorToCsv('deterding-testLabels.csv', tf.argMax(TY.transpose()).as2D(1, t_samples)),
-    //     ]);
-    // }
+    if (isRepresentationAlgorithm(algorithm)) {
+        const H = await algorithm.getRepresentation(X, optimizationParams);
+        const Ht = await algorithm.getRepresentation(T, optimizationParams);
+        await Promise.all([
+            writeTensorToCsv(path.join(resultsPath, `${experiment.description.algorithm}-H_${experiment.description.dataset}-train.csv`), H.transpose()),
+            writeTensorToCsv(path.join(resultsPath, `${experiment.description.algorithm}-H_${experiment.description.dataset}-test.csv`), Ht.transpose()),
+            writeTensorToCsv(path.join(resultsPath, `${experiment.description.dataset}-trainLabels.csv`), tf.argMax(Y.transpose()).as2D(1, samples)),
+            writeTensorToCsv(path.join(resultsPath, `${experiment.description.dataset}-testLabels.csv`), tf.argMax(TY.transpose()).as2D(1, t_samples)),
+        ]);
+    }
 
 
     const TY_hat = await algorithm.predict(T, optimizationParams);

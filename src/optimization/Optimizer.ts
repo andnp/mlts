@@ -2,11 +2,13 @@ import * as tf from '@tensorflow/tfjs';
 import * as _ from 'lodash';
 import * as v from 'validtyped';
 import * as path from 'path';
+import * as arrays from 'utils/arrays';
 import { printProgressAsync } from 'utils/printer';
 import { repeat } from 'utils/tasks';
 import { assertNever } from 'utils/tsUtil';
 import { writeJson, readJson } from 'utils/files';
 import { History } from 'analysis/History';
+import { LoggerCallback } from 'utils/tensorflow';
 
 // -----------------------
 // Optimization Parameters
@@ -74,6 +76,7 @@ export class Optimizer {
                     vars,
                 );
                 const loss = lossTensor!.get();
+                lossTensor!.dispose();
                 if (this.opts.printProgress) printer(`${this.completedIterations}: ${loss}`);
                 this.completedIterations++;
                 return loss;
@@ -93,6 +96,36 @@ export class Optimizer {
 
         assertNever(this.parameters);
         throw new Error('Unexpected line reached');
+    }
+    async fit(model: tf.Model, X: tf.Tensor | tf.Tensor[], Y: tf.Tensor | tf.Tensor[], params: tf.ModelFitConfig) {
+        const refreshRate = 250;
+
+        const history = await printProgressAsync(async (printer) => {
+            const epochs = params.epochs!;
+            let cumulativeHistory: tf.History | undefined;
+
+            // this all sucks.. I'd much rather _not_ do this, but there is currently a major
+            // memory leak in tfjs that is causing catastrophic slow downs of models that need
+            // to run over many epochs. By splitting up the epochs like this, I manage to get
+            // around that memory leak. One day, I hope that this will be appropriately fixed
+            for (let i = 0; i < epochs; i += refreshRate) {
+                const remainingEpochs = epochs - i;
+                const epochsToRun = remainingEpochs > refreshRate ? refreshRate : remainingEpochs;
+                const h = await model.fit(X, Y, {
+                    batchSize: params.batchSize || arrays.getFirst(X).shape[0],
+                    yieldEvery: 'epoch',
+                    ...params,
+                    epochs: epochsToRun,
+                    callbacks: [new LoggerCallback(printer, i)],
+                });
+                if (!cumulativeHistory) cumulativeHistory = h;
+                else cumulativeHistory.history.loss = cumulativeHistory.history.loss.concat(h.history.loss);
+            }
+
+            return cumulativeHistory!;
+        });
+
+        return history;
     }
 
     // ------------------

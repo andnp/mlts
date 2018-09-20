@@ -5,12 +5,10 @@ import * as v from 'validtyped';
 
 import { Algorithm } from "algorithms/Algorithm";
 import { Optimizer, OptimizationParameters } from 'optimization/Optimizer';
-import { LoggerCallback } from 'utils/tensorflow';
 import { readJson } from 'utils/files';
 import { RegularizerParametersSchema, regularizeLayer } from 'regularizers/regularizers';
 import { MatrixFactorizationDatasetDescription, MatrixFactorizationDatasetDescriptionSchema } from 'data/DatasetDescription';
 import { LayerConfig } from '@tensorflow/tfjs-layers/dist/engine/topology';
-import { printProgressAsync } from 'utils/printer';
 import { History } from 'analysis/History';
 
 class DictLayer extends tf.layers.Layer {
@@ -58,7 +56,6 @@ export class MatrixFactorization extends Algorithm {
     protected readonly name = MatrixFactorization.name;
 
     protected opts: MatrixFactorizationMetaParameters;
-    private optimizer: Optimizer | undefined;
     protected model: tf.Model;
 
     private getDefaults(opts?: Partial<MatrixFactorizationMetaParameters>): MatrixFactorizationMetaParameters {
@@ -101,14 +98,10 @@ export class MatrixFactorization extends Algorithm {
             loss: 'meanSquaredError',
         });
 
-        const history = await printProgressAsync(async (printer) => {
-            return this.model.fit(X, X, {
-                batchSize: X.shape[0],
-                epochs: o.iterations,
-                shuffle: false,
-                yieldEvery: 'epoch',
-                callbacks: [new LoggerCallback(printer)],
-            });
+        const history = await this.optimizer.fit(this.model, X, X, {
+            batchSize: X.shape[0],
+            epochs: o.iterations,
+            shuffle: false,
         });
 
         // we've finished optimizing, so we can release our optimizer
@@ -118,11 +111,6 @@ export class MatrixFactorization extends Algorithm {
     }
 
     async predict(): Promise<tf.Tensor2D> { throw new Error('Predict not implemented for MatrixFactorization'); }
-
-
-    async _saveState(location: string): Promise<void> {
-        if (this.optimizer) await this.optimizer.saveState(path.join(location, 'optimizer'));
-    }
 
     static async fromSavedState(location: string) {
         const subfolder = await this.findSavedState(location);

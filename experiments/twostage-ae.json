@@ -3,11 +3,12 @@
     "dataset": "mnist",
     "metaParameters": {
         "layers": [
-            { "type": ["dense"], "units": [200], "activation": ["relu"], "regularizer": { "type": ["l1"], "weight": [0.00001] } }
-        ]
+            { "type": ["dense"], "units": [2], "activation": ["linear"], "regularizer": { "type": ["l1"], "weight": [0] } }
+        ],
+        "retrainRepresentation": [false]
     },
     "optimization": {
-        "iterations": 25,
+        "iterations": 50,
         "type": "adadelta",
         "learningRate": 0.1,
         "batchSize": 1000

@@ -49,7 +49,8 @@ export function randomInitVariable(shape: [number, number]): tf.Variable<tf.Rank
 
 export class LoggerCallback extends BaseCallback {
     private epoch: number = 0;
-    constructor(private print: Printer) {
+    private trainingBegan: number = 0;
+    constructor(private print: Printer, private startingEpoch = 0) {
         super();
     }
     async onBatchEnd(batch: number, logs?: UnresolvedLogs) {
@@ -64,9 +65,16 @@ export class LoggerCallback extends BaseCallback {
                 return { name: key, value };
             });
 
+            const avgTimePerEpoch = Math.round((Date.now() - this.trainingBegan) / (this.epoch + 1));
             const printStr = logValues.map(v => `${v.name.substr(-4)}: ${v.value.toPrecision(4)}`).join(' ');
-            this.print(`${this.epoch}- ${printStr}`);
+
+            const epoch = this.epoch + this.startingEpoch;
+            this.print(`${epoch}- ${printStr} atpe: ${avgTimePerEpoch}`);
         }
+    }
+
+    async onEpochBegin() {
+        if (!this.trainingBegan) this.trainingBegan = Date.now();
     }
 
     async onEpochEnd() {

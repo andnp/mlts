@@ -2,7 +2,7 @@ import * as v from 'validtyped';
 import * as path from 'path';
 import * as tf from '@tensorflow/tfjs';
 
-import { OptimizationParameters } from 'optimization/Optimizer';
+import { OptimizationParameters, Optimizer } from 'optimization/Optimizer';
 import { giveBack } from 'utils/fp';
 import { readdir, removeRecursively, writeJson } from 'utils/files';
 import { getMostRecent } from 'utils/dates';
@@ -21,6 +21,7 @@ export abstract class Algorithm {
     protected model: tf.Model | undefined;
     protected opts: object | undefined;
     protected state: object | undefined;
+    protected optimizer: Optimizer | undefined;
     protected abstract datasetDescription: DatasetDescription;
 
     // --------
@@ -70,6 +71,10 @@ export abstract class Algorithm {
             await this.model.save(`file://${path.join(subfolder, 'model')}`);
         }
 
+        if (this.optimizer) {
+            await this.optimizer.saveState(path.join(subfolder, 'optimizer'));
+        }
+
         return this._saveState(subfolder).then(giveBack(subfolder));
     }
 
@@ -111,7 +116,7 @@ export abstract class Algorithm {
     private _alg_saveLocation: string | undefined;
     private async save(saveLocation: string) {
         if (this.activeBackup) return;
-        const location = await this.saveState(saveLocation);
+        const location = await this.saveState(saveLocation).catch();
         const tmp = this.lastSaveLocation;
         this.lastSaveLocation = location;
 

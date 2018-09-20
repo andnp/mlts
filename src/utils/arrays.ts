@@ -3,3 +3,9 @@ export const middleItem = <T>(arr: T[]): T => {
     const idx = Math.floor(arr.length / 2);
     return arr[idx];
 };
+
+export const getFirst = <T>(arr: T | T[]): T => {
+    if (!Array.isArray(arr)) return arr;
+    if (arr.length < 1) throw new Error('Expected a non-empty array');
+    return arr[0];
+};

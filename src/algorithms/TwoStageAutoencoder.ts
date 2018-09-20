@@ -75,19 +75,17 @@ export class TwoStageAutoencoder extends Algorithm implements RepresentationAlgo
     // --------
     async train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>) {
         const o = this.getDefaultOptimizationParameters(opts);
+        this.optimizer = this.optimizer || new Optimizer(o);
+
         this.model.compile({
-            optimizer: new Optimizer(o).getTfOptimizer(),
+            optimizer: this.optimizer.getTfOptimizer(),
             loss: 'meanSquaredError',
         });
 
-        const history = await printProgressAsync(async (printer) => {
-            return this.model.fit(X, X, {
-                batchSize: o.batchSize || X.shape[0],
-                epochs: o.iterations,
-                shuffle: true,
-                yieldEvery: 'epoch',
-                callbacks: [new LoggerCallback(printer)],
-            });
+        const history = await this.optimizer.fit(this.model, X, X, {
+            batchSize: o.batchSize,
+            epochs: o.iterations,
+            shuffle: true,
         });
 
         this.predictionModel.layers.forEach((layer, i) => {
@@ -96,19 +94,16 @@ export class TwoStageAutoencoder extends Algorithm implements RepresentationAlgo
             layer.trainable = this.opts.retrainRepresentation;
         });
 
+        this.optimizer = new Optimizer(o);
         this.predictionModel.compile({
-            optimizer: new Optimizer(o).getTfOptimizer(),
+            optimizer: this.optimizer.getTfOptimizer(),
             loss: 'categoricalCrossentropy',
         });
 
-        await printProgressAsync(async (printer) => {
-            return this.predictionModel.fit(X, Y, {
-                batchSize: o.batchSize || X.shape[0],
-                epochs: o.iterations,
-                shuffle: true,
-                yieldEvery: 'epoch',
-                callbacks: [new LoggerCallback(printer)],
-            });
+        await this.optimizer.fit(this.predictionModel, X, Y, {
+            batchSize: o.batchSize,
+            epochs: o.iterations,
+            shuffle: true,
         });
 
         return History.fromTensorflowHistory(this.name, this.opts, history);
