@@ -6,6 +6,8 @@ import * as util from 'util';
 import * as tsplot from 'tsplot';
 import { discriminatedObject } from '../src/utils/objects';
 
+const filterUndefined = <T>(x: Array<T | undefined>): T[] => x.filter(d => d !== undefined) as any;
+
 const glob = util.promisify(globAsync);
 const readdir = util.promisify(fs.readdir);
 const exists = util.promisify(fs.exists);
@@ -27,10 +29,12 @@ async function execute() {
     const uncollectedResults = await Promise.all(hashDirectories.filter(dir => exists(path.join(dir, 'results.json'))));
 
     await Promise.all(uncollectedResults.map(async (res) => {
-        const descriptions = await Promise.all(resultFileNames.map(async (resultFile) => {
+        const descriptionsOrUndefined = await Promise.all(resultFileNames.map(async (resultFile) => {
             const resultFiles = await glob(path.join(res, '*', resultFile));
+            if (resultFiles.length === 0) return;
             const contents = await Promise.all(resultFiles.map(file => readFile(file)));
             const results = contents.map(c => parseFloat(c.toString()));
+
 
             const resMatrix = tsplot.Matrix.fromData([results]);
             return {
@@ -38,6 +42,8 @@ async function execute() {
                 name: resultFile,
             };
         }));
+
+        const descriptions = filterUndefined(descriptionsOrUndefined);
 
         const paramsFiles = await glob(path.join(res, '*', 'params.json'));
         const experimentFiles = await glob(path.join(res, '*', 'experiment.json'));
