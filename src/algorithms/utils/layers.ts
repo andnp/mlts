@@ -19,6 +19,7 @@ export const constructTFLayer = (layerDef: LayerMetaParameters) => {
             units: layerDef.units,
             kernelRegularizer: regularizeLayer(layerDef.regularizer),
             activation: layerDef.activation,
+            name: layerDef.name,
         });
     }
 

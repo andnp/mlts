@@ -12,7 +12,7 @@ import { SupervisedDictionaryLearning, SupervisedDictionaryLearningMetaParameter
 import { LogisticRegression, LogisticRegressionMetaParameterSchema } from 'algorithms/LogisticRegression';
 import { isRepresentationAlgorithm } from 'algorithms/interfaces/RepresentationAlgorithm';
 import { writeTensorToCsv } from 'utils/tensorflow';
-import { csvStringFromObject } from 'utils/csv';
+import { csvStringFromObject, writeCsv } from 'utils/csv';
 import { writeFile, writeJson } from 'utils/files';
 import { Mnist } from 'data/tensorflow/mnist';
 import { SupervisedAutoencoder, SupervisedAutoencoderMetaParameterSchema } from 'algorithms/SupervisedAutoencoder';
@@ -83,6 +83,7 @@ async function execute() {
     await writeFile(path.join(resultsPath, 'originalH.txt'), originalHTrainError.get());
     await writeJson(path.join(resultsPath, 'params.json'), params);
     await writeJson(path.join(resultsPath, 'experiment.json'), experiment.description);
+    await writeCsv(path.join(resultsPath, 'loss.csv'), { rows: 1, cols: history.loss.length, get(i, j) { return history.loss[j]; } });
 
     const paramsCsvString = csvStringFromObject(algorithm.getParameters());
     console.log(paramsCsvString, 'originalH', originalHTrainError.get(), 'test:', testError.get(), 'train:', trainError.get()); // tslint:disable-line no-console

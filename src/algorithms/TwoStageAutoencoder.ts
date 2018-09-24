@@ -1,18 +1,15 @@
 import * as tf from '@tensorflow/tfjs';
-import * as path from 'path';
 import * as _ from 'lodash';
 import * as v from 'validtyped';
 
 import { Algorithm } from "algorithms/Algorithm";
-import { OptimizationParameters, Optimizer } from 'optimization/Optimizer';
-import { readJson } from 'utils/files';
-import { SupervisedDatasetDescription, SupervisedDatasetDescriptionSchema } from 'data/DatasetDescription';
-import { printProgressAsync } from 'utils/printer';
-import { LoggerCallback } from 'utils/tensorflow';
+import { Optimizer } from 'optimization/Optimizer';
+import { SupervisedDatasetDescription } from 'data/DatasetDescription';
 import { History } from 'analysis/History';
 import { constructTFNetwork, LayerMetaParametersSchema } from 'algorithms/utils/layers';
 import * as arrays from 'utils/arrays';
 import { RepresentationAlgorithm } from 'algorithms/interfaces/RepresentationAlgorithm';
+import { OptimizationParameters } from 'optimization/OptimizerSchemas';
 
 export const TwoStageAutoencoderMetaParameterSchema = v.object({
     layers: v.array(LayerMetaParametersSchema),
@@ -21,14 +18,15 @@ export const TwoStageAutoencoderMetaParameterSchema = v.object({
 
 export type TwoStageAutoencoderMetaParameters = v.ValidType<typeof TwoStageAutoencoderMetaParameterSchema>;
 
+const PREDICTION_MODEL = 'predictionModel';
+const MODEL = 'model';
 export class TwoStageAutoencoder extends Algorithm implements RepresentationAlgorithm {
     protected readonly name = TwoStageAutoencoder.name;
     protected readonly opts: TwoStageAutoencoderMetaParameters;
-    protected model: tf.Model;
+    protected state: TwoStageAutoencoderState = { activeStage: 'stage1' };
 
-    protected representationLayer: tf.SymbolicTensor;
-    protected inputs: tf.SymbolicTensor;
-    protected predictionModel: tf.Model;
+    protected representationLayer: tf.SymbolicTensor | undefined;
+    protected inputs: tf.SymbolicTensor | undefined;
 
     // ----------------
     // Model Definition
@@ -36,102 +34,143 @@ export class TwoStageAutoencoder extends Algorithm implements RepresentationAlgo
     constructor (
         protected datasetDescription: SupervisedDatasetDescription,
         opts?: Partial<TwoStageAutoencoderMetaParameters>,
+        saveLocation = 'savedModels',
     ) {
-        super();
+        super(datasetDescription, saveLocation);
         this.opts = _.merge({
             layers: [{ units: 25, regularizer: { type: 'l1', weight: 0 }, activation: 'sigmoid', type: 'dense' }],
             retrainRepresentation: false,
         }, opts);
+    }
 
-        arrays.middleItem(this.opts.layers).name = 'innerLayer';
+    protected async _build() {
+        // ---------------------
+        // Create learning model
+        // ---------------------
+        const model = this.registerModel(MODEL, () => {
+            arrays.middleItem(this.opts.layers).name = 'representationLayer';
 
-        this.inputs = tf.layers.input({ shape: [datasetDescription.features] });
+            const inputs = tf.layers.input({ shape: [this.datasetDescription.features] });
+            const network = constructTFNetwork(this.opts.layers, inputs);
+            const outputs_x = tf.layers.dense({ units: this.datasetDescription.features, activation: 'linear', name: 'out_x' }).apply(_.last(network)!) as tf.SymbolicTensor;
 
-        const network = constructTFNetwork(this.opts.layers, this.inputs);
-
-        this.representationLayer = arrays.middleItem(network);
-
-        const outputs_x = tf.layers.dense({ units: datasetDescription.features, activation: 'linear', name: 'out_x' }).apply(_.last(network)!) as tf.SymbolicTensor;
-
-        this.model = tf.model({
-            inputs: [this.inputs],
-            outputs: [outputs_x],
+            return tf.model({
+                inputs: [inputs],
+                outputs: [outputs_x],
+            });
         });
 
-        const predictionLayer = tf.layers.dense({ units: this.datasetDescription.classes, activation: 'sigmoid' });
-        const predictionOutputs = predictionLayer.apply(this.representationLayer) as tf.SymbolicTensor;
+        this.representationLayer = model.getLayer('representationLayer').output as tf.SymbolicTensor;
+        this.inputs = model.input as tf.SymbolicTensor;
 
-        this.predictionModel = tf.model({
-            inputs: [this.inputs],
-            outputs: [predictionOutputs]
+        // -----------------------
+        // Create prediction model
+        // -----------------------
+        const predictionModel = this.registerModel(PREDICTION_MODEL, () => {
+            const predictionLayer = tf.layers.dense({ units: this.datasetDescription.classes, activation: 'sigmoid' });
+            const predictionOutputs = predictionLayer.apply(this.representationLayer!) as tf.SymbolicTensor;
+            return tf.model({
+                inputs: [this.inputs!],
+                outputs: [predictionOutputs]
+            });
         });
 
-
-        this.model.summary(72);
+        console.log('Representation Model::'); // tslint:disable-line no-console
+        model.summary(72);
+        console.log('Prediction Model::'); // tslint:disable-line no-console
+        predictionModel.summary(72);
     }
 
     // --------
     // Training
     // --------
-    async train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>) {
+    protected async _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>) {
         const o = this.getDefaultOptimizationParameters(opts);
-        this.optimizer = this.optimizer || new Optimizer(o);
+        const model = this.assertModel(MODEL);
 
-        this.model.compile({
-            optimizer: this.optimizer.getTfOptimizer(),
-            loss: 'meanSquaredError',
-        });
+        let history: tf.History | undefined;
 
-        const history = await this.optimizer.fit(this.model, X, X, {
-            batchSize: o.batchSize,
-            epochs: o.iterations,
-            shuffle: true,
-        });
+        // -------
+        // Stage 1
+        // -------
+        if (this.state.activeStage === 'stage1') {
+            const optimizer = this.registerOptimizer('opt', () => new Optimizer(o));
 
-        this.predictionModel.layers.forEach((layer, i) => {
-            if (i === this.predictionModel.layers.length - 1) return;
-            layer.setWeights(this.model.getLayer(undefined, i).getWeights());
-            layer.trainable = this.opts.retrainRepresentation;
-        });
+            model.compile({
+                optimizer: optimizer.getTfOptimizer(),
+                loss: 'meanSquaredError',
+            });
 
-        this.optimizer = new Optimizer(o);
-        this.predictionModel.compile({
-            optimizer: this.optimizer.getTfOptimizer(),
-            loss: 'categoricalCrossentropy',
-        });
+            history = await optimizer.fit(model, X, X, {
+                batchSize: o.batchSize,
+                epochs: o.iterations,
+                shuffle: true,
+            });
 
-        await this.optimizer.fit(this.predictionModel, X, Y, {
-            batchSize: o.batchSize,
-            epochs: o.iterations,
-            shuffle: true,
-        });
+            this.clearOptimizer('opt');
+            this.state.activeStage = 'stage2';
+        }
+        // -------
+        // Stage 2
+        // -------
+        if (this.state.activeStage === 'stage2') {
+            const optimizer = this.registerOptimizer('opt', () => new Optimizer(o));
+            const predictionModel = this.assertModel(PREDICTION_MODEL);
 
-        return History.fromTensorflowHistory(this.name, this.opts, history);
+            // transfer weights from learning model to prediction model
+            predictionModel.layers.forEach((layer, i) => {
+                if (i === predictionModel.layers.length - 1) return;
+                layer.setWeights(model.getLayer(undefined, i).getWeights());
+                layer.trainable = this.opts.retrainRepresentation;
+            });
+
+            predictionModel.compile({
+                optimizer: optimizer.getTfOptimizer(),
+                loss: 'categoricalCrossentropy',
+            });
+
+            history = await optimizer.fit(predictionModel, X, Y, {
+                batchSize: o.batchSize,
+                epochs: o.iterations,
+                shuffle: true,
+            });
+
+            this.clearOptimizer('opt');
+            this.state.activeStage = 'complete';
+        }
+
+        return History.fromTensorflowHistory(this.name, this.opts, history!);
     }
 
     loss(X: tf.Tensor2D, Y: tf.Tensor2D) {
-        const X_hat = this.model.predict(X) as tf.Tensor2D;
+        const model = this.assertModel(MODEL);
+        const X_hat = model.predict(X) as tf.Tensor2D;
         return tf.losses.meanSquaredError(X, X_hat);
     }
 
     async getRepresentation(X: tf.Tensor2D) {
+        const model = this.assertModel(MODEL);
+
         const representationModel = tf.model({
-            inputs: [this.inputs],
-            outputs: [this.representationLayer],
+            inputs: [this.inputs!],
+            outputs: [this.representationLayer!],
         });
 
-        representationModel.layers.forEach((layer, i) => layer.setWeights(this.model.getLayer(undefined, i).getWeights()));
+        // transfer weights from learned model to representation model
+        representationModel.layers.forEach((layer, i) => layer.setWeights(model.getLayer(undefined, i).getWeights()));
 
         return representationModel.predictOnBatch(X) as tf.Tensor2D;
     }
 
     reconstructionLoss(X: tf.Tensor2D) {
-        const x_loss = this.model.evaluate(X, X) as tf.Scalar;
+        const model = this.assertModel(MODEL);
+        const x_loss = model.evaluate(X, X) as tf.Scalar;
         return x_loss.get();
     }
 
-    async predict(X: tf.Tensor2D) {
-        const Y_hat_batches = X.split(10).map(d => (this.predictionModel.predictOnBatch(d) as tf.Tensor2D));
+    protected async _predict(X: tf.Tensor2D) {
+        const model = this.assertModel(PREDICTION_MODEL);
+        const Y_hat_batches = X.split(10).map(d => (model.predictOnBatch(d) as tf.Tensor2D));
 
         const Y_hat = tf.concat(Y_hat_batches, 0);
         return Y_hat;
@@ -141,13 +180,7 @@ export class TwoStageAutoencoder extends Algorithm implements RepresentationAlgo
     // Saving
     // ------
     static async fromSavedState(location: string) {
-        const subfolder = await this.findSavedState(location);
-        const state = await readJson(path.join(subfolder, 'state.json'), SaveDataSchema);
-        const layer = new TwoStageAutoencoder(state.datasetDescription, state.metaParameters);
-
-        layer.model = await tf.loadModel('file://' + path.join(subfolder, 'model/model.json'));
-
-        return layer;
+        return new TwoStageAutoencoder({} as SupervisedDatasetDescription).loadFromDisk(location);
     }
 
     private getDefaultOptimizationParameters(o?: Partial<OptimizationParameters>): OptimizationParameters {
@@ -159,7 +192,6 @@ export class TwoStageAutoencoder extends Algorithm implements RepresentationAlgo
     }
 }
 
-const SaveDataSchema = v.object({
-    datasetDescription: SupervisedDatasetDescriptionSchema,
-    metaParameters: TwoStageAutoencoderMetaParameterSchema,
-});
+interface TwoStageAutoencoderState {
+    activeStage: 'stage1' | 'stage2' | 'complete';
+}

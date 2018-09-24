@@ -3,7 +3,7 @@
     "dataset": "deterding",
     "metaParameters": {
         "regularizer": {
-            "type": ["l1"],
+            "type": "l1",
             "weight": [0]
         },
         "hidden": [10]

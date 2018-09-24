@@ -1,18 +1,15 @@
 import * as tf from '@tensorflow/tfjs';
-import * as path from 'path';
 import * as _ from 'lodash';
 import * as v from 'validtyped';
 
 import { Algorithm } from "algorithms/Algorithm";
-import { OptimizationParameters, Optimizer } from 'optimization/Optimizer';
-import { readJson } from 'utils/files';
-import { SupervisedDatasetDescription, SupervisedDatasetDescriptionSchema } from 'data/DatasetDescription';
-import { printProgressAsync } from 'utils/printer';
-import { LoggerCallback } from 'utils/tensorflow';
+import { Optimizer } from 'optimization/Optimizer';
+import { SupervisedDatasetDescription } from 'data/DatasetDescription';
 import { History } from 'analysis/History';
 import { LayerMetaParametersSchema, constructTFNetwork } from 'algorithms/utils/layers';
 import * as arrays from 'utils/arrays';
 import { RepresentationAlgorithm } from 'algorithms/interfaces/RepresentationAlgorithm';
+import { OptimizationParameters } from 'optimization/OptimizerSchemas';
 
 export const SupervisedAutoencoderMetaParameterSchema = v.object({
     layers: v.array(LayerMetaParametersSchema),
@@ -20,13 +17,13 @@ export const SupervisedAutoencoderMetaParameterSchema = v.object({
 
 export type SupervisedAutoencoderMetaParameters = v.ValidType<typeof SupervisedAutoencoderMetaParameterSchema>;
 
+const MODEL = 'model';
 export class SupervisedAutoencoder extends Algorithm implements RepresentationAlgorithm {
     protected readonly name = SupervisedAutoencoder.name;
     protected readonly opts: SupervisedAutoencoderMetaParameters;
-    protected model: tf.Model;
 
-    protected representationLayer: tf.SymbolicTensor;
-    protected inputs: tf.SymbolicTensor;
+    protected representationLayer: tf.SymbolicTensor | undefined;
+    protected inputs: tf.SymbolicTensor | undefined;
 
     // ----------------
     // Model Definition
@@ -34,78 +31,95 @@ export class SupervisedAutoencoder extends Algorithm implements RepresentationAl
     constructor (
         protected datasetDescription: SupervisedDatasetDescription,
         opts?: Partial<SupervisedAutoencoderMetaParameters>,
+        saveLocation = 'savedModels',
     ) {
-        super();
+        super(datasetDescription, saveLocation);
         this.opts = _.merge({
             layers: [{ units: 25, regularizer: { type: 'l1', weight: 0 }, activation: 'sigmoid', type: 'dense' }]
         }, opts);
+    }
 
-        this.inputs = tf.layers.input({ shape: [datasetDescription.features ] });
+    protected async _build() {
+        const model = this.registerModel(MODEL, () => {
+            const inputs = tf.layers.input({ shape: [this.datasetDescription.features ] });
 
-        const network = constructTFNetwork(this.opts.layers, this.inputs);
+            const representationLayerDescription = arrays.middleItem(this.opts.layers);
+            representationLayerDescription.name = 'representationLayer';
 
-        this.representationLayer = arrays.middleItem(network);
+            const network = constructTFNetwork(this.opts.layers, inputs);
+            const representationLayer = arrays.middleItem(network);
 
-        const outputs_y = tf.layers.dense({ units: datasetDescription.classes, activation: 'sigmoid', name: 'out_y' }).apply(this.representationLayer) as tf.SymbolicTensor;
-        const outputs_x = tf.layers.dense({ units: datasetDescription.features, activation: 'linear', name: 'out_x' }).apply(_.last(network)!) as tf.SymbolicTensor;
+            const outputs_y = tf.layers.dense({ units: this.datasetDescription.classes, activation: 'sigmoid', name: 'out_y' }).apply(representationLayer) as tf.SymbolicTensor;
+            const outputs_x = tf.layers.dense({ units: this.datasetDescription.features, activation: 'linear', name: 'out_x' }).apply(_.last(network)!) as tf.SymbolicTensor;
 
-        this.model = tf.model({
-            inputs: [this.inputs],
-            outputs: [outputs_y, outputs_x],
+            const model = tf.model({
+                inputs: [inputs],
+                outputs: [outputs_y, outputs_x],
+            });
+
+            model.summary(72);
+
+            return model;
         });
 
-        this.model.summary(72);
+        this.representationLayer = model.getLayer('representationLayer').output as tf.SymbolicTensor;
+        this.inputs = model.input as tf.SymbolicTensor;
     }
 
     // --------
     // Training
     // --------
-    async train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>) {
+    protected async _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>) {
         const o = this.getDefaultOptimizationParameters(opts);
-        this.optimizer = this.optimizer || new Optimizer(o);
+        const optimizer = this.registerOptimizer('opt', () => new Optimizer(o));
+        const model = this.assertModel(MODEL);
 
-        this.model.compile({
-            optimizer: this.optimizer.getTfOptimizer(),
+        model.compile({
+            optimizer: optimizer.getTfOptimizer(),
             loss: ['categoricalCrossentropy', 'meanSquaredError'],
             metrics: { out_y: 'accuracy' },
         });
 
-        const history = await this.optimizer.fit(this.model, X, [Y, X], {
+        const history = await optimizer.fit(model, X, [Y, X], {
             batchSize: o.batchSize,
             epochs: o.iterations,
             shuffle: true,
         });
 
-        this.optimizer = undefined;
+        this.clearOptimizer('opt');
 
         return History.fromTensorflowHistory(this.name, this.opts, history);
     }
 
     loss(X: tf.Tensor2D, Y: tf.Tensor2D) {
-        const [Y_hat, X_hat] = this.model.predict(X) as tf.Tensor2D[];
+        const model = this.assertModel(MODEL);
+        const [Y_hat, X_hat] = model.predict(X) as tf.Tensor2D[];
         return tf.losses.sigmoidCrossEntropy(Y, Y_hat).add(tf.losses.meanSquaredError(X, X_hat));
     }
 
     async getRepresentation(X: tf.Tensor2D) {
+        const originalModel = this.assertModel(MODEL);
         const model = tf.model({
-            inputs: [this.inputs],
-            outputs: [this.representationLayer],
+            inputs: [this.inputs!],
+            outputs: [this.representationLayer!],
         });
 
-        model.layers.forEach((layer, i) => layer.setWeights(this.model.getLayer(undefined, i).getWeights()));
+        model.layers.forEach((layer, i) => layer.setWeights(originalModel.getLayer(undefined, i).getWeights()));
 
         const H = model.predictOnBatch(X) as tf.Tensor2D;
         return H;
     }
 
     reconstructionLoss(X: tf.Tensor2D) {
+        const model = this.assertModel(MODEL);
         const fake_y = tf.zeros([X.shape[0], this.datasetDescription.classes]);
-        const [, x_loss] = this.model.evaluate(X, [fake_y, X]) as tf.Scalar[];
+        const [, x_loss] = model.evaluate(X, [fake_y, X]) as tf.Scalar[];
         return x_loss.get();
     }
 
-    async predict(X: tf.Tensor2D) {
-        const Y_hat_batches = X.split(10).map(d => (this.model.predictOnBatch(d) as tf.Tensor2D[])[0]);
+    protected async _predict(X: tf.Tensor2D) {
+        const model = this.assertModel(MODEL);
+        const Y_hat_batches = X.split(10).map(d => (model.predictOnBatch(d) as tf.Tensor2D[])[0]);
 
         const Y_hat = tf.concat(Y_hat_batches, 0);
         return Y_hat;
@@ -115,13 +129,7 @@ export class SupervisedAutoencoder extends Algorithm implements RepresentationAl
     // Saving
     // ------
     static async fromSavedState(location: string) {
-        const subfolder = await this.findSavedState(location);
-        const state = await readJson(path.join(subfolder, 'state.json'), SaveDataSchema);
-        const layer = new SupervisedAutoencoder(state.datasetDescription, state.metaParameters);
-
-        layer.model = await tf.loadModel('file://' + path.join(subfolder, 'model/model.json'));
-
-        return layer;
+        return new SupervisedAutoencoder({} as SupervisedDatasetDescription).loadFromDisk(location);
     }
 
     private getDefaultOptimizationParameters(o?: Partial<OptimizationParameters>): OptimizationParameters {
@@ -132,8 +140,3 @@ export class SupervisedAutoencoder extends Algorithm implements RepresentationAl
         }, o);
     }
 }
-
-const SaveDataSchema = v.object({
-    datasetDescription: SupervisedDatasetDescriptionSchema,
-    metaParameters: SupervisedAutoencoderMetaParameterSchema,
-});

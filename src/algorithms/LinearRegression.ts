@@ -1,16 +1,13 @@
 import * as tf from '@tensorflow/tfjs';
-import * as path from 'path';
 import * as _ from 'lodash';
 import * as v from 'validtyped';
 
 import { Algorithm } from "algorithms/Algorithm";
-import { OptimizationParameters, Optimizer } from 'optimization/Optimizer';
-import { readJson } from 'utils/files';
-import { RegularizerParametersSchema } from 'regularizers/regularizers';
-import { SupervisedDatasetDescription, SupervisedDatasetDescriptionSchema } from 'data/DatasetDescription';
+import { Optimizer } from 'optimization/Optimizer';
+import { RegularizerParametersSchema, regularizeLayer } from 'regularizers/regularizers';
+import { SupervisedDatasetDescription } from 'data/DatasetDescription';
 import { History } from 'analysis/History';
-import { LoggerCallback } from 'utils/tensorflow';
-import { printProgressAsync } from 'utils/printer';
+import { OptimizationParameters } from 'optimization/OptimizerSchemas';
 
 export const LinearRegressionMetaParameterSchema = v.object({
     regularizer: RegularizerParametersSchema,
@@ -21,68 +18,62 @@ export type LinearRegressionMetaParameters = v.ValidType<typeof LinearRegression
 export class LinearRegression extends Algorithm {
     protected readonly name = LinearRegression.name;
     protected readonly opts: LinearRegressionMetaParameters;
-    protected model: tf.Model;
+    protected model: tf.Model | undefined;
 
     constructor (
         protected datasetDescription: SupervisedDatasetDescription,
         opts?: Partial<LinearRegressionMetaParameters>,
+        saveLocation = 'savedModels',
     ) {
-        super();
+        super(datasetDescription, saveLocation);
         this.opts = _.merge({
             regularizer: { type: 'l1', weight: 0 },
         }, opts);
-
-        const regularizer =
-            this.opts.regularizer.type === 'l1' ? tf.regularizers.l1({ l1: this.opts.regularizer.weight }) :
-            this.opts.regularizer.type === 'l2' ? tf.regularizers.l2({ l2: this.opts.regularizer.weight }) : undefined;
-
-        const model = tf.sequential();
-        model.add(tf.layers.inputLayer({ inputShape: [datasetDescription.features] }));
-        model.add(tf.layers.dense({ units: datasetDescription.classes, activation: 'linear', kernelRegularizer: regularizer, name: 'W' }));
-
-        this.model = model;
     }
 
-    async train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>) {
-        const o = this.getDefaultOptimizationParameters(opts);
-        this.optimizer = this.optimizer || new Optimizer(o);
+    protected async _build() {
+        this.model = this.registerModel('model', () => {
+            const model = tf.sequential();
+            model.add(tf.layers.inputLayer({ inputShape: [this.datasetDescription.features] }));
+            model.add(tf.layers.dense({ units: this.datasetDescription.classes, activation: 'linear', kernelRegularizer: regularizeLayer(this.opts.regularizer), name: 'W' }));
+            return model;
+        });
+    }
 
-        this.model.compile({
-            optimizer: this.optimizer.getTfOptimizer(),
+    protected async _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>) {
+        const o = this.getDefaultOptimizationParameters(opts);
+        const optimizer = this.registerOptimizer('optimizer', () => new Optimizer(o));
+
+        this.model!.compile({
+            optimizer: optimizer.getTfOptimizer(),
             loss: 'meanSquaredError',
         });
 
-        const history = await this.optimizer.fit(this.model, X, Y, {
+        const history = await optimizer.fit(this.model!, X, Y, {
             batchSize: o.batchSize || X.shape[0],
             epochs: o.iterations,
             shuffle: true,
         });
 
-        this.optimizer = undefined;
+        this.clearOptimizer('optimizer');
 
         return History.fromTensorflowHistory(this.name, this.opts, history);
     }
 
     loss(X: tf.Tensor2D, Y: tf.Tensor2D) {
-        const Y_hat = this.model.predict(X) as tf.Tensor2D;
+        const Y_hat = this.model!.predict(X) as tf.Tensor2D;
         return tf.losses.meanSquaredError(Y, Y_hat);
     }
 
-    async predict(X: tf.Tensor2D) {
-        return this.model.predict(X) as tf.Tensor2D;
+    protected async _predict(X: tf.Tensor2D) {
+        return this.model!.predict(X) as tf.Tensor2D;
     }
 
     static async fromSavedState(location: string) {
-        const subfolder = await this.findSavedState(location);
-        const state = await readJson(path.join(subfolder, 'state.json'), SaveDataSchema);
-        const layer = new LinearRegression(state.datasetDescription, state.metaParameters);
-
-        layer.model = await tf.loadModel('file://' + path.join(subfolder, 'model'));
-
-        return layer;
+        return new LinearRegression({} as SupervisedDatasetDescription).loadFromDisk(location);
     }
 
-    get W() { return this.model.getLayer('W').getWeights()[0] as tf.Tensor2D; }
+    get W() { return this.model!.getLayer('W').getWeights()[0] as tf.Tensor2D; }
 
     private getDefaultOptimizationParameters(o?: Partial<OptimizationParameters>): OptimizationParameters {
         return _.merge({
@@ -92,8 +83,3 @@ export class LinearRegression extends Algorithm {
         }, o);
     }
 }
-
-const SaveDataSchema = v.object({
-    datasetDescription: SupervisedDatasetDescriptionSchema,
-    metaParameters: LinearRegressionMetaParameterSchema,
-});

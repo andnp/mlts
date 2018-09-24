@@ -81,3 +81,12 @@ export class LoggerCallback extends BaseCallback {
         this.epoch++;
     }
 }
+
+export class EpochCounter extends BaseCallback {
+    constructor (private callback: () => void) {
+        super();
+    }
+    async onEpochEnd() {
+        this.callback();
+    }
+}

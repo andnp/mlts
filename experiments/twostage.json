@@ -3,13 +3,13 @@
     "dataset": "deterding",
     "metaParameters": {
         "stage1": {
-            "regularizerD": { "type": ["l1"], "weight": [0.001] },
-            "regularizerH": { "type": ["l1"], "weight": [0] }
+            "regularizerD": { "type": "l1", "weight": [0.001] },
+            "regularizerH": { "type": "l1", "weight": [0] }
         },
         "stage2": {
-            "regularizer": { "type": ["l2"], "weight": [0] }
+            "regularizer": { "type": "l2", "weight": [0] }
         },
-        "hidden": [25]
+        "hidden": 25
     },
     "optimization": {
         "iterations": 10000,

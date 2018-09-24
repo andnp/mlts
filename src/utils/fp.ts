@@ -17,3 +17,5 @@ export const tapEffect = <F extends AnyFunc>(f: F, effect: () => any): F => {
 export const invoke = <F extends AnyFunc>(f: F): ReturnType<F> => f();
 
 export const giveBack = <T>(d: T) => () => d;
+
+export type BuilderFunction<T> = () => T;

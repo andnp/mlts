@@ -32,6 +32,6 @@ export const allValues = <T extends Record<string, any>>(obj: T): PromiseValueOb
         }, {} as any));
 };
 
-export const map = <T, R>(arr: T[], f: (x: T) => Promise<R>): Promise<R[]> => {
+export const map = <T, R>(arr: T[], f: (x: T) => R | Promise<R>): Promise<R[]> => {
     return Promise.all(arr.map(f));
 };

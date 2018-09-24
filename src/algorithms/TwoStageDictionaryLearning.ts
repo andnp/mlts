@@ -6,7 +6,7 @@ import { DeepPartial } from 'simplytyped';
 
 import { readJson } from 'utils/files';
 import { Algorithm } from 'algorithms/Algorithm';
-import { OptimizationParameters } from 'optimization/Optimizer';
+import { OptimizationParameters } from 'optimization/OptimizerSchemas';
 import { MatrixFactorization, MatrixFactorizationMetaParametersSchema } from 'algorithms/MatrixFactorization';
 import { LogisticRegression, LogisticRegressionMetaParameterSchema } from 'algorithms/LogisticRegression';
 import { SupervisedDictionaryLearningDatasetDescription, SupervisedDictionaryLearningDatasetDescriptionSchema } from 'data/DatasetDescription';
@@ -27,9 +27,9 @@ export class TwoStageDictionaryLearning extends Algorithm implements Representat
     constructor(
         protected datasetDescription: SupervisedDictionaryLearningDatasetDescription,
         opts?: DeepPartial<TwoStageDictionaryLearningMetaParameters>,
-        protected saveLocation?: string,
+        saveLocation = 'savedModels',
     ) {
-        super();
+        super(datasetDescription, saveLocation);
         this.opts = _.merge({
             stage1: {},
             stage2: {},
@@ -41,6 +41,8 @@ export class TwoStageDictionaryLearning extends Algorithm implements Representat
         // So use number of hidden features here instead of number of dataset features.
         this.stage2 = new LogisticRegression({ features: this.opts.hidden, classes: this.datasetDescription.classes }, this.opts.stage2);
     }
+
+    protected async _build() { /* stub */ }
 
     private getDefaults(opts?: Partial<OptimizationParameters>): OptimizationParameters {
         return _.merge({
@@ -60,29 +62,26 @@ export class TwoStageDictionaryLearning extends Algorithm implements Representat
         return s1_loss.add(s2_loss);
     }
 
-    async train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>) {
+    protected async _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>) {
         const o = this.getDefaults(opts);
 
         const jointHistory = new History(this.name, this.opts, []);
-        // start making backup files
-        this.startBackup(this.saveLocation);
         if (this.state.activeStage === 'stage1') {
-            const history = await this.stage1.train(X, tf.zeros([0, 0]), o);
+            const history = await this.stage1.train(X, tf.zeros([0, 0]), o, { autosave: false });
             this.state.activeStage = 'stage2';
             jointHistory.loss = jointHistory.loss.concat(history.loss);
             await writeTensorToCsv('twostage-originalH_deterding-train.csv', this.stage1.H.transpose());
         }
         if (this.state.activeStage === 'stage2') {
-            const history = await this.stage2.train(this.stage1.H, Y, {...o, iterations: o.iterations * 2});
+            const history = await this.stage2.train(this.stage1.H, Y, {...o, iterations: o.iterations}, { autosave: false });
             this.state.activeStage = 'complete';
             jointHistory.loss = jointHistory.loss.concat(history.loss);
         }
-        this.stopBackup();
 
         return jointHistory;
     }
 
-    async predict(T: tf.Tensor2D, opts?: Partial<OptimizationParameters> & { useOriginalH?: boolean }) {
+    protected async _predict(T: tf.Tensor2D, opts?: Partial<OptimizationParameters> & { useOriginalH?: boolean }) {
         const o = this.getDefaults(opts);
 
         const H = opts && opts.useOriginalH
@@ -100,7 +99,7 @@ export class TwoStageDictionaryLearning extends Algorithm implements Representat
         // a new representation can be calculated as a linear regression optimization over H.
         // X = argmin_H (X - DH) so the "inputs" to the linear regressor are "D" and the targets are "X"
         const stage3 = new LinearRegression({ features: this.opts.hidden, classes: X.shape[0] }, { regularizer: this.opts.stage1.regularizerH });
-        await stage3.train(this.stage1.D.transpose(), X.transpose(), opts);
+        await stage3.train(this.stage1.D.transpose(), X.transpose(), opts, { autosave: false });
         const H = stage3.W.transpose();
         return H;
     }
@@ -118,9 +117,9 @@ export class TwoStageDictionaryLearning extends Algorithm implements Representat
     }
 
     static async fromSavedState(location: string): Promise<TwoStageDictionaryLearning> {
-        const subfolder = await this.findSavedState(location);
+        const subfolder = await this.findSavedState(location, this.name);
         const saveData = await readJson(path.join(subfolder, 'state.json'), SaveSchema);
-        const alg = new TwoStageDictionaryLearning(saveData.datasetDescription, saveData.metaParameters);
+        const alg = new TwoStageDictionaryLearning(saveData.datasetDescription, saveData.metaParameters, location);
 
         const [ stage1, stage2 ] = await Promise.all([
             MatrixFactorization.fromSavedState(subfolder),

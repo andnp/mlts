@@ -4,12 +4,12 @@ import * as _ from 'lodash';
 import * as v from 'validtyped';
 
 import { Algorithm } from "algorithms/Algorithm";
-import { Optimizer, OptimizationParameters } from 'optimization/Optimizer';
-import { readJson } from 'utils/files';
+import { Optimizer } from 'optimization/Optimizer';
 import { RegularizerParametersSchema, regularizeLayer } from 'regularizers/regularizers';
-import { MatrixFactorizationDatasetDescription, MatrixFactorizationDatasetDescriptionSchema } from 'data/DatasetDescription';
+import { MatrixFactorizationDatasetDescription } from 'data/DatasetDescription';
 import { LayerConfig } from '@tensorflow/tfjs-layers/dist/engine/topology';
 import { History } from 'analysis/History';
+import { OptimizationParameters } from 'optimization/OptimizerSchemas';
 
 class DictLayer extends tf.layers.Layer {
     static className = DictLayer.name;
@@ -51,12 +51,11 @@ class DictLayer extends tf.layers.Layer {
 }
 tf.serialization.registerClass(DictLayer);
 
-
+const MODEL = 'model';
 export class MatrixFactorization extends Algorithm {
     protected readonly name = MatrixFactorization.name;
 
     protected opts: MatrixFactorizationMetaParameters;
-    protected model: tf.Model;
 
     private getDefaults(opts?: Partial<MatrixFactorizationMetaParameters>): MatrixFactorizationMetaParameters {
         return _.merge({
@@ -75,60 +74,67 @@ export class MatrixFactorization extends Algorithm {
     constructor (
         protected datasetDescription: MatrixFactorizationDatasetDescription,
         opts?: Partial<MatrixFactorizationMetaParameters>,
+        saveLocation = 'savedModels',
     ) {
-        super();
+        super(datasetDescription, saveLocation);
         this.opts = this.getDefaults(opts);
+    }
 
-        const model = this.model = tf.sequential();
+    protected async _build() {
+        this.registerModel(MODEL, () => {
+            const model = tf.sequential();
 
-        model.add(tf.layers.inputLayer({ inputShape: [this.datasetDescription.features] }));
-        model.add(new DictLayer({ ...this.opts, datasetDescription }));
+            model.add(tf.layers.inputLayer({ inputShape: [this.datasetDescription.features] }));
+            model.add(new DictLayer({ ...this.opts, datasetDescription: this.datasetDescription }));
+
+            return model;
+        });
     }
 
     loss(X: tf.Tensor2D) {
-        const X_hat = this.model.predict(X) as tf.Tensor;
+        const model = this.assertModel(MODEL);
+        const X_hat = model.predict(X) as tf.Tensor;
         return tf.losses.meanSquaredError(X, X_hat);
     }
 
-    async train(X: tf.Tensor2D, Y: tf.Tensor2D, o: OptimizationParameters) {
-        this.optimizer = this.optimizer || new Optimizer(o);
+    protected async _train(X: tf.Tensor2D, Y: tf.Tensor2D, o: OptimizationParameters) {
+        const model = this.assertModel(MODEL);
+        const optimizer = this.registerOptimizer('opt', () => new Optimizer(o));
 
-        this.model.compile({
-            optimizer: this.optimizer.getTfOptimizer(),
+        model.compile({
+            optimizer: optimizer.getTfOptimizer(),
             loss: 'meanSquaredError',
         });
 
-        const history = await this.optimizer.fit(this.model, X, X, {
+        const history = await optimizer.fit(model, X, X, {
             batchSize: X.shape[0],
             epochs: o.iterations,
             shuffle: false,
         });
 
         // we've finished optimizing, so we can release our optimizer
-        this.optimizer = undefined;
+        this.clearOptimizer('opt');
 
         return History.fromTensorflowHistory(this.name, this.opts, history);
     }
 
-    async predict(): Promise<tf.Tensor2D> { throw new Error('Predict not implemented for MatrixFactorization'); }
+    protected async _predict(): Promise<tf.Tensor2D> { throw new Error('Predict not implemented for MatrixFactorization'); }
 
     static async fromSavedState(location: string) {
-        const subfolder = await this.findSavedState(location);
-        const state = await readJson(path.join(subfolder, 'state.json'), SaveDataSchema);
-        const layer = new MatrixFactorization(state.datasetDescription, state.metaParameters);
-        layer.model = await tf.loadModel('file://' + path.join(subfolder, 'model/model.json'));
-
-        try {
-            layer.optimizer = await Optimizer.fromSavedState(path.join(subfolder, 'optimizer'));
-        } catch (e) { /* do nothing */ }
-
-        return layer;
+        return new MatrixFactorization({} as MatrixFactorizationDatasetDescription).loadFromDisk(location);
     }
 
-    get D() { return this.model.getLayer(DictLayer.name).getWeights()[0] as tf.Tensor2D; }
-    get H() { return this.model.getLayer(DictLayer.name).getWeights()[1] as tf.Tensor2D; }
+    get D() {
+        const model = this.assertModel(MODEL);
+        return model.getLayer(DictLayer.name).getWeights()[0] as tf.Tensor2D;
+    }
+    get H() {
+        const model = this.assertModel(MODEL);
+        return model.getLayer(DictLayer.name).getWeights()[1] as tf.Tensor2D;
+    }
     setD(tensor: tf.Tensor2D) {
-        this.model.getLayer(DictLayer.name).setWeights([tensor, this.H]);
+        const model = this.assertModel(MODEL);
+        model.getLayer(DictLayer.name).setWeights([tensor, this.H]);
     }
 }
 
@@ -138,8 +144,3 @@ export const MatrixFactorizationMetaParametersSchema = v.object({
     hidden: v.number(),
 });
 export type MatrixFactorizationMetaParameters = v.ValidType<typeof MatrixFactorizationMetaParametersSchema>;
-
-const SaveDataSchema = v.object({
-    datasetDescription: MatrixFactorizationDatasetDescriptionSchema,
-    metaParameters: MatrixFactorizationMetaParametersSchema,
-});

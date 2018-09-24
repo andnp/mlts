@@ -3,7 +3,7 @@
     "dataset": "mnist",
     "metaParameters": {
         "layers": [
-            { "type": ["dense"], "units": [2], "activation": ["linear"], "regularizer": { "type": ["l1"], "weight": [0] } }
+            { "type": "dense", "units": [2], "activation": "linear", "regularizer": { "type": "l1", "weight": [0] } }
         ]
     },
     "optimization": {

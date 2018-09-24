@@ -1,14 +1,13 @@
 import * as tf from '@tensorflow/tfjs';
-import * as path from 'path';
 import * as _ from 'lodash';
 import * as v from 'validtyped';
 
 import { Algorithm } from "algorithms/Algorithm";
-import { Optimizer, OptimizationParameters } from 'optimization/Optimizer';
+import { Optimizer } from 'optimization/Optimizer';
 import { autoDispose, randomInitVariable } from 'utils/tensorflow';
-import { readJson } from 'utils/files';
 import { regularize, RegularizerParametersSchema } from 'regularizers/regularizers';
-import { SupervisedDictionaryLearningDatasetDescription, SupervisedDictionaryLearningDatasetDescriptionSchema } from 'data/DatasetDescription';
+import { SupervisedDictionaryLearningDatasetDescription } from 'data/DatasetDescription';
+import { OptimizationParameters } from 'optimization/OptimizerSchemas';
 
 export const SupervisedDictionaryLearningMetaParameterSchema = v.object({
     regularizer: RegularizerParametersSchema,
@@ -24,16 +23,19 @@ export class SupervisedDictionaryLearning extends Algorithm {
     constructor (
         protected datasetDescription: SupervisedDictionaryLearningDatasetDescription,
         opts?: Partial<SupervisedDictionaryLearningMetaParameters>,
+        saveLocation = 'savedModels',
     ) {
-        super();
+        super(datasetDescription, saveLocation);
         this.opts = _.merge({
             regularizer: { type: 'l1', weight: 0 },
             hidden: 2,
         }, opts);
+    }
 
-        this.params.W = randomInitVariable([this.datasetDescription.classes, this.opts.hidden]);
-        this.params.H = randomInitVariable([this.opts.hidden, this.datasetDescription.samples]);
-        this.params.D = randomInitVariable([this.datasetDescription.features, this.opts.hidden]);
+    async _build() {
+        this.registerParameter('W', () => randomInitVariable([this.datasetDescription.classes, this.opts.hidden]));
+        this.registerParameter('H', () => randomInitVariable([this.opts.hidden, this.datasetDescription.samples]));
+        this.registerParameter('D', () => randomInitVariable([this.datasetDescription.features, this.opts.hidden]));
     }
 
     loss = autoDispose((X: tf.Tensor2D, Y: tf.Tensor2D) => {
@@ -45,13 +47,14 @@ export class SupervisedDictionaryLearning extends Algorithm {
         return y_loss.add(x_loss).add(reg);
     });
 
-    async train(X: tf.Tensor2D, Y: tf.Tensor2D, o: OptimizationParameters) {
-        this.optimizer = this.optimizer || new Optimizer(this.getDefaultOptimizerParameters(o));
+    protected async _train(X: tf.Tensor2D, Y: tf.Tensor2D, o: OptimizationParameters) {
+        const optimizer = this.registerOptimizer('opt', () => new Optimizer(this.getDefaultOptimizerParameters(o)));
 
-        return this.optimizer.minimize(_.partial(this.loss, X, Y), [ this.W, this.D, this.H ]);
+        const { W, D, H } = this.assertParametersExist(['W', 'H', 'D']);
+        return optimizer.minimize(_.partial(this.loss, X, Y), [ W, D, H ]);
     }
 
-    async predict(X: tf.Tensor2D, o?: Partial<OptimizationParameters>) {
+    protected async _predict(X: tf.Tensor2D, o?: Partial<OptimizationParameters>) {
         const optimizer = new Optimizer(this.getDefaultOptimizerParameters(o));
 
         const H_test = (X.shape[0] === this.datasetDescription.samples)
@@ -77,23 +80,10 @@ export class SupervisedDictionaryLearning extends Algorithm {
     }
 
     static async fromSavedState(location: string) {
-        const subfolder = await this.findSavedState(location);
-
-        const state = await readJson(path.join(subfolder, 'state.json'), SaveDataSchema);
-
-        const layer = new SupervisedDictionaryLearning(state.datasetDescription, state.metaParameters);
-
-        await layer.loadTensorsFromDisk(subfolder);
-
-        return layer;
+        return new SupervisedDictionaryLearning({} as SupervisedDictionaryLearningDatasetDescription).loadFromDisk(location);
     }
 
-    get W() { return this.params.W; }
-    get H() { return this.params.H; }
-    get D() { return this.params.D; }
+    get W() { return this.assertParametersExist(['W']).W; }
+    get H() { return this.assertParametersExist(['H']).H; }
+    get D() { return this.assertParametersExist(['D']).D; }
 }
-
-const SaveDataSchema = v.object({
-    datasetDescription: SupervisedDictionaryLearningDatasetDescriptionSchema,
-    metaParameters: SupervisedDictionaryLearningMetaParameterSchema,
-});

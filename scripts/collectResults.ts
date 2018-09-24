@@ -1,18 +1,11 @@
 // tslint:disable no-console
-import * as globAsync from 'glob';
-import * as fs from 'fs';
+import * as v from 'validtyped';
 import * as path from 'path';
-import * as util from 'util';
 import * as tsplot from 'tsplot';
+import * as files from '../src/utils/files';
 import { discriminatedObject } from '../src/utils/objects';
 
 const filterUndefined = <T>(x: Array<T | undefined>): T[] => x.filter(d => d !== undefined) as any;
-
-const glob = util.promisify(globAsync);
-const readdir = util.promisify(fs.readdir);
-const exists = util.promisify(fs.exists);
-const readFile = util.promisify(fs.readFile);
-const writeFile = util.promisify(fs.writeFile);
 
 const resultFileNames = [ 'originalH.txt', 'test.txt', 'train.txt' ];
 
@@ -24,15 +17,15 @@ async function execute() {
     }
 
     const rootPath = process.argv[2];
-    const hashDirectories = (await readdir(rootPath)).map(n => path.join(rootPath, n));
+    const hashDirectories = (await files.readdir(rootPath)).map(n => path.join(rootPath, n));
 
-    const uncollectedResults = await Promise.all(hashDirectories.filter(dir => exists(path.join(dir, 'results.json'))));
+    const uncollectedResults = await Promise.all(hashDirectories.filter(dir => files.fileExists(path.join(dir, 'results.json'))));
 
     await Promise.all(uncollectedResults.map(async (res) => {
         const descriptionsOrUndefined = await Promise.all(resultFileNames.map(async (resultFile) => {
-            const resultFiles = await glob(path.join(res, '*', resultFile));
+            const resultFiles = await files.glob(path.join(res, '*', resultFile));
             if (resultFiles.length === 0) return;
-            const contents = await Promise.all(resultFiles.map(file => readFile(file)));
+            const contents = await Promise.all(resultFiles.map(file => files.readFile(file)));
             const results = contents.map(c => parseFloat(c.toString()));
 
 
@@ -45,25 +38,23 @@ async function execute() {
 
         const descriptions = filterUndefined(descriptionsOrUndefined);
 
-        const paramsFiles = await glob(path.join(res, '*', 'params.json'));
-        const experimentFiles = await glob(path.join(res, '*', 'experiment.json'));
+        const paramsFiles = await files.glob(path.join(res, '*', 'params.json'));
+        const experimentFiles = await files.glob(path.join(res, '*', 'experiment.json'));
 
-        const paramsFile = await readFile(paramsFiles[0]);
-        const experimentFile = await readFile(experimentFiles[0]);
-
-        const experiment = JSON.parse(experimentFile.toString());
+        const params = await files.readJson(paramsFiles[0], v.any());
+        const experiment = await files.readJson(experimentFiles[0], v.any());
 
         const description = discriminatedObject('name', descriptions);
 
         const result = {
             ...description,
-            metaParameters: JSON.parse(paramsFile.toString()),
+            metaParameters: params,
             algorithm: experiment.algorithm,
             dataset: experiment.dataset,
             optimization: experiment.optimization,
         };
 
-        await writeFile(path.join(res, 'results.json'), JSON.stringify(result, undefined, 4));
+        await files.writeJson(path.join(res, 'results.json'), result);
     }));
 
 }

@@ -24,6 +24,11 @@ export function flattenToArray(thing: any): Array<[ string, any[] ]> {
             return;
         }
 
+        if (typeof thing === 'boolean' || typeof thing === 'number' || typeof thing === 'string') {
+            accum.push([ path, [thing] ]);
+            return;
+        }
+
         throw new Error(`Shouldn't be finding something of any other type. <${typeof thing}>`);
     }
 

@@ -8,30 +8,8 @@ import { repeat } from 'utils/tasks';
 import { assertNever } from 'utils/tsUtil';
 import { writeJson, readJson } from 'utils/files';
 import { History } from 'analysis/History';
-import { LoggerCallback } from 'utils/tensorflow';
-
-// -----------------------
-// Optimization Parameters
-// -----------------------
-
-const AdadeltaParametersSchema = v.object({
-    type: v.string(['adadelta']),
-    learningRate: v.number(),
-});
-
-const AdagradParametersSchema = v.object({
-    type: v.string(['adagrad']),
-    learningRate: v.number(),
-});
-
-export const OptimizationParametersSchema = v.object({
-    threshold: v.number(),
-    iterations: v.number(),
-    batchSize: v.number(),
-}, { optional: ['threshold', 'batchSize'] }).and(AdadeltaParametersSchema.or(AdagradParametersSchema));
-
-export type AdadeltaParameters = v.ValidType<typeof AdadeltaParametersSchema>;
-export type OptimizationParameters = v.ValidType<typeof OptimizationParametersSchema>;
+import { LoggerCallback, EpochCounter } from 'utils/tensorflow';
+import { OptimizationParameters, OptimizationParametersSchema } from './OptimizerSchemas';
 
 export interface OptimizationOptions {
     printProgress: boolean;
@@ -98,7 +76,7 @@ export class Optimizer {
         throw new Error('Unexpected line reached');
     }
     async fit(model: tf.Model, X: tf.Tensor | tf.Tensor[], Y: tf.Tensor | tf.Tensor[], params: tf.ModelFitConfig) {
-        const refreshRate = 250;
+        const refreshRate = 100;
 
         const history = await printProgressAsync(async (printer) => {
             const epochs = params.epochs!;
@@ -108,7 +86,7 @@ export class Optimizer {
             // memory leak in tfjs that is causing catastrophic slow downs of models that need
             // to run over many epochs. By splitting up the epochs like this, I manage to get
             // around that memory leak. One day, I hope that this will be appropriately fixed
-            for (let i = 0; i < epochs; i += refreshRate) {
+            for (let i = this.completedIterations; i < epochs; i += refreshRate) {
                 const remainingEpochs = epochs - i;
                 const epochsToRun = remainingEpochs > refreshRate ? refreshRate : remainingEpochs;
                 const h = await model.fit(X, Y, {
@@ -116,8 +94,9 @@ export class Optimizer {
                     yieldEvery: 'epoch',
                     ...params,
                     epochs: epochsToRun,
-                    callbacks: [new LoggerCallback(printer, i)],
+                    callbacks: [new LoggerCallback(printer, i), new EpochCounter(() => this.completedIterations++)],
                 });
+
                 if (!cumulativeHistory) cumulativeHistory = h;
                 else cumulativeHistory.history.loss = cumulativeHistory.history.loss.concat(h.history.loss);
             }
