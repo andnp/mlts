@@ -2,31 +2,13 @@ import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-node';
 import * as path from 'path';
 
-import { GreyCifar10 } from 'data/tensorflow/GreyCifar10';
-import { Deterding } from 'data/tensorflow/Deterding';
-import { SusyComplete } from 'data/tensorflow/SusyComplete';
-import { TwoStageDictionaryLearning, TwoStageDictionaryLearningMetaParametersSchema } from 'algorithms/TwoStageDictionaryLearning';
 import { getClassificationError } from 'analysis/classification';
-import { registerAlgorithm, registerDataset, Experiment } from 'experiments/Experiment';
-import { SupervisedDictionaryLearning, SupervisedDictionaryLearningMetaParameterSchema } from 'algorithms/SupervisedDictionaryLearning';
-import { LogisticRegression, LogisticRegressionMetaParameterSchema } from 'algorithms/LogisticRegression';
+import { Experiment } from 'experiments/Experiment';
 import { isRepresentationAlgorithm } from 'algorithms/interfaces/RepresentationAlgorithm';
 import { writeTensorToCsv } from 'utils/tensorflow';
 import { csvStringFromObject, writeCsv } from 'utils/csv';
 import { writeFile, writeJson } from 'utils/files';
-import { Mnist } from 'data/tensorflow/mnist';
-import { SupervisedAutoencoder, SupervisedAutoencoderMetaParameterSchema } from 'algorithms/SupervisedAutoencoder';
-import { TwoStageAutoencoder, TwoStageAutoencoderMetaParameterSchema } from 'algorithms/TwoStageAutoencoder';
-
-registerAlgorithm('twostage', TwoStageDictionaryLearning, TwoStageDictionaryLearningMetaParametersSchema);
-registerAlgorithm('sdl', SupervisedDictionaryLearning, SupervisedDictionaryLearningMetaParameterSchema);
-registerAlgorithm('logisticRegression', LogisticRegression, LogisticRegressionMetaParameterSchema);
-registerAlgorithm('sae', SupervisedAutoencoder, SupervisedAutoencoderMetaParameterSchema);
-registerAlgorithm('twostage-ae', TwoStageAutoencoder, TwoStageAutoencoderMetaParameterSchema);
-registerDataset('cifar', GreyCifar10);
-registerDataset('deterding', Deterding);
-registerDataset('susy', SusyComplete);
-registerDataset('mnist', Mnist);
+import 'registry';
 
 async function execute() {
     if (!process.argv[2]) throw new Error('Expected experiment description JSON for first argument');
