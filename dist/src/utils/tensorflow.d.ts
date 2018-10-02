@@ -20,6 +20,7 @@ export declare class LoggerCallback extends BaseCallback {
     private print;
     private startingEpoch;
     private epoch;
+    private batch;
     private trainingBegan;
     constructor(print: Printer, startingEpoch?: number);
     onBatchEnd(batch: number, logs?: UnresolvedLogs): Promise<void>;

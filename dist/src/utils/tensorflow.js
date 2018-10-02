@@ -68,6 +68,7 @@ class LoggerCallback extends base_callbacks_1.BaseCallback {
         this.print = print;
         this.startingEpoch = startingEpoch;
         this.epoch = 0;
+        this.batch = 0;
         this.trainingBegan = 0;
     }
     onBatchEnd(batch, logs) {
@@ -81,10 +82,11 @@ class LoggerCallback extends base_callbacks_1.BaseCallback {
                         : log;
                     return { name: key, value };
                 });
-                const avgTimePerBatch = Math.round((Date.now() - this.trainingBegan) / (batch + 1));
+                const avgTimePerBatch = Math.round((Date.now() - this.trainingBegan) / (this.batch + 1));
                 const printStr = logValues.map(v => `${v.name.substr(-4)}: ${v.value.toPrecision(4)}`).join(' ');
                 const epoch = this.epoch + this.startingEpoch;
                 this.print(`${epoch}- ${printStr} atpb: ${avgTimePerBatch}`);
+                this.batch++;
             }
         });
     }

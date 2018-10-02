@@ -64,6 +64,7 @@ export function randomSamples(X: tf.Tensor2D, numSamples: number) {
 
 export class LoggerCallback extends BaseCallback {
     private epoch: number = 0;
+    private batch: number = 0;
     private trainingBegan: number = 0;
     constructor(private print: Printer, private startingEpoch = 0) {
         super();
@@ -80,11 +81,12 @@ export class LoggerCallback extends BaseCallback {
                 return { name: key, value };
             });
 
-            const avgTimePerBatch = Math.round((Date.now() - this.trainingBegan) / (batch + 1));
+            const avgTimePerBatch = Math.round((Date.now() - this.trainingBegan) / (this.batch + 1));
             const printStr = logValues.map(v => `${v.name.substr(-4)}: ${v.value.toPrecision(4)}`).join(' ');
 
             const epoch = this.epoch + this.startingEpoch;
             this.print(`${epoch}- ${printStr} atpb: ${avgTimePerBatch}`);
+            this.batch++;
         }
     }
 
