@@ -80,11 +80,11 @@ export class LoggerCallback extends BaseCallback {
                 return { name: key, value };
             });
 
-            const avgTimePerEpoch = Math.round((Date.now() - this.trainingBegan) / (this.epoch + 1));
+            const avgTimePerBatch = Math.round((Date.now() - this.trainingBegan) / (batch + 1));
             const printStr = logValues.map(v => `${v.name.substr(-4)}: ${v.value.toPrecision(4)}`).join(' ');
 
             const epoch = this.epoch + this.startingEpoch;
-            this.print(`${epoch}- ${printStr} atpe: ${avgTimePerEpoch}`);
+            this.print(`${epoch}- ${printStr} atpb: ${avgTimePerBatch}`);
         }
     }
 
