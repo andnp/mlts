@@ -1,5 +1,5 @@
 import * as rl from 'readline';
-import { Printable } from 'utils/printer';
+import { Printable } from './printer';
 
 export type PrintMessage = {
     type: 'flush'

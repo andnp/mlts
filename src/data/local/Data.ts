@@ -1,5 +1,5 @@
-import { Matrix } from 'utils/matrix';
-import { tuple } from 'utils/tsUtil';
+import { Matrix } from '../../utils/matrix';
+import { tuple } from '../../utils/tsUtil';
 
 
 export interface Dataset<M> {
@@ -37,5 +37,14 @@ export class Data implements Dataset<Matrix> {
 
     get classes() {
         return this._y.cols;
+    }
+
+    description() {
+        return {
+            samples: this.trainSamples,
+            testSamples: this.testSamples,
+            features: this.features,
+            classes: this.classes,
+        };
     }
 }

@@ -2,7 +2,7 @@
 import * as files from '../src/utils/files';
 
 import { getParameterPermutation } from 'experiments/metaParameters';
-import { ExperimentSchema } from 'experiments/ExperimentSchema';
+import { getExperimentSchema } from 'experiments/ExperimentSchema';
 import { getResultsPath } from 'experiments/fileSystem';
 
 async function execute() {
@@ -11,6 +11,8 @@ async function execute() {
         console.log('npm run file scripts/findResultsPath.ts {resultsBaseDir} {experimentFile} {index}');
         process.exit(0);
     }
+
+    const ExperimentSchema = getExperimentSchema();
 
     const run = parseInt(process.argv[4]);
 

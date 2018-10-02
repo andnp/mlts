@@ -1,6 +1,6 @@
 // tslint:disable no-console
 import { AnyFunc } from 'simplytyped';
-import { invoke } from 'utils/fp';
+import { invoke } from './fp';
 
 const toDispose: AnyFunc[] = [];
 

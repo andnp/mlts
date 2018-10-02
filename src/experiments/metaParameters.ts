@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { flattenToArray } from 'utils/flatten';
+import { flattenToArray } from '../utils/flatten';
 
 // --------------------------------------------
 // Compute the MetaParameters used for this run

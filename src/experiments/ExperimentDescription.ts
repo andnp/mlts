@@ -1,30 +1,19 @@
-import * as v from 'validtyped';
 import * as _ from 'lodash';
-import { ConstructorFor } from 'simplytyped';
 import * as path from 'path';
 
-import { Algorithm } from "algorithms/Algorithm";
-import { readJson, fileExists } from 'utils/files';
-import { TensorflowDataset } from 'data/tensorflow/TensorflowDataset';
-import { OptimizationParameters } from 'optimization/OptimizerSchemas';
+import { Algorithm } from "../algorithms/Algorithm";
+import { readJson, fileExists } from '../utils/files';
+import { TensorflowDataset } from '../data/tensorflow/TensorflowDataset';
+import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 import { getNumberOfRuns, getParameterPermutation } from './metaParameters';
-import { ExperimentSchema, ExperimentJson } from './ExperimentSchema';
+import { getExperimentSchema, ExperimentJson } from './ExperimentSchema';
 import { getResultsPath } from './fileSystem';
 
-const algorithmRegistry: Record<string, { constructor: ConstructorFor<Algorithm>, schema: v.Validator<any> }> = {};
-const datasetRegistry: Record<string, typeof TensorflowDataset> = {};
+import { getDatasetConstructor, getTransformationRegistryData, getAlgorithmRegistryData } from './ExperimentRegistry';
 
-export function registerAlgorithm(name: string, constructor: ConstructorFor<Algorithm>, schema: v.Validator<any> = v.any()) {
-    algorithmRegistry[name] = { constructor, schema };
-}
-
-export function registerDataset(name: string, dataset: typeof TensorflowDataset) {
-    datasetRegistry[name] = dataset;
-}
-
-export class Experiment {
-    constructor(
-        readonly description: ExperimentJson,
+export class ExperimentDescription {
+    private constructor(
+        readonly definition: ExperimentJson,
         readonly algorithm: Algorithm,
         readonly dataset: TensorflowDataset,
         readonly optimization: OptimizationParameters,
@@ -32,16 +21,29 @@ export class Experiment {
     ) {}
 
     static async fromJson(location: string, index: number) {
+        const ExperimentSchema = getExperimentSchema();
         const data = await readJson(location, ExperimentSchema);
 
-        const datasetConstructor = datasetRegistry[data.dataset];
-        if (!datasetConstructor) throw new Error(`Attempted to run an experiment with an unregistered dataset. <${data.dataset}>`);
+        // ---------------------------------
+        // Load Constructors from Registries
+        // ---------------------------------
+        const datasetConstructor = getDatasetConstructor(data.dataset);
+        const algData = getAlgorithmRegistryData(data.algorithm);
+        const transformationData = data.transformation && getTransformationRegistryData(data.transformation.type);
 
+        // ------------
+        // Load Dataset
+        // ------------
         const dataset = await datasetConstructor.load();
 
-        const algData = algorithmRegistry[data.algorithm];
-        if (!algData) throw new Error(`Attempted to run an experiment with an unregistered algorithm. <${data.algorithm}>`);
+        if (transformationData) {
+            const Transformation = transformationData.constructor;
+            await dataset.applyTransformation(new Transformation(data.transformation));
+        }
 
+        // --------------
+        // Load Algorithm
+        // --------------
         const metaParameters = getParameterPermutation(data.metaParameters, index);
 
         const paramsValid = algData.schema.validate(metaParameters);
@@ -63,6 +65,6 @@ export class Experiment {
             ? await (algData.constructor as any as typeof Algorithm).fromSavedState(saveLocation)
             : new algData.constructor(datasetDescriptor, metaParameters, saveLocation);
 
-        return new Experiment(data, algorithm, dataset, data.optimization, expLocation);
+        return new ExperimentDescription(data, algorithm, dataset, data.optimization, expLocation);
     }
 }

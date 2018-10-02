@@ -2,14 +2,14 @@ import * as tf from '@tensorflow/tfjs';
 import * as _ from 'lodash';
 import * as v from 'validtyped';
 
-import { Algorithm } from "algorithms/Algorithm";
-import { Optimizer } from 'optimization/Optimizer';
-import { SupervisedDatasetDescription } from 'data/DatasetDescription';
-import { History } from 'analysis/History';
-import { constructTFNetwork, LayerMetaParametersSchema } from 'algorithms/utils/layers';
-import * as arrays from 'utils/arrays';
-import { RepresentationAlgorithm } from 'algorithms/interfaces/RepresentationAlgorithm';
-import { OptimizationParameters } from 'optimization/OptimizerSchemas';
+import { Algorithm } from "../algorithms/Algorithm";
+import { Optimizer } from '../optimization/Optimizer';
+import { SupervisedDatasetDescription } from '../data/DatasetDescription';
+import { History } from '../analysis/History';
+import { constructTFNetwork, LayerMetaParametersSchema } from '../algorithms/utils/layers';
+import * as arrays from '../utils/arrays';
+import { RepresentationAlgorithm } from '../algorithms/interfaces/RepresentationAlgorithm';
+import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 
 export const TwoStageAutoencoderMetaParameterSchema = v.object({
     layers: v.array(LayerMetaParametersSchema),
@@ -139,7 +139,9 @@ export class TwoStageAutoencoder extends Algorithm implements RepresentationAlgo
             this.state.activeStage = 'complete';
         }
 
-        return History.fromTensorflowHistory(this.name, this.opts, history!);
+        return history
+            ? History.fromTensorflowHistory(this.name, this.opts, history)
+            : History.initializeEmpty(this.name, this.opts);
     }
 
     loss(X: tf.Tensor2D, Y: tf.Tensor2D) {
@@ -170,10 +172,7 @@ export class TwoStageAutoencoder extends Algorithm implements RepresentationAlgo
 
     protected async _predict(X: tf.Tensor2D) {
         const model = this.assertModel(PREDICTION_MODEL);
-        const Y_hat_batches = X.split(10).map(d => (model.predictOnBatch(d) as tf.Tensor2D));
-
-        const Y_hat = tf.concat(Y_hat_batches, 0);
-        return Y_hat;
+        return model.predictOnBatch(X) as tf.Tensor2D;
     }
 
     // ------

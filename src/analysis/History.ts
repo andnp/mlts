@@ -11,4 +11,8 @@ export class History {
         if (typeof hist.history.loss[0] !== 'number') throw new Error(`I don't know how to deal with tensor histories`);
         return new History(name, params, hist.history.loss as number[]);
     }
+
+    static initializeEmpty(name: string, params: {}) {
+        return new History(name, params, []);
+    }
 }

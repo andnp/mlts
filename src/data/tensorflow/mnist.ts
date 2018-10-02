@@ -1,6 +1,6 @@
-import { TensorflowDataset } from 'data/tensorflow/TensorflowDataset';
-import * as mnist from 'data/local/mnist';
-import { Data } from 'data/local/Data';
+import { TensorflowDataset } from '../tensorflow/TensorflowDataset';
+import * as mnist from '../local/mnist';
+import { Data } from '../local/Data';
 
 export class Mnist extends TensorflowDataset {
     static async load(location?: string) {

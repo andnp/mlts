@@ -7,5 +7,5 @@ export function getClassificationError(Y_hat: tf.Tensor2D, Y: tf.Tensor2D): tf.T
     const correct = tf.equal(y_hat, y).sum();
     const total = tf.tensor(y_hat.shape[0]);
 
-    return correct.toFloat().div(total);
+    return tf.tensor(1).sub(correct.toFloat().div(total));
 }

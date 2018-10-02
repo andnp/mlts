@@ -10,6 +10,7 @@
         "target": "es6",
         "noImplicitAny": true,
         "noImplicitThis": true,
+        "declaration": true,
         "lib": [
             "dom",
             "es2015",

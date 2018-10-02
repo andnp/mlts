@@ -4,16 +4,16 @@ import * as tf from '@tensorflow/tfjs';
 import * as v from 'validtyped';
 import { DeepPartial } from 'simplytyped';
 
-import { readJson } from 'utils/files';
-import { Algorithm } from 'algorithms/Algorithm';
-import { OptimizationParameters } from 'optimization/OptimizerSchemas';
-import { MatrixFactorization, MatrixFactorizationMetaParametersSchema } from 'algorithms/MatrixFactorization';
-import { LogisticRegression, LogisticRegressionMetaParameterSchema } from 'algorithms/LogisticRegression';
-import { SupervisedDictionaryLearningDatasetDescription, SupervisedDictionaryLearningDatasetDescriptionSchema } from 'data/DatasetDescription';
-import { History } from 'analysis/History';
-import { RepresentationAlgorithm } from 'algorithms/interfaces/RepresentationAlgorithm';
+import { readJson } from '../utils/files';
+import { Algorithm } from './Algorithm';
+import { OptimizationParameters } from '../optimization/OptimizerSchemas';
+import { MatrixFactorization, MatrixFactorizationMetaParametersSchema } from './MatrixFactorization';
+import { LogisticRegression, LogisticRegressionMetaParameterSchema } from './LogisticRegression';
+import { SupervisedDictionaryLearningDatasetDescription, SupervisedDictionaryLearningDatasetDescriptionSchema } from '../data/DatasetDescription';
+import { History } from '../analysis/History';
+import { RepresentationAlgorithm } from '../algorithms/interfaces/RepresentationAlgorithm';
 import { LinearRegression } from './LinearRegression';
-import { writeTensorToCsv } from 'utils/tensorflow';
+import { writeTensorToCsv } from '../utils/tensorflow';
 
 export class TwoStageDictionaryLearning extends Algorithm implements RepresentationAlgorithm {
     protected readonly name = TwoStageDictionaryLearning.name;

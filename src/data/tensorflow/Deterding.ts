@@ -1,6 +1,6 @@
-import { TensorflowDataset } from 'data/tensorflow/TensorflowDataset';
-import * as deterding from 'data/local/deterding';
-import { Data } from 'data/local/Data';
+import { TensorflowDataset } from '../tensorflow/TensorflowDataset';
+import * as deterding from '../local/deterding';
+import { Data } from '../local/Data';
 
 export class Deterding extends TensorflowDataset {
     static async load(location?: string) {

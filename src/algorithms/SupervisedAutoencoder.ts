@@ -2,14 +2,14 @@ import * as tf from '@tensorflow/tfjs';
 import * as _ from 'lodash';
 import * as v from 'validtyped';
 
-import { Algorithm } from "algorithms/Algorithm";
-import { Optimizer } from 'optimization/Optimizer';
-import { SupervisedDatasetDescription } from 'data/DatasetDescription';
-import { History } from 'analysis/History';
-import { LayerMetaParametersSchema, constructTFNetwork } from 'algorithms/utils/layers';
-import * as arrays from 'utils/arrays';
-import { RepresentationAlgorithm } from 'algorithms/interfaces/RepresentationAlgorithm';
-import { OptimizationParameters } from 'optimization/OptimizerSchemas';
+import { Algorithm } from "../algorithms/Algorithm";
+import { Optimizer } from '../optimization/Optimizer';
+import { SupervisedDatasetDescription } from '../data/DatasetDescription';
+import { History } from '../analysis/History';
+import { LayerMetaParametersSchema, constructTFNetwork } from '../algorithms/utils/layers';
+import * as arrays from '../utils/arrays';
+import { RepresentationAlgorithm } from '../algorithms/interfaces/RepresentationAlgorithm';
+import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 
 export const SupervisedAutoencoderMetaParameterSchema = v.object({
     layers: v.array(LayerMetaParametersSchema),

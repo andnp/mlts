@@ -1,15 +1,14 @@
 import * as tf from '@tensorflow/tfjs';
-import * as path from 'path';
 import * as _ from 'lodash';
 import * as v from 'validtyped';
-
-import { Algorithm } from "algorithms/Algorithm";
-import { Optimizer } from 'optimization/Optimizer';
-import { RegularizerParametersSchema, regularizeLayer } from 'regularizers/regularizers';
-import { MatrixFactorizationDatasetDescription } from 'data/DatasetDescription';
 import { LayerConfig } from '@tensorflow/tfjs-layers/dist/engine/topology';
-import { History } from 'analysis/History';
-import { OptimizationParameters } from 'optimization/OptimizerSchemas';
+
+import { Algorithm } from "../algorithms/Algorithm";
+import { Optimizer } from '../optimization/Optimizer';
+import { RegularizerParametersSchema, regularizeLayer } from '../regularizers/regularizers';
+import { MatrixFactorizationDatasetDescription } from '../data/DatasetDescription';
+import { History } from '../analysis/History';
+import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 
 class DictLayer extends tf.layers.Layer {
     static className = DictLayer.name;

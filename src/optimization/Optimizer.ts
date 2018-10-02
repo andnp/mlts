@@ -2,13 +2,14 @@ import * as tf from '@tensorflow/tfjs';
 import * as _ from 'lodash';
 import * as v from 'validtyped';
 import * as path from 'path';
-import * as arrays from 'utils/arrays';
-import { printProgressAsync } from 'utils/printer';
-import { repeat } from 'utils/tasks';
-import { assertNever } from 'utils/tsUtil';
-import { writeJson, readJson } from 'utils/files';
-import { History } from 'analysis/History';
-import { LoggerCallback, EpochCounter } from 'utils/tensorflow';
+
+import * as arrays from '../utils/arrays';
+import { printProgressAsync } from '../utils/printer';
+import { repeat } from '../utils/tasks';
+import { assertNever } from '../utils/tsUtil';
+import { writeJson, readJson } from '../utils/files';
+import { History } from '../analysis/History';
+import { LoggerCallback, EpochCounter } from '../utils/tensorflow';
 import { OptimizationParameters, OptimizationParametersSchema } from './OptimizerSchemas';
 
 export interface OptimizationOptions {
@@ -70,6 +71,9 @@ export class Optimizer {
         }
         if (this.parameters.type === 'adagrad') {
             return tf.train.adagrad(this.parameters.learningRate);
+        }
+        if (this.parameters.type === 'rmsprop') {
+            return tf.train.rmsprop(this.parameters.learningRate);
         }
 
         assertNever(this.parameters);

@@ -1,6 +1,6 @@
-import { TensorflowDataset } from 'data/tensorflow/TensorflowDataset';
-import * as susy from 'data/local/susy_complete';
-import { Data } from 'data/local/Data';
+import { TensorflowDataset } from '../tensorflow/TensorflowDataset';
+import * as susy from '../local/susy_complete';
+import { Data } from '../local/Data';
 
 export class SusyComplete extends TensorflowDataset {
     static async load(location?: string) {

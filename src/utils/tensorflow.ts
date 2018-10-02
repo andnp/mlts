@@ -1,12 +1,14 @@
 import * as _ from 'lodash';
 import * as tf from '@tensorflow/tfjs';
 import { AnyFunc } from 'simplytyped';
-import { Data } from 'data/local/Data';
-import { Matrix } from 'utils/matrix';
-import { writeCsv, loadCsvToBuffer } from 'utils/csv';
 import { BaseCallback } from '@tensorflow/tfjs-layers/dist/base_callbacks';
-import { Printer } from './printer';
 import { UnresolvedLogs } from '@tensorflow/tfjs-layers/dist/logs';
+
+import * as random from './random';
+import { Data } from '../data/local/Data';
+import { Matrix } from './matrix';
+import { writeCsv, loadCsvToBuffer } from './csv';
+import { Printer } from './printer';
 
 export function autoDispose<F extends AnyFunc>(f: F): F {
     const g = (...args: any[]) => {
@@ -44,7 +46,20 @@ export async function loadTensorFromCsv(location: string, shape: [number, number
 }
 
 export function randomInitVariable(shape: [number, number]): tf.Variable<tf.Rank.R2> {
-    return tf.variable(tf.randomNormal(shape));
+    return tf.variable(tf.randomNormal(shape, 0, 1, 'float32', random.getIncrementingSeed()));
+}
+
+export function randomSamples(X: tf.Tensor2D, numSamples: number) {
+    const [rows] = X.shape;
+    const sample = random.randomIndices(rows);
+
+    const samples = [] as tf.Tensor2D[];
+    for (let i = 0; i < numSamples; ++i) {
+        const s = sample[i];
+        samples.push(X.slice(s, 1));
+    }
+
+    return tf.concat2d(samples, 0);
 }
 
 export class LoggerCallback extends BaseCallback {

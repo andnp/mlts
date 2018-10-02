@@ -1,6 +1,6 @@
-import { TensorflowDataset } from 'data/tensorflow/TensorflowDataset';
-import * as cifar from 'data/local/gray_cifar10';
-import { Data } from 'data/local/Data';
+import { TensorflowDataset } from '../tensorflow/TensorflowDataset';
+import * as cifar from '../local/gray_cifar10';
+import { Data } from '../local/Data';
 
 export class GreyCifar10 extends TensorflowDataset {
     static async load(location?: string) {

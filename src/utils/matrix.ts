@@ -1,5 +1,5 @@
 import * as tf from '@tensorflow/tfjs';
-import { BufferArray } from 'utils/buffers';
+import { BufferArray } from './buffers';
 
 export class Matrix {
     private data: BufferArray;
@@ -17,6 +17,14 @@ export class Matrix {
 
     get(i: number, j: number) {
         return this.data[i * this.c + j];
+    }
+
+    set(i: number, j: number, v: number) {
+        this.data[i * this.c + j] = v;
+    }
+
+    asTensor() {
+        return tf.tensor2d(this.data, [this.r, this.c]);
     }
 
     static fromTensor(X: tf.Tensor2D): Promise<Matrix> {

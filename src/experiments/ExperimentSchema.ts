@@ -1,12 +1,21 @@
 import * as v from 'validtyped';
 
-import { OptimizationParametersSchema } from 'optimization/OptimizerSchemas';
+import { OptimizationParametersSchema } from '../optimization/OptimizerSchemas';
+import { getTransformationSchemas } from './ExperimentRegistry';
 
-export const ExperimentSchema = v.object({
-    algorithm: v.string(),
-    dataset: v.string(),
-    metaParameters: v.any(),
-    optimization: OptimizationParametersSchema,
-});
+export const getExperimentSchema = () => {
+    const transformationSchemas = getTransformationSchemas();
+    const TransformationSchema = transformationSchemas.length > 0
+        ? v.union(transformationSchemas)
+        : v.boolean().and(v.number());
 
-export type ExperimentJson = v.ValidType<typeof ExperimentSchema>;
+    return v.object({
+        algorithm: v.string(),
+        dataset: v.string(),
+        metaParameters: v.any(),
+        transformation: TransformationSchema,
+        optimization: OptimizationParametersSchema,
+    }, { optional: ['transformation'] });
+};
+
+export type ExperimentJson = v.ValidType<ReturnType<typeof getExperimentSchema>>;

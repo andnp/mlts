@@ -1,4 +1,4 @@
-import { Milliseconds } from "utils/time";
+import { Milliseconds } from "./time";
 
 export const join = <T, U, R> (p1: Promise<T>, p2: Promise<U>, j: ((x: T, y: U) => R | Promise<R>)): Promise<R> => {
     return p1.then(x => p2.then(y => j(x, y)));

@@ -3,19 +3,19 @@ import * as path from 'path';
 import * as tf from '@tensorflow/tfjs';
 import * as _ from 'lodash';
 
-import * as promise from 'utils/promise';
-import * as files from 'utils/files';
+import * as promise from '../utils/promise';
+import * as files from '../utils/files';
 
-import { Optimizer } from 'optimization/Optimizer';
-import { giveBack, BuilderFunction } from 'utils/fp';
-import { getMostRecent } from 'utils/dates';
-import { minutes } from 'utils/time';
-import { DatasetDescription, DatasetDescriptionSchema } from 'data/DatasetDescription';
-import { writeTensorToCsv, loadTensorFromCsv } from 'utils/tensorflow';
-import { returnVoid, tuple } from 'utils/tsUtil';
-import { History } from 'analysis/History';
-import { flatten } from 'utils/flatten';
-import { OptimizationParameters } from 'optimization/OptimizerSchemas';
+import { Optimizer } from '../optimization/Optimizer';
+import { giveBack, BuilderFunction } from '../utils/fp';
+import { getMostRecent } from '../utils/dates';
+import { minutes } from '../utils/time';
+import { DatasetDescription, DatasetDescriptionSchema } from '../data/DatasetDescription';
+import { writeTensorToCsv, loadTensorFromCsv } from '../utils/tensorflow';
+import { returnVoid, tuple } from '../utils/tsUtil';
+import { History } from '../analysis/History';
+import { flatten } from '../utils/flatten';
+import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 
 // TODO: consider making distinctions between Supervised, Unsupervised, etc. algs
 // they will have different function signatures for training methods.
@@ -88,6 +88,17 @@ export abstract class Algorithm {
         const m = this.models[name];
         if (!m) throw new Error(`Expected to have a model registered. <${name}>`);
         return m;
+    }
+
+    getModel(name?: string): tf.Model {
+        const modelNames = Object.keys(this.models);
+        if (!name && modelNames.length > 1) throw new Error(`Need to specify a model name for this algorithm. <${JSON.stringify(modelNames)}>`);
+
+        if (modelNames.length === 1) return this.models[modelNames[0]];
+
+        if (name && name in this.models) return this.models[name];
+
+        throw new Error(`Was unable to find model by this name. <${name}>, <${JSON.stringify(modelNames)}>`);
     }
 
     private parameters: Record<string, tf.Variable<tf.Rank.R2>> = {};

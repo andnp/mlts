@@ -1,10 +1,10 @@
 import * as path from 'path';
 
-import * as downloader from 'utils/downloader';
-import { loadCsvToBuffer } from 'utils/csv';
-import { allValues } from 'utils/promise';
-import { Data } from 'data/local/Data';
-import { Matrix } from 'utils/matrix';
+import * as downloader from '../../utils/downloader';
+import { loadCsvToBuffer } from '../../utils/csv';
+import { allValues } from '../../utils/promise';
+import { Data } from '../../data/local/Data';
+import { Matrix } from '../../utils/matrix';
 
 const dataRemoteLocation = 'https://rawgit.com/andnp/ml_data/master/deterding.tar.gz';
 

@@ -13,7 +13,7 @@
     },
     "optimization": {
         "iterations": 10000,
-        "type": "adadelta",
-        "learningRate": 1.0
+        "type": "rmsprop",
+        "learningRate": 0.01
     }
 }

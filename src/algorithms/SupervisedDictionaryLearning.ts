@@ -2,12 +2,12 @@ import * as tf from '@tensorflow/tfjs';
 import * as _ from 'lodash';
 import * as v from 'validtyped';
 
-import { Algorithm } from "algorithms/Algorithm";
-import { Optimizer } from 'optimization/Optimizer';
-import { autoDispose, randomInitVariable } from 'utils/tensorflow';
-import { regularize, RegularizerParametersSchema } from 'regularizers/regularizers';
-import { SupervisedDictionaryLearningDatasetDescription } from 'data/DatasetDescription';
-import { OptimizationParameters } from 'optimization/OptimizerSchemas';
+import { Algorithm } from "../algorithms/Algorithm";
+import { Optimizer } from '../optimization/Optimizer';
+import { autoDispose, randomInitVariable } from '../utils/tensorflow';
+import { regularize, RegularizerParametersSchema } from '../regularizers/regularizers';
+import { SupervisedDictionaryLearningDatasetDescription } from '../data/DatasetDescription';
+import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 
 export const SupervisedDictionaryLearningMetaParameterSchema = v.object({
     regularizer: RegularizerParametersSchema,

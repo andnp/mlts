@@ -14,11 +14,17 @@ export const AdagradParametersSchema = v.object({
     learningRate: v.number(),
 });
 
+export const RMSPropParametersSchema = v.object({
+    type: v.string(['rmsprop']),
+    learningRate: v.number(),
+});
+
 export const OptimizationParametersSchema = v.object({
     threshold: v.number(),
     iterations: v.number(),
     batchSize: v.number(),
-}, { optional: ['threshold', 'batchSize'] }).and(AdadeltaParametersSchema.or(AdagradParametersSchema));
-
+}, { optional: ['threshold', 'batchSize'] }).and(
+    v.union([AdadeltaParametersSchema, AdagradParametersSchema, RMSPropParametersSchema])
+);
 export type AdadeltaParameters = v.ValidType<typeof AdadeltaParametersSchema>;
 export type OptimizationParameters = v.ValidType<typeof OptimizationParametersSchema>;

@@ -1,7 +1,8 @@
 import * as tf from '@tensorflow/tfjs';
-import { Dataset, Data } from 'data/local/Data';
-import { tuple } from 'utils/tsUtil';
-import * as tfUtil from 'utils/tensorflow';
+import { Dataset, Data } from '../local/Data';
+import { tuple } from '../../utils/tsUtil';
+import * as tfUtil from '../../utils/tensorflow';
+import { Transformation } from '../../transformations/Transformation';
 
 // TODO: consider that not all datasets will necessarily have in-sample and out-sample data
 export class TensorflowDataset implements Dataset<tf.Tensor2D> {
@@ -49,6 +50,17 @@ export class TensorflowDataset implements Dataset<tf.Tensor2D> {
         this._t = this._t.asType('float32').div(tf.scalar(constant, 'float32'));
         return this;
     });
+
+    async applyTransformation(transform: Transformation) {
+        const newData = await transform.applyTransformation(this);
+
+        this._x = newData._x;
+        this._y = newData._y;
+        this._t = newData._t;
+        this._ty = newData._ty;
+
+        return this;
+    }
 
     get train() {
         return tuple(this._x, this._y);

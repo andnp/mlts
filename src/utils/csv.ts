@@ -1,9 +1,10 @@
 import * as _ from 'lodash';
 import * as fs from 'fs';
 import { Writable } from 'stream';
-import { createFolder } from 'utils/files';
-import { BufferArray } from 'utils/buffers';
 import { PlainObject } from 'simplytyped';
+
+import { createFolder } from './files';
+import { BufferArray } from './buffers';
 
 class LineCollector extends Writable {
     private buf = '';
