@@ -48,6 +48,7 @@ class TensorflowDataset {
             this._t = this._t.asType('float32').div(tf.scalar(constant, 'float32'));
             return this;
         });
+        this.limitedSamples = this._x.shape[0];
     }
     applyTransformation(transform) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -59,16 +60,30 @@ class TensorflowDataset {
             return this;
         });
     }
+    limitSamples(samples) {
+        this.limitedSamples = samples;
+        return this;
+    }
     get train() {
-        return tsUtil_1.tuple(this._x, this._y);
+        const x = tf.tidy(() => this._x.slice(0, this.limitedSamples));
+        const y = tf.tidy(() => this._y.slice(0, this.limitedSamples));
+        return tsUtil_1.tuple(x, y);
     }
     get test() {
         return tsUtil_1.tuple(this._t, this._ty);
     }
     get features() { return this._x.shape[1]; }
-    get samples() { return this._x.shape[0]; }
+    get samples() { return this.limitedSamples; }
     get classes() { return this._y.shape[1]; }
     get testSamples() { return this._t.shape[0]; }
+    description() {
+        return {
+            samples: this.samples,
+            features: this.features,
+            classes: this.classes,
+            testSamples: this.testSamples,
+        };
+    }
     static fromDataset(dataset) {
         return new TensorflowDataset(tfUtil.matrixToTensor(dataset.train[0]), tfUtil.matrixToTensor(dataset.train[1]), tfUtil.matrixToTensor(dataset.test[0]), tfUtil.matrixToTensor(dataset.test[1]));
     }

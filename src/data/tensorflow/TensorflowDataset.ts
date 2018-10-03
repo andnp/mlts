@@ -6,12 +6,15 @@ import { Transformation } from '../../transformations/Transformation';
 
 // TODO: consider that not all datasets will necessarily have in-sample and out-sample data
 export class TensorflowDataset implements Dataset<tf.Tensor2D> {
+    private limitedSamples: number;
     constructor(
         protected _x: tf.Tensor2D,
         protected _y: tf.Tensor2D,
         protected _t: tf.Tensor2D,
         protected _ty: tf.Tensor2D,
-    ) {}
+    ) {
+        this.limitedSamples = this._x.shape[0];
+    }
 
     transpose = tfUtil.autoDispose(() => {
         this._x = this._x.transpose();
@@ -62,8 +65,15 @@ export class TensorflowDataset implements Dataset<tf.Tensor2D> {
         return this;
     }
 
+    limitSamples(samples: number) {
+        this.limitedSamples = samples;
+        return this;
+    }
+
     get train() {
-        return tuple(this._x, this._y);
+        const x = tf.tidy(() => this._x.slice(0, this.limitedSamples));
+        const y = tf.tidy(() => this._y.slice(0, this.limitedSamples));
+        return tuple(x, y);
     }
 
     get test() {
@@ -71,9 +81,18 @@ export class TensorflowDataset implements Dataset<tf.Tensor2D> {
     }
 
     get features() { return this._x.shape[1]; }
-    get samples() { return this._x.shape[0]; }
+    get samples() { return this.limitedSamples; }
     get classes() { return this._y.shape[1]; }
     get testSamples() { return this._t.shape[0]; }
+
+    description() {
+        return {
+            samples: this.samples,
+            features: this.features,
+            classes: this.classes,
+            testSamples: this.testSamples,
+        };
+    }
 
     static fromDataset(dataset: Data): TensorflowDataset {
         return new TensorflowDataset(
