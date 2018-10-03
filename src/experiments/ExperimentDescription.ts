@@ -1,6 +1,8 @@
 import * as _ from 'lodash';
 import * as path from 'path';
 
+import * as commandLine from '../utils/commandLine';
+
 import { Algorithm } from "../algorithms/Algorithm";
 import { readJson, fileExists } from '../utils/files';
 import { TensorflowDataset } from '../data/tensorflow/TensorflowDataset';
@@ -66,5 +68,17 @@ export class ExperimentDescription {
             : new algData.constructor(datasetDescriptor, metaParameters, saveLocation);
 
         return new ExperimentDescription(data, algorithm, dataset, data.optimization, expLocation);
+    }
+
+    static async fromCommandLine() {
+        const cla = commandLine.parseArgs();
+
+        const index = cla.i || cla.index;
+        const experimentPath = cla.e || cla.experiment;
+
+        if (!index) throw new Error('Expected -i or --index to be specified');
+        if (!experimentPath) throw new Error('Expected -e or --experiment to be specified');
+
+        return this.fromJson(experimentPath, parseInt(index));
     }
 }

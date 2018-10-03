@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
+const commandLine = require("../utils/commandLine");
 const files_1 = require("../utils/files");
 const metaParameters_1 = require("./metaParameters");
 const ExperimentSchema_1 = require("./ExperimentSchema");
@@ -60,6 +61,18 @@ class ExperimentDescription {
                 ? yield algData.constructor.fromSavedState(saveLocation)
                 : new algData.constructor(datasetDescriptor, metaParameters, saveLocation);
             return new ExperimentDescription(data, algorithm, dataset, data.optimization, expLocation);
+        });
+    }
+    static fromCommandLine() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const cla = commandLine.parseArgs();
+            const index = cla.i || cla.index;
+            const experimentPath = cla.e || cla.experiment;
+            if (!index)
+                throw new Error('Expected -i or --index to be specified');
+            if (!experimentPath)
+                throw new Error('Expected -e or --experiment to be specified');
+            return this.fromJson(experimentPath, parseInt(index));
         });
     }
 }
