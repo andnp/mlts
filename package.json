@@ -20,6 +20,9 @@
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     },
+    "globals": {
+      "__TEST__": true
+    },
     "testMatch": [
       "**/tests/**/*.test.ts?(x)"
     ],

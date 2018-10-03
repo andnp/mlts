@@ -5,19 +5,22 @@ import * as _ from 'lodash';
 import { onExit } from './onExit';
 
 const childFile = path.join(__dirname, 'childPrinter.js');
-const cp = fork(childFile);
-onExit(() => cp.kill());
+const cp = !(global as any).__TEST__ && fork(childFile);
+onExit(() => cp && cp.kill());
 
 const print = (data: Printable) => {
+    if (!cp) return;
     cp.send({ type: 'print', data });
 };
 
 const flush = () => {
+    if (!cp) return;
     const p = hasFlushed();
     cp.send({ type: 'flush' });
     return p;
 };
 const hasFlushed = () => new Promise((resolve, reject) => {
+    if (!cp) return resolve();
     cp.once('message', d => d.flushed ? resolve() : reject());
 });
 

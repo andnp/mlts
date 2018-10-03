@@ -12,17 +12,23 @@ const child_process_1 = require("child_process");
 const path = require("path");
 const onExit_1 = require("./onExit");
 const childFile = path.join(__dirname, 'childPrinter.js');
-const cp = child_process_1.fork(childFile);
-onExit_1.onExit(() => cp.kill());
+const cp = !global.__TEST__ && child_process_1.fork(childFile);
+onExit_1.onExit(() => cp && cp.kill());
 const print = (data) => {
+    if (!cp)
+        return;
     cp.send({ type: 'print', data });
 };
 const flush = () => {
+    if (!cp)
+        return;
     const p = hasFlushed();
     cp.send({ type: 'flush' });
     return p;
 };
 const hasFlushed = () => new Promise((resolve, reject) => {
+    if (!cp)
+        return resolve();
     cp.once('message', d => d.flushed ? resolve() : reject());
 });
 function printProgress(f) {
