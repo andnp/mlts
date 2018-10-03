@@ -46,7 +46,7 @@ export class LogisticRegression extends Algorithm {
 
         this.model!.compile({
             optimizer: optimizer.getTfOptimizer(),
-            loss: 'categoricalCrossentropy',
+            loss: 'binaryCrossentropy',
         });
 
         const history = await optimizer.fit(this.model!, X, Y, {

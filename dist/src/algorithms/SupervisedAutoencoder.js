@@ -63,7 +63,7 @@ class SupervisedAutoencoder extends Algorithm_1.Algorithm {
             const model = this.assertModel(MODEL);
             model.compile({
                 optimizer: optimizer.getTfOptimizer(),
-                loss: ['categoricalCrossentropy', 'meanSquaredError'],
+                loss: ['binaryCrossentropy', 'meanSquaredError'],
                 metrics: { out_y: 'accuracy' },
             });
             const history = yield optimizer.fit(model, X, [Y, X], {

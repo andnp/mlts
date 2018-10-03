@@ -110,7 +110,7 @@ class TwoStageAutoencoder extends Algorithm_1.Algorithm {
                 });
                 predictionModel.compile({
                     optimizer: optimizer.getTfOptimizer(),
-                    loss: 'categoricalCrossentropy',
+                    loss: 'binaryCrossentropy',
                 });
                 history = yield optimizer.fit(predictionModel, X, Y, {
                     batchSize: o.batchSize,

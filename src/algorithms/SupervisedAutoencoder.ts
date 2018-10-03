@@ -76,7 +76,7 @@ export class SupervisedAutoencoder extends Algorithm implements RepresentationAl
 
         model.compile({
             optimizer: optimizer.getTfOptimizer(),
-            loss: ['categoricalCrossentropy', 'meanSquaredError'],
+            loss: ['binaryCrossentropy', 'meanSquaredError'],
             metrics: { out_y: 'accuracy' },
         });
 

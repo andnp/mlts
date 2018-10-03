@@ -17,7 +17,7 @@ const History_1 = require("../analysis/History");
 const layers_1 = require("../algorithms/utils/layers");
 exports.ANNMetaParameterSchema = v.object({
     layers: v.array(layers_1.LayerMetaParametersSchema),
-    loss: v.string(['categoricalCrossentropy', 'meanSquaredError']),
+    loss: v.string(['binaryCrossentropy', 'meanSquaredError']),
 }, { optional: ['loss'] });
 const MODEL = 'model';
 class ANN extends Algorithm_1.Algorithm {
@@ -30,7 +30,7 @@ class ANN extends Algorithm_1.Algorithm {
         this.name = ANN.name;
         this.opts = _.merge({
             layers: [{ units: 25, regularizer: { type: 'l1', weight: 0 }, activation: 'sigmoid', type: 'dense' }],
-            loss: 'categoricalCrossentropy',
+            loss: 'binaryCrossentropy',
         }, opts);
     }
     _build() {
@@ -38,7 +38,7 @@ class ANN extends Algorithm_1.Algorithm {
             this.registerModel(MODEL, () => {
                 const inputs = tf.layers.input({ shape: [this.datasetDescription.features] });
                 const network = layers_1.constructTFNetwork(this.opts.layers, inputs);
-                const outputType = this.opts.loss === 'categoricalCrossentropy' ? 'sigmoid' :
+                const outputType = this.opts.loss === 'binaryCrossentropy' ? 'sigmoid' :
                     this.opts.loss === 'meanSquaredError' ? 'linear' :
                         'sigmoid';
                 const outputs_y = tf.layers.dense({ units: this.datasetDescription.classes, activation: outputType, name: 'out_y' }).apply(_.last(network));

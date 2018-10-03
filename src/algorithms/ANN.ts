@@ -11,7 +11,7 @@ import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 
 export const ANNMetaParameterSchema = v.object({
     layers: v.array(LayerMetaParametersSchema),
-    loss: v.string(['categoricalCrossentropy', 'meanSquaredError']),
+    loss: v.string(['binaryCrossentropy', 'meanSquaredError']),
 }, { optional: ['loss'] });
 
 export type ANNMetaParameters = v.ValidType<typeof ANNMetaParameterSchema>;
@@ -32,7 +32,7 @@ export class ANN extends Algorithm {
         super(datasetDescription, saveLocation);
         this.opts = _.merge({
             layers: [{ units: 25, regularizer: { type: 'l1', weight: 0 }, activation: 'sigmoid', type: 'dense' }],
-            loss: 'categoricalCrossentropy',
+            loss: 'binaryCrossentropy',
         }, opts);
     }
 
@@ -43,7 +43,7 @@ export class ANN extends Algorithm {
             const network = constructTFNetwork(this.opts.layers, inputs);
 
             const outputType =
-                this.opts.loss === 'categoricalCrossentropy' ? 'sigmoid' :
+                this.opts.loss === 'binaryCrossentropy' ? 'sigmoid' :
                 this.opts.loss === 'meanSquaredError' ? 'linear' :
                 'sigmoid';
 

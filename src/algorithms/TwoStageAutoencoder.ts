@@ -126,7 +126,7 @@ export class TwoStageAutoencoder extends Algorithm implements RepresentationAlgo
 
             predictionModel.compile({
                 optimizer: optimizer.getTfOptimizer(),
-                loss: 'categoricalCrossentropy',
+                loss: 'binaryCrossentropy',
             });
 
             history = await optimizer.fit(predictionModel, X, Y, {

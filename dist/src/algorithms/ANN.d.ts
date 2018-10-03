@@ -5,10 +5,9 @@ import { SupervisedDatasetDescription } from '../data/DatasetDescription';
 import { History } from '../analysis/History';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 export declare const ANNMetaParameterSchema: v.Validator<import("simplytyped/types/objects").ObjectType<{
-    loss?: "categoricalCrossentropy" | "meanSquaredError" | undefined;
+    loss?: "binaryCrossentropy" | "meanSquaredError" | undefined;
 } & Pick<v.ObjectValidator<{
     layers: v.Validator<import("simplytyped/types/objects").ObjectType<{
-        name?: string | undefined;
         regularizer?: v.ObjectValidator<{
             type: v.Validator<"l1">;
             weight: v.Validator<number>;
@@ -16,6 +15,7 @@ export declare const ANNMetaParameterSchema: v.Validator<import("simplytyped/typ
             type: v.Validator<"l2">;
             weight: v.Validator<number>;
         }> | undefined;
+        name?: string | undefined;
     } & Pick<v.ObjectValidator<{
         regularizer: v.Validator<v.ObjectValidator<{
             type: v.Validator<"l1">;
@@ -25,11 +25,11 @@ export declare const ANNMetaParameterSchema: v.Validator<import("simplytyped/typ
             weight: v.Validator<number>;
         }>>;
         units: v.Validator<number>;
-        activation: v.Validator<"sigmoid" | "linear" | "relu" | "tanh" | "elu">;
+        activation: v.Validator<"elu" | "linear" | "relu" | "sigmoid" | "tanh">;
         type: v.Validator<"dense">;
         name: v.Validator<string>;
     }>, "type" | "units" | "activation">>[]>;
-    loss: v.Validator<"categoricalCrossentropy" | "meanSquaredError">;
+    loss: v.Validator<"binaryCrossentropy" | "meanSquaredError">;
 }>, "layers">>>;
 export declare type ANNMetaParameters = v.ValidType<typeof ANNMetaParameterSchema>;
 export declare class ANN extends Algorithm {

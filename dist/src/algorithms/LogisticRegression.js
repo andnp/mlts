@@ -43,7 +43,7 @@ class LogisticRegression extends Algorithm_1.Algorithm {
             const optimizer = this.registerOptimizer('optimizer', () => new Optimizer_1.Optimizer(o));
             this.model.compile({
                 optimizer: optimizer.getTfOptimizer(),
-                loss: 'categoricalCrossentropy',
+                loss: 'binaryCrossentropy',
             });
             const history = yield optimizer.fit(this.model, X, Y, {
                 batchSize: o.batchSize || X.shape[0],
