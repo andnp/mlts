@@ -8,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const _ = require("lodash");
 const tf = require("@tensorflow/tfjs");
 const tsUtil_1 = require("../../utils/tsUtil");
 const tfUtil = require("../../utils/tensorflow");
@@ -18,6 +19,7 @@ class TensorflowDataset {
         this._y = _y;
         this._t = _t;
         this._ty = _ty;
+        this.shouldStratify = false;
         this.transpose = tfUtil.autoDispose(() => {
             this._x = this._x.transpose();
             this._y = this._y.transpose();
@@ -48,6 +50,34 @@ class TensorflowDataset {
             this._t = this._t.asType('float32').div(tf.scalar(constant, 'float32'));
             return this;
         });
+        this.roundRobin = tfUtil.autoDispose(() => {
+            const classBins = _.times(this.classes, () => []);
+            const samples = this._x.shape[0];
+            for (let i = 0; i < samples; ++i) {
+                const x = this._x.slice(i, 1);
+                const y = this._y.slice(i, 1);
+                const c = tf.argMax(y, 1).get(0);
+                classBins[c].push([x, y]);
+            }
+            const X = [];
+            const Y = [];
+            for (let i = 0; i < samples; ++i) {
+                let c = i % this.classes;
+                if (classBins[c].length === 0) {
+                    for (let j = 1; j < this.classes; ++j) {
+                        const cp = (c + j) % this.classes;
+                        if (classBins[cp].length === 0)
+                            continue;
+                        c = cp;
+                        break;
+                    }
+                }
+                const [x, y] = classBins[c].pop();
+                X.push(x);
+                Y.push(y);
+            }
+            return tsUtil_1.tuple(tf.concat2d(X, 0), tf.concat2d(Y, 0));
+        });
         this.limitedSamples = this._x.shape[0];
     }
     applyTransformation(transform) {
@@ -64,9 +94,16 @@ class TensorflowDataset {
         this.limitedSamples = samples;
         return this;
     }
+    stratify() {
+        this.shouldStratify = true;
+        return this;
+    }
     get train() {
-        const x = tf.tidy(() => this._x.slice(0, this.limitedSamples));
-        const y = tf.tidy(() => this._y.slice(0, this.limitedSamples));
+        const [X, Y] = this.shouldStratify
+            ? this.roundRobin()
+            : [this._x, this._y];
+        const x = tf.tidy(() => X.slice(0, this.limitedSamples));
+        const y = tf.tidy(() => Y.slice(0, this.limitedSamples));
         return tsUtil_1.tuple(x, y);
     }
     get test() {

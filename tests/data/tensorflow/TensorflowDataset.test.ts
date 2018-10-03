@@ -10,10 +10,10 @@ const createSmallDataset = () => {
     ]);
 
     const y = tf.tensor2d([
-        [0],
-        [0],
-        [1],
-        [1],
+        [0, 1],
+        [1, 0],
+        [1, 0],
+        [1, 0],
     ]);
 
     const t = tf.tensor2d([
@@ -21,8 +21,8 @@ const createSmallDataset = () => {
         [6, 5, 4],
     ]);
     const ty = tf.tensor2d([
-        [1],
-        [0],
+        [1, 0],
+        [0, 1],
     ]);
 
     return new TensorflowDataset(x, y, t, ty);
@@ -39,13 +39,13 @@ test('Can get description of the dataset sizes', () => {
 
     expect(data.samples).toBe(4);
     expect(data.features).toBe(3);
-    expect(data.classes).toBe(1);
+    expect(data.classes).toBe(2);
     expect(data.testSamples).toBe(2);
 
     expect(data.description()).toEqual({
         samples: 4,
         features: 3,
-        classes: 1,
+        classes: 2,
         testSamples: 2,
     });
 });
@@ -61,4 +61,22 @@ test('Can reduce the size of the training samples', () => {
     const x = data.train[0];
 
     expect(x.shape[0]).toBe(1);
+});
+
+test('Can draw stratified samples by class', () => {
+    const data = createSmallDataset();
+
+    data.stratify().limitSamples(3);
+
+    expect(data.samples).toBe(3);
+
+    const [X, Y] = data.train;
+
+    expect(X.shape[0]).toBe(3);
+    expect(Y.shape[0]).toBe(3);
+
+    expect(Y.get(0, 0)).toBe(1);
+    expect(Y.get(0, 1)).toBe(0);
+    expect(Y.get(1, 1)).toBe(1);
+    expect(Y.get(2, 0)).toBe(1);
 });

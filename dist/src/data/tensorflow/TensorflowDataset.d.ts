@@ -7,6 +7,7 @@ export declare class TensorflowDataset implements Dataset<tf.Tensor2D> {
     protected _t: tf.Tensor2D;
     protected _ty: tf.Tensor2D;
     private limitedSamples;
+    private shouldStratify;
     constructor(_x: tf.Tensor2D, _y: tf.Tensor2D, _t: tf.Tensor2D, _ty: tf.Tensor2D);
     transpose: () => this;
     oneHot: (depth: number) => this;
@@ -14,6 +15,7 @@ export declare class TensorflowDataset implements Dataset<tf.Tensor2D> {
     scaleByConstant: (constant: number) => this;
     applyTransformation(transform: Transformation): Promise<this>;
     limitSamples(samples: number): this;
+    stratify(): this;
     readonly train: [tf.Tensor<tf.Rank.R2>, tf.Tensor<tf.Rank.R2>];
     readonly test: [tf.Tensor<tf.Rank.R2>, tf.Tensor<tf.Rank.R2>];
     readonly features: number;
@@ -28,4 +30,5 @@ export declare class TensorflowDataset implements Dataset<tf.Tensor2D> {
     };
     static fromDataset(dataset: Data): TensorflowDataset;
     static load(): Promise<TensorflowDataset>;
+    private roundRobin;
 }
