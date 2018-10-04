@@ -20,7 +20,7 @@ class ClassificationErrorExperiment {
             const d = this.description.dataset;
             yield alg.build();
             const [X, Y] = d.train;
-            yield alg.train(X, Y, this.description.optimization);
+            yield alg.train(X, Y, this.description.optimization, { autosave: false });
             const [T, TY] = d.test;
             const Y_hat = yield alg.predict(X, this.description.optimization);
             const TY_hat = yield alg.predict(T, this.description.optimization);
