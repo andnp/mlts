@@ -11,11 +11,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const tf = require("@tensorflow/tfjs");
 const _ = require("lodash");
 const v = require("validtyped");
+const utilities_ts_1 = require("utilities-ts");
 const Algorithm_1 = require("../algorithms/Algorithm");
 const Optimizer_1 = require("../optimization/Optimizer");
 const History_1 = require("../analysis/History");
 const layers_1 = require("../algorithms/utils/layers");
-const arrays = require("../utils/arrays");
 exports.SupervisedAutoencoderMetaParameterSchema = v.object({
     layers: v.array(layers_1.LayerMetaParametersSchema),
 });
@@ -36,10 +36,10 @@ class SupervisedAutoencoder extends Algorithm_1.Algorithm {
         return __awaiter(this, void 0, void 0, function* () {
             const model = this.registerModel(MODEL, () => {
                 const inputs = tf.layers.input({ shape: [this.datasetDescription.features] });
-                const representationLayerDescription = arrays.middleItem(this.opts.layers);
+                const representationLayerDescription = utilities_ts_1.arrays.middleItem(this.opts.layers);
                 representationLayerDescription.name = 'representationLayer';
                 const network = layers_1.constructTFNetwork(this.opts.layers, inputs);
-                const representationLayer = arrays.middleItem(network);
+                const representationLayer = utilities_ts_1.arrays.middleItem(network);
                 const outputs_y = tf.layers.dense({ units: this.datasetDescription.classes, activation: 'sigmoid', name: 'out_y' }).apply(representationLayer);
                 const outputs_x = tf.layers.dense({ units: this.datasetDescription.features, activation: 'linear', name: 'out_x' }).apply(_.last(network));
                 const model = tf.model({

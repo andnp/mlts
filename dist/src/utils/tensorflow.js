@@ -12,7 +12,7 @@ const tf = require("@tensorflow/tfjs");
 const base_callbacks_1 = require("@tensorflow/tfjs-layers/dist/base_callbacks");
 const random = require("./random");
 const matrix_1 = require("./matrix");
-const csv_1 = require("./csv");
+const utilities_ts_1 = require("utilities-ts");
 function autoDispose(f) {
     const g = (...args) => {
         return tf.tidy(() => {
@@ -32,14 +32,14 @@ exports.datasetToTFDataset = (dataset) => {
 function writeTensorToCsv(location, tensor) {
     return __awaiter(this, void 0, void 0, function* () {
         const buf = yield tensor.data();
-        return csv_1.writeCsv(location, new matrix_1.Matrix(tensor.shape[0], tensor.shape[1], buf));
+        return utilities_ts_1.csv.writeCsv(location, new matrix_1.Matrix(tensor.shape[0], tensor.shape[1], buf));
     });
 }
 exports.writeTensorToCsv = writeTensorToCsv;
 function loadTensorFromCsv(location, shape, Buffer = Float32Array) {
     return __awaiter(this, void 0, void 0, function* () {
         const buffer = new Buffer(shape[0] * shape[1]);
-        const data = yield csv_1.loadCsvToBuffer({
+        const data = yield utilities_ts_1.csv.loadCsvToBuffer({
             buffer,
             path: location,
         });

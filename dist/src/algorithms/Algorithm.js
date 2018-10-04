@@ -12,15 +12,11 @@ const v = require("validtyped");
 const path = require("path");
 const tf = require("@tensorflow/tfjs");
 const _ = require("lodash");
-const promise = require("../utils/promise");
-const files = require("../utils/files");
+const utilities_ts_1 = require("utilities-ts");
+const utilities_ts_2 = require("utilities-ts");
 const Optimizer_1 = require("../optimization/Optimizer");
-const fp_1 = require("../utils/fp");
-const dates_1 = require("../utils/dates");
-const time_1 = require("../utils/time");
 const DatasetDescription_1 = require("../data/DatasetDescription");
 const tensorflow_1 = require("../utils/tensorflow");
-const tsUtil_1 = require("../utils/tsUtil");
 const flatten_1 = require("../utils/flatten");
 // TODO: consider making distinctions between Supervised, Unsupervised, etc. algs
 // they will have different function signatures for training methods.
@@ -126,28 +122,28 @@ class Algorithm {
     saveState(location = this.saveLocation) {
         return __awaiter(this, void 0, void 0, function* () {
             const subfolder = path.join(location, this.name, new Date().toISOString());
-            yield files.createFolder(subfolder);
+            yield utilities_ts_2.files.createFolder(subfolder);
             // promise.allValues executes each of the right sides in parallel
             // this makes sure that fileSystem latency is minimally a bottleneck here
-            const tableOfContents = yield promise.allValues({
+            const tableOfContents = yield utilities_ts_1.promise.allValues({
                 models: this.saveModels(subfolder),
                 parameters: this.saveParameters(subfolder),
                 optimizers: this.saveOptimizers(subfolder),
                 state: this.saveStateDescription(subfolder),
             });
-            yield files.writeJson(path.join(subfolder, 'toc.json'), tableOfContents);
-            return this._saveState(subfolder).then(fp_1.giveBack(subfolder));
+            yield utilities_ts_2.files.writeJson(path.join(subfolder, 'toc.json'), tableOfContents);
+            return this._saveState(subfolder).then(utilities_ts_1.fp.giveBack(subfolder));
         });
     }
     saveModels(subfolder) {
         return __awaiter(this, void 0, void 0, function* () {
             const registeredModels = Object.keys(this.models);
-            const modelLocationPairs = yield promise.map(registeredModels, modelName => {
+            const modelLocationPairs = yield utilities_ts_1.promise.map(registeredModels, modelName => {
                 const model = this.models[modelName];
                 const location = path.join(subfolder, 'models', modelName);
-                return files.createFolder(location)
+                return utilities_ts_2.files.createFolder(location)
                     .then(() => model.save(`file://${location}`))
-                    .then(fp_1.giveBack(tsUtil_1.tuple(modelName, location)));
+                    .then(utilities_ts_1.fp.giveBack(utilities_ts_1.tuple(modelName, location)));
             });
             return _.fromPairs(modelLocationPairs);
         });
@@ -155,7 +151,7 @@ class Algorithm {
     saveParameters(subfolder) {
         return __awaiter(this, void 0, void 0, function* () {
             const registeredParameters = Object.keys(this.parameters);
-            const parametersLocationPairs = yield promise.map(registeredParameters, paramName => {
+            const parametersLocationPairs = yield utilities_ts_1.promise.map(registeredParameters, paramName => {
                 const param = this.parameters[paramName];
                 const location = path.join(subfolder, 'parameters', `${paramName}.csv`);
                 const metaData = {
@@ -163,7 +159,7 @@ class Algorithm {
                     shape: param.shape,
                 };
                 return tensorflow_1.writeTensorToCsv(location, param)
-                    .then(fp_1.giveBack(tsUtil_1.tuple(paramName, metaData)));
+                    .then(utilities_ts_1.fp.giveBack(utilities_ts_1.tuple(paramName, metaData)));
             });
             return _.fromPairs(parametersLocationPairs);
         });
@@ -171,11 +167,11 @@ class Algorithm {
     saveOptimizers(subfolder) {
         return __awaiter(this, void 0, void 0, function* () {
             const registeredOptimizers = Object.keys(this.optimizers);
-            const optimizerLocations = yield promise.map(registeredOptimizers, optName => {
+            const optimizerLocations = yield utilities_ts_1.promise.map(registeredOptimizers, optName => {
                 const optimizer = this.optimizers[optName];
                 const location = path.join(subfolder, 'optimizers', optName);
                 return optimizer.saveState(location)
-                    .then(fp_1.giveBack(tsUtil_1.tuple(optName, location)));
+                    .then(utilities_ts_1.fp.giveBack(utilities_ts_1.tuple(optName, location)));
             });
             return _.fromPairs(optimizerLocations);
         });
@@ -188,8 +184,8 @@ class Algorithm {
                 state: this.state || {},
             };
             const location = path.join(subfolder, 'state.json');
-            return files.writeJson(location, state)
-                .then(fp_1.giveBack(location));
+            return utilities_ts_2.files.writeJson(location, state)
+                .then(utilities_ts_1.fp.giveBack(location));
         });
     }
     // -------
@@ -214,36 +210,36 @@ class Algorithm {
     }
     loadTableOfContents(location) {
         return __awaiter(this, void 0, void 0, function* () {
-            return files.readJson(path.join(location, 'toc.json'), TableOfContentsSchema);
+            return utilities_ts_2.files.readJson(path.join(location, 'toc.json'), TableOfContentsSchema);
         });
     }
     static findAllSavedStates(location, name) {
         return __awaiter(this, void 0, void 0, function* () {
             const algFolder = path.join(location, name);
-            return files.readdir(algFolder);
+            return utilities_ts_2.files.readdir(algFolder);
         });
     }
     static findSavedState(location, name) {
         return __awaiter(this, void 0, void 0, function* () {
             const algFolder = path.join(location, name);
             const times = yield this.findAllSavedStates(location, name);
-            const mostRecent = dates_1.getMostRecent(times);
+            const mostRecent = utilities_ts_1.dates.getMostRecent(times);
             return path.join(algFolder, mostRecent.toISOString());
         });
     }
     loadTensorsFromDisk(tensors) {
         return __awaiter(this, void 0, void 0, function* () {
             const tensorNames = Object.keys(tensors);
-            return promise.map(tensorNames, (name) => __awaiter(this, void 0, void 0, function* () {
+            return utilities_ts_1.promise.map(tensorNames, (name) => __awaiter(this, void 0, void 0, function* () {
                 const metaData = tensors[name];
                 const tensor = yield tensorflow_1.loadTensorFromCsv(metaData.location, metaData.shape);
                 this.parameters[name] = tf.variable(tensor);
-            })).then(tsUtil_1.returnVoid);
+            })).then(utilities_ts_1.returnVoid);
         });
     }
     loadSaveState(tocEntry) {
         return __awaiter(this, void 0, void 0, function* () {
-            const state = yield files.readJson(tocEntry, StateSchema);
+            const state = yield utilities_ts_2.files.readJson(tocEntry, StateSchema);
             this.state = state;
             this.datasetDescription = state.datasetDescription;
             this.opts = state.metaParameters;
@@ -252,21 +248,21 @@ class Algorithm {
     loadModels(tocEntry) {
         return __awaiter(this, void 0, void 0, function* () {
             const modelNames = Object.keys(tocEntry);
-            return promise.map(modelNames, (name) => __awaiter(this, void 0, void 0, function* () {
+            return utilities_ts_1.promise.map(modelNames, (name) => __awaiter(this, void 0, void 0, function* () {
                 const location = tocEntry[name];
                 const model = yield tf.loadModel(`file://${path.join(location, 'model.json')}`);
                 this.models[name] = model;
-            })).then(tsUtil_1.returnVoid);
+            })).then(utilities_ts_1.returnVoid);
         });
     }
     loadOptimizers(tocEntry) {
         return __awaiter(this, void 0, void 0, function* () {
             const optimizerNames = Object.keys(tocEntry);
-            return promise.map(optimizerNames, (name) => __awaiter(this, void 0, void 0, function* () {
+            return utilities_ts_1.promise.map(optimizerNames, (name) => __awaiter(this, void 0, void 0, function* () {
                 const location = tocEntry[name];
                 const optimizer = yield Optimizer_1.Optimizer.fromSavedState(location);
                 this.optimizers[name] = optimizer;
-            })).then(tsUtil_1.returnVoid);
+            })).then(utilities_ts_1.returnVoid);
         });
     }
     static fromSavedState(location) {
@@ -282,7 +278,7 @@ class Algorithm {
             const tmp = this.lastSaveLocation;
             this.lastSaveLocation = location;
             if (tmp)
-                yield files.removeRecursively(tmp);
+                yield utilities_ts_2.files.removeRecursively(tmp);
             const saves = yield Algorithm.findAllSavedStates(this.saveLocation, this.name);
             const oldSaves = saves
                 // put the saves in order [oldest, ..., newest]
@@ -292,7 +288,7 @@ class Algorithm {
                 // prepend the filepath to the old save dates
                 .map(save => path.join(this.saveLocation, this.name, save));
             // delete all old saves
-            yield promise.map(oldSaves, save => files.removeRecursively(save));
+            yield utilities_ts_1.promise.map(oldSaves, save => utilities_ts_2.files.removeRecursively(save));
         });
     }
     startBackup() {
@@ -301,7 +297,7 @@ class Algorithm {
                 return;
             this.activeBackup = this.save()
                 .then(() => this.activeBackup = undefined);
-        }, time_1.minutes(5));
+        }, utilities_ts_1.time.minutes(5));
     }
     stopBackup() {
         // if we stop backing up while there is no backup occurring, save one more time

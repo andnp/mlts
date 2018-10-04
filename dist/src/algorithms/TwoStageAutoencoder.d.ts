@@ -7,6 +7,7 @@ import { RepresentationAlgorithm } from '../algorithms/interfaces/Representation
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 export declare const TwoStageAutoencoderMetaParameterSchema: v.Validator<v.ObjectValidator<{
     layers: v.Validator<import("simplytyped/types/objects").ObjectType<{
+        name?: string | undefined;
         regularizer?: v.ObjectValidator<{
             type: v.Validator<"l1">;
             weight: v.Validator<number>;
@@ -14,7 +15,6 @@ export declare const TwoStageAutoencoderMetaParameterSchema: v.Validator<v.Objec
             type: v.Validator<"l2">;
             weight: v.Validator<number>;
         }> | undefined;
-        name?: string | undefined;
     } & Pick<v.ObjectValidator<{
         regularizer: v.Validator<v.ObjectValidator<{
             type: v.Validator<"l1">;
@@ -24,7 +24,7 @@ export declare const TwoStageAutoencoderMetaParameterSchema: v.Validator<v.Objec
             weight: v.Validator<number>;
         }>>;
         units: v.Validator<number>;
-        activation: v.Validator<"elu" | "linear" | "relu" | "sigmoid" | "tanh">;
+        activation: v.Validator<"linear" | "elu" | "relu" | "sigmoid" | "tanh">;
         type: v.Validator<"dense">;
         name: v.Validator<string>;
     }>, "type" | "units" | "activation">>[]>;

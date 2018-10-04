@@ -1,6 +1,6 @@
 import * as tf from '@tensorflow/tfjs';
+import { BuilderFunction } from 'utilities-ts/src/fp';
 import { Optimizer } from '../optimization/Optimizer';
-import { BuilderFunction } from '../utils/fp';
 import { DatasetDescription } from '../data/DatasetDescription';
 import { History } from '../analysis/History';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';

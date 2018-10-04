@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 const downloader = require("../../utils/downloader");
-const csv_1 = require("../../utils/csv");
+const utilities_ts_1 = require("utilities-ts");
 const Data_1 = require("../../data/local/Data");
 const matrix_1 = require("../../utils/matrix");
 const dataRemoteLocation = 'https://rawgit.com/andnp/ml_data/master/gs_cifar10.tar.gz';
@@ -23,11 +23,11 @@ function load(location = '.tmp') {
         yield download(location);
         const x_buf = new Uint8Array(1024 * 60000);
         const y_buf = new Int32Array(1 * 60000);
-        const dataX = yield csv_1.loadCsvToBuffer({
+        const dataX = yield utilities_ts_1.csv.loadCsvToBuffer({
             path: path.join(location, 'cifar/cifar_X.csv'),
             buffer: x_buf,
         });
-        const dataY = yield csv_1.loadCsvToBuffer({
+        const dataY = yield utilities_ts_1.csv.loadCsvToBuffer({
             path: path.join(location, 'cifar/cifar_Y.csv'),
             buffer: y_buf,
         });

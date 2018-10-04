@@ -4,7 +4,7 @@ import * as tf from '@tensorflow/tfjs';
 import * as v from 'validtyped';
 import { DeepPartial } from 'simplytyped';
 
-import { readJson } from '../utils/files';
+import { files } from 'utilities-ts';
 import { Algorithm } from './Algorithm';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 import { MatrixFactorization, MatrixFactorizationMetaParametersSchema } from './MatrixFactorization';
@@ -118,7 +118,7 @@ export class TwoStageDictionaryLearning extends Algorithm implements Representat
 
     static async fromSavedState(location: string): Promise<TwoStageDictionaryLearning> {
         const subfolder = await this.findSavedState(location, this.name);
-        const saveData = await readJson(path.join(subfolder, 'state.json'), SaveSchema);
+        const saveData = await files.readJson(path.join(subfolder, 'state.json'), SaveSchema);
         const alg = new TwoStageDictionaryLearning(saveData.datasetDescription, saveData.metaParameters, location);
 
         const [ stage1, stage2 ] = await Promise.all([

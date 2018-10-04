@@ -1,6 +1,6 @@
 // tslint:disable no-console
 import { AnyFunc } from 'simplytyped';
-import { invoke } from './fp';
+import { fp } from 'utilities-ts';
 
 const toDispose: AnyFunc[] = [];
 
@@ -8,7 +8,7 @@ let exitHandled = false;
 const exitHandler = () => {
     if (exitHandled) return;
     exitHandled = true;
-    toDispose.forEach(invoke);
+    toDispose.forEach(fp.invoke);
     process.exit();
 };
 

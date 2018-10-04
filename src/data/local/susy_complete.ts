@@ -1,7 +1,7 @@
 import * as path from 'path';
 
 import * as downloader from '../../utils/downloader';
-import { loadCsvToBuffer } from '../../utils/csv';
+import { csv } from 'utilities-ts';
 import { Data } from '../../data/local/Data';
 import { Matrix } from '../../utils/matrix';
 
@@ -22,12 +22,12 @@ export async function load(location = '.tmp') {
     const x_buf = new Float32Array(features * (trainSamples + testSamples));
     const y_buf = new Int32Array(targets * (trainSamples + testSamples));
 
-    const dataX = await loadCsvToBuffer({
+    const dataX = await csv.loadCsvToBuffer({
         path: path.join(location, 'susycomplete/susycomplete_X.csv'),
         buffer: x_buf,
     });
 
-    const dataY = await loadCsvToBuffer({
+    const dataY = await csv.loadCsvToBuffer({
         path: path.join(location, 'susycomplete/susycomplete_Y.csv'),
         buffer: y_buf,
     });

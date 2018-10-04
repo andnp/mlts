@@ -11,11 +11,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const tf = require("@tensorflow/tfjs");
 const _ = require("lodash");
 const v = require("validtyped");
+const utilities_ts_1 = require("utilities-ts");
 const Algorithm_1 = require("../algorithms/Algorithm");
 const Optimizer_1 = require("../optimization/Optimizer");
 const History_1 = require("../analysis/History");
 const layers_1 = require("../algorithms/utils/layers");
-const arrays = require("../utils/arrays");
 exports.TwoStageAutoencoderMetaParameterSchema = v.object({
     layers: v.array(layers_1.LayerMetaParametersSchema),
     retrainRepresentation: v.boolean(),
@@ -42,7 +42,7 @@ class TwoStageAutoencoder extends Algorithm_1.Algorithm {
             // Create learning model
             // ---------------------
             const model = this.registerModel(MODEL, () => {
-                arrays.middleItem(this.opts.layers).name = 'representationLayer';
+                utilities_ts_1.arrays.middleItem(this.opts.layers).name = 'representationLayer';
                 const inputs = tf.layers.input({ shape: [this.datasetDescription.features] });
                 const network = layers_1.constructTFNetwork(this.opts.layers, inputs);
                 const outputs_x = tf.layers.dense({ units: this.datasetDescription.features, activation: 'linear', name: 'out_x' }).apply(_.last(network));

@@ -1,26 +1,19 @@
 import * as tf from '@tensorflow/tfjs';
-import { BufferArray } from './buffers';
+import { Matrix as SharedMatrix, BufferConstructor } from 'utilities-ts';
+import { BufferType } from 'utilities-ts/src/buffers';
 
-export class Matrix {
-    private data: BufferArray;
+export class Matrix extends SharedMatrix {
     private r: number;
     private c: number;
 
-    constructor(rows: number, columns: number, data?: BufferArray) {
-        this.c = columns;
+    constructor(rows: number, cols: number, data?: BufferType) {
+        super(getBufferConstructor(data) as Float32ArrayConstructor, { rows, cols }, data as Float32Array);
+        this.c = cols;
         this.r = rows;
 
-        this.data = data || new Float32Array(rows * columns);
+        this.data = data || new Float32Array(rows * cols);
 
-        if (this.data.length !== rows * columns) throw new Error(`Expected buffer to be length <${rows * columns}>, got <${this.data.length}>`);
-    }
-
-    get(i: number, j: number) {
-        return this.data[i * this.c + j];
-    }
-
-    set(i: number, j: number, v: number) {
-        this.data[i * this.c + j] = v;
+        if (this.data.length !== rows * cols) throw new Error(`Expected buffer to be length <${rows * cols}>, got <${this.data.length}>`);
     }
 
     asTensor() {
@@ -30,11 +23,12 @@ export class Matrix {
     static fromTensor(X: tf.Tensor2D): Promise<Matrix> {
         return X.data().then(d => new Matrix(X.shape[0], X.shape[1], d));
     }
+}
 
-    get raw(): BufferArray {
-        return this.data;
-    }
+function getBufferConstructor<B extends BufferType>(buffer?: B): BufferConstructor {
+    if (buffer instanceof Float32Array) return Float32Array;
+    if (buffer instanceof Int32Array) return Int32Array;
+    if (buffer instanceof Uint8Array) return Uint8Array;
 
-    get rows() { return this.r; }
-    get cols() { return this.c; }
+    return Float32Array;
 }

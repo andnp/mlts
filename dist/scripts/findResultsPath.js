@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable no-console
-const files = require("../src/utils/files");
+const utilities_ts_1 = require("utilities-ts");
 const metaParameters_1 = require("experiments/metaParameters");
 const ExperimentSchema_1 = require("experiments/ExperimentSchema");
 const fileSystem_1 = require("experiments/fileSystem");
@@ -22,12 +22,12 @@ function execute() {
         }
         const ExperimentSchema = ExperimentSchema_1.getExperimentSchema();
         const run = parseInt(process.argv[4]);
-        const experiment = yield files.readJson(process.argv[3], ExperimentSchema);
+        const experiment = yield utilities_ts_1.files.readJson(process.argv[3], ExperimentSchema);
         const metaParameters = metaParameters_1.getParameterPermutation(experiment.metaParameters, run);
         const rootPath = process.argv[2];
         const path = fileSystem_1.getResultsPath(experiment, metaParameters, run);
         const resultsPath = path.split('/').slice(0, -1).join('/');
-        console.log(files.filePath(`${rootPath}/${resultsPath}/results.json`));
+        console.log(utilities_ts_1.files.filePath(`${rootPath}/${resultsPath}/results.json`));
     });
 }
 execute();

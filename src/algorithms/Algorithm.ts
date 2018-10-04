@@ -3,16 +3,14 @@ import * as path from 'path';
 import * as tf from '@tensorflow/tfjs';
 import * as _ from 'lodash';
 
-import * as promise from '../utils/promise';
-import * as files from '../utils/files';
+import { promise, fp, dates, time, returnVoid, tuple } from 'utilities-ts';
+import { BuilderFunction } from 'utilities-ts/src/fp';
+
+import { files } from 'utilities-ts';
 
 import { Optimizer } from '../optimization/Optimizer';
-import { giveBack, BuilderFunction } from '../utils/fp';
-import { getMostRecent } from '../utils/dates';
-import { minutes } from '../utils/time';
 import { DatasetDescription, DatasetDescriptionSchema } from '../data/DatasetDescription';
 import { writeTensorToCsv, loadTensorFromCsv } from '../utils/tensorflow';
-import { returnVoid, tuple } from '../utils/tsUtil';
 import { History } from '../analysis/History';
 import { flatten } from '../utils/flatten';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
@@ -147,7 +145,7 @@ export abstract class Algorithm {
 
         await files.writeJson(path.join(subfolder, 'toc.json'), tableOfContents);
 
-        return this._saveState(subfolder).then(giveBack(subfolder));
+        return this._saveState(subfolder).then(fp.giveBack(subfolder));
     }
 
     private async saveModels(subfolder: string): Promise<ModelsTOCEntry> {
@@ -157,7 +155,7 @@ export abstract class Algorithm {
             const location = path.join(subfolder, 'models', modelName);
             return files.createFolder(location)
                 .then(() => model.save(`file://${location}`))
-                .then(giveBack(tuple(modelName, location)));
+                .then(fp.giveBack(tuple(modelName, location)));
         });
 
         return _.fromPairs(modelLocationPairs);
@@ -173,7 +171,7 @@ export abstract class Algorithm {
                 shape: param.shape,
             };
             return writeTensorToCsv(location, param)
-                .then(giveBack(tuple(paramName, metaData)));
+                .then(fp.giveBack(tuple(paramName, metaData)));
         });
 
         return _.fromPairs(parametersLocationPairs);
@@ -185,7 +183,7 @@ export abstract class Algorithm {
             const optimizer = this.optimizers[optName];
             const location = path.join(subfolder, 'optimizers', optName);
             return optimizer.saveState(location)
-                .then(giveBack(tuple(optName, location)));
+                .then(fp.giveBack(tuple(optName, location)));
         });
 
         return _.fromPairs(optimizerLocations);
@@ -200,7 +198,7 @@ export abstract class Algorithm {
 
         const location = path.join(subfolder, 'state.json');
         return files.writeJson(location, state)
-            .then(giveBack(location));
+            .then(fp.giveBack(location));
     }
 
     // -------
@@ -238,7 +236,7 @@ export abstract class Algorithm {
     protected static async findSavedState(location: string, name: string): Promise<string> {
         const algFolder = path.join(location, name);
         const times = await this.findAllSavedStates(location, name);
-        const mostRecent = getMostRecent(times);
+        const mostRecent = dates.getMostRecent(times);
 
         return path.join(algFolder, mostRecent.toISOString());
     }
@@ -321,7 +319,7 @@ export abstract class Algorithm {
             if (this.activeBackup) return;
             this.activeBackup = this.save()
                 .then(() => this.activeBackup = undefined);
-        }, minutes(5));
+        }, time.minutes(5));
     }
 
     private stopBackup() {

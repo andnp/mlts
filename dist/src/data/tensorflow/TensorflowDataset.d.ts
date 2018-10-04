@@ -16,6 +16,8 @@ export declare class TensorflowDataset implements Dataset<tf.Tensor2D> {
     applyTransformation(transform: Transformation): Promise<this>;
     limitSamples(samples: number): this;
     stratify(): this;
+    shuffle(): void;
+    crossValidate(folds: number, index: number): TensorflowDataset;
     readonly train: [tf.Tensor<tf.Rank.R2>, tf.Tensor<tf.Rank.R2>];
     readonly test: [tf.Tensor<tf.Rank.R2>, tf.Tensor<tf.Rank.R2>];
     readonly features: number;

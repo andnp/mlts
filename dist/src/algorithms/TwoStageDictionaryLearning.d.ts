@@ -12,7 +12,7 @@ export declare class TwoStageDictionaryLearning extends Algorithm implements Rep
     private stage1;
     private stage2;
     protected state: {
-        activeStage: "stage1" | "stage2" | "complete";
+        activeStage: "complete" | "stage1" | "stage2";
     };
     protected opts: TwoStageDictionaryLearningMetaParameters;
     constructor(datasetDescription: SupervisedDictionaryLearningDatasetDescription, opts?: DeepPartial<TwoStageDictionaryLearningMetaParameters>, saveLocation?: string);

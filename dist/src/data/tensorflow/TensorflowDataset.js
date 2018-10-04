@@ -8,10 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const utilities_ts_1 = require("utilities-ts");
 const _ = require("lodash");
 const tf = require("@tensorflow/tfjs");
-const tsUtil_1 = require("../../utils/tsUtil");
 const tfUtil = require("../../utils/tensorflow");
+const random = require("../../utils/random");
 // TODO: consider that not all datasets will necessarily have in-sample and out-sample data
 class TensorflowDataset {
     constructor(_x, _y, _t, _ty) {
@@ -76,7 +77,7 @@ class TensorflowDataset {
                 X.push(x);
                 Y.push(y);
             }
-            return tsUtil_1.tuple(tf.concat2d(X, 0), tf.concat2d(Y, 0));
+            return utilities_ts_1.tuple(tf.concat2d(X, 0), tf.concat2d(Y, 0));
         });
         this.limitedSamples = this._x.shape[0];
     }
@@ -98,16 +99,33 @@ class TensorflowDataset {
         this.shouldStratify = true;
         return this;
     }
+    shuffle() {
+        const indices = random.randomIndices(this._x.shape[0]);
+        const x_split = [];
+        const y_split = [];
+        for (const i of indices) {
+            x_split.push(this._x.slice(i, 1));
+            y_split.push(this._y.slice(i, 1));
+        }
+        this._x = tf.concat2d(x_split, 0);
+        this._y = tf.concat2d(y_split, 0);
+    }
+    crossValidate(folds, index) {
+        const bins = binSizes(this._x.shape[0], folds);
+        const x = this._x.split(bins);
+        const y = this._y.split(bins);
+        return new TensorflowDataset(tf.concat2d(utilities_ts_1.arrays.leaveOut(x, index), 0), tf.concat2d(utilities_ts_1.arrays.leaveOut(y, index), 0), x[index], y[index]);
+    }
     get train() {
         const [X, Y] = this.shouldStratify
             ? this.roundRobin()
             : [this._x, this._y];
         const x = tf.tidy(() => X.slice(0, this.limitedSamples));
         const y = tf.tidy(() => Y.slice(0, this.limitedSamples));
-        return tsUtil_1.tuple(x, y);
+        return utilities_ts_1.tuple(x, y);
     }
     get test() {
-        return tsUtil_1.tuple(this._t, this._ty);
+        return utilities_ts_1.tuple(this._t, this._ty);
     }
     get features() { return this._x.shape[1]; }
     get samples() { return this.limitedSamples; }
@@ -131,4 +149,14 @@ class TensorflowDataset {
     }
 }
 exports.TensorflowDataset = TensorflowDataset;
+function binSizes(t, k) {
+    let a = 0;
+    return _.times(k, i => {
+        if (i === k - 1)
+            return t - a;
+        const s = Math.floor(t / k);
+        a += s;
+        return s;
+    });
+}
 //# sourceMappingURL=TensorflowDataset.js.map

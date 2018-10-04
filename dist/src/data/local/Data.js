@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const tsUtil_1 = require("../../utils/tsUtil");
+const utilities_ts_1 = require("utilities-ts");
 class Data {
     constructor(_x, _y, _t, _ty) {
         this._x = _x;
@@ -9,10 +9,10 @@ class Data {
         this._ty = _ty;
     }
     get train() {
-        return tsUtil_1.tuple(this._x, this._y);
+        return utilities_ts_1.tuple(this._x, this._y);
     }
     get test() {
-        return tsUtil_1.tuple(this._t, this._ty);
+        return utilities_ts_1.tuple(this._t, this._ty);
     }
     get features() {
         return this._x.cols;

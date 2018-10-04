@@ -1,8 +1,9 @@
+import { arrays, tuple } from 'utilities-ts';
 import * as _ from 'lodash';
 import * as tf from '@tensorflow/tfjs';
-import { Dataset, Data } from '../local/Data';
-import { tuple } from '../../utils/tsUtil';
 import * as tfUtil from '../../utils/tensorflow';
+import * as random from '../../utils/random';
+import { Dataset, Data } from '../local/Data';
 import { Transformation } from '../../transformations/Transformation';
 
 // TODO: consider that not all datasets will necessarily have in-sample and out-sample data
@@ -76,6 +77,35 @@ export class TensorflowDataset implements Dataset<tf.Tensor2D> {
     stratify() {
         this.shouldStratify = true;
         return this;
+    }
+
+    shuffle() {
+        const indices = random.randomIndices(this._x.shape[0]);
+
+        const x_split = [] as tf.Tensor2D[];
+        const y_split = [] as tf.Tensor2D[];
+
+        for (const i of indices) {
+            x_split.push(this._x.slice(i, 1));
+            y_split.push(this._y.slice(i, 1));
+        }
+
+        this._x = tf.concat2d(x_split, 0);
+        this._y = tf.concat2d(y_split, 0);
+    }
+
+    crossValidate(folds: number, index: number) {
+        const bins = binSizes(this._x.shape[0], folds);
+
+        const x = this._x.split(bins);
+        const y = this._y.split(bins);
+
+        return new TensorflowDataset(
+            tf.concat2d(arrays.leaveOut(x, index), 0),
+            tf.concat2d(arrays.leaveOut(y, index), 0),
+            x[index],
+            y[index],
+        );
     }
 
     get train() {
@@ -156,5 +186,16 @@ export class TensorflowDataset implements Dataset<tf.Tensor2D> {
             tf.concat2d(X, 0),
             tf.concat2d(Y, 0),
         );
+    });
+}
+
+function binSizes(t: number, k: number) {
+    let a = 0;
+    return _.times(k, i => {
+        if (i === k - 1) return t - a;
+
+        const s = Math.floor(t / k);
+        a += s;
+        return s;
     });
 }

@@ -12,7 +12,7 @@ const path = require("path");
 const _ = require("lodash");
 const tf = require("@tensorflow/tfjs");
 const v = require("validtyped");
-const files_1 = require("../utils/files");
+const utilities_ts_1 = require("utilities-ts");
 const Algorithm_1 = require("./Algorithm");
 const MatrixFactorization_1 = require("./MatrixFactorization");
 const LogisticRegression_1 = require("./LogisticRegression");
@@ -110,7 +110,7 @@ class TwoStageDictionaryLearning extends Algorithm_1.Algorithm {
     static fromSavedState(location) {
         return __awaiter(this, void 0, void 0, function* () {
             const subfolder = yield this.findSavedState(location, this.name);
-            const saveData = yield files_1.readJson(path.join(subfolder, 'state.json'), SaveSchema);
+            const saveData = yield utilities_ts_1.files.readJson(path.join(subfolder, 'state.json'), SaveSchema);
             const alg = new TwoStageDictionaryLearning(saveData.datasetDescription, saveData.metaParameters, location);
             const [stage1, stage2] = yield Promise.all([
                 MatrixFactorization_1.MatrixFactorization.fromSavedState(subfolder),

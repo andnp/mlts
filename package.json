@@ -65,6 +65,7 @@
     "seedrandom": "^2.4.4",
     "simplytyped": "^1.4.0",
     "tsplot": "git+https://github.com/andnp/tsplot.git",
+    "utilities-ts": "git+https://github.com/andnp/utilities-ts.git",
     "validtyped": "^2.0.0"
   }
 }

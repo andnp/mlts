@@ -1,7 +1,7 @@
 import * as path from 'path';
 
 import * as downloader from '../../utils/downloader';
-import { loadCsvToBuffer } from '../../utils/csv';
+import { csv } from 'utilities-ts';
 import { Data } from '../../data/local/Data';
 import { Matrix } from '../../utils/matrix';
 
@@ -17,12 +17,12 @@ export async function load(location = '.tmp') {
     const x_buf = new Uint8Array(1024 * 60000);
     const y_buf = new Int32Array(1 * 60000);
 
-    const dataX = await loadCsvToBuffer({
+    const dataX = await csv.loadCsvToBuffer({
         path: path.join(location, 'cifar/cifar_X.csv'),
         buffer: x_buf,
     });
 
-    const dataY = await loadCsvToBuffer({
+    const dataY = await csv.loadCsvToBuffer({
         path: path.join(location, 'cifar/cifar_Y.csv'),
         buffer: y_buf,
     });

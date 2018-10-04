@@ -2,12 +2,11 @@ import * as tf from '@tensorflow/tfjs';
 import * as _ from 'lodash';
 import * as v from 'validtyped';
 import * as path from 'path';
+import { arrays } from 'utilities-ts';
 
-import * as arrays from '../utils/arrays';
 import { printProgressAsync } from '../utils/printer';
 import { repeat } from '../utils/tasks';
-import { assertNever } from '../utils/tsUtil';
-import { writeJson, readJson } from '../utils/files';
+import { files, assertNever } from 'utilities-ts';
 import { History } from '../analysis/History';
 import { LoggerCallback, EpochCounter } from '../utils/tensorflow';
 import { OptimizationParameters, OptimizationParametersSchema } from './OptimizerSchemas';
@@ -121,11 +120,11 @@ export class Optimizer {
             parameters: this.parameters,
         };
 
-        await writeJson(path.join(location, 'state.json'), state);
+        await files.writeJson(path.join(location, 'state.json'), state);
     }
 
     static async fromSavedState(location: string): Promise<Optimizer> {
-        const saveData = await readJson(path.join(location, 'state.json'), SaveDataSchema);
+        const saveData = await files.readJson(path.join(location, 'state.json'), SaveDataSchema);
         const optimizer = new Optimizer(saveData.parameters);
         optimizer.completedIterations = saveData.iterations;
         return optimizer;

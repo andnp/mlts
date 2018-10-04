@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const fp_1 = require("./fp");
+const utilities_ts_1 = require("utilities-ts");
 const toDispose = [];
 let exitHandled = false;
 const exitHandler = () => {
     if (exitHandled)
         return;
     exitHandled = true;
-    toDispose.forEach(fp_1.invoke);
+    toDispose.forEach(utilities_ts_1.fp.invoke);
     process.exit();
 };
 process.on('exit', exitHandler);

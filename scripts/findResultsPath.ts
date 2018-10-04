@@ -1,6 +1,5 @@
 // tslint:disable no-console
-import * as files from '../src/utils/files';
-
+import { files } from 'utilities-ts';
 import { getParameterPermutation } from 'experiments/metaParameters';
 import { getExperimentSchema } from 'experiments/ExperimentSchema';
 import { getResultsPath } from 'experiments/fileSystem';

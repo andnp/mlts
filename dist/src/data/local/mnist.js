@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 const downloader = require("../../utils/downloader");
-const csv_1 = require("../../utils/csv");
+const utilities_ts_1 = require("utilities-ts");
 const Data_1 = require("../../data/local/Data");
 const matrix_1 = require("../../utils/matrix");
 const dataRemoteLocation = 'https://rawgit.com/andnp/ml_data/master/mnist.tar.gz';
@@ -27,11 +27,11 @@ function load(location = '.tmp') {
         const testSamples = 20000;
         const x_buf = new Uint8Array(features * (trainSamples + testSamples));
         const y_buf = new Int32Array(targets * (trainSamples + testSamples));
-        const dataX = yield csv_1.loadCsvToBuffer({
+        const dataX = yield utilities_ts_1.csv.loadCsvToBuffer({
             path: path.join(location, 'mnist/mnist_x.csv'),
             buffer: x_buf,
         });
-        const dataY = yield csv_1.loadCsvToBuffer({
+        const dataY = yield utilities_ts_1.csv.loadCsvToBuffer({
             path: path.join(location, 'mnist/mnist_y.csv'),
             buffer: y_buf,
         });

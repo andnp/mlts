@@ -1,5 +1,5 @@
+import { tuple } from 'utilities-ts';
 import { Matrix } from '../../utils/matrix';
-import { tuple } from '../../utils/tsUtil';
 
 
 export interface Dataset<M> {

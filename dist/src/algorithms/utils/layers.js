@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const v = require("validtyped");
 const tf = require("@tensorflow/tfjs");
+const utilities_ts_1 = require("utilities-ts");
 const regularizers_1 = require("../../regularizers/regularizers");
-const tsUtil_1 = require("../../utils/tsUtil");
 exports.LayerMetaParametersSchema = v.object({
     regularizer: regularizers_1.RegularizerParametersSchema,
     units: v.number(),
@@ -20,7 +20,7 @@ exports.constructTFLayer = (layerDef) => {
             name: layerDef.name,
         });
     }
-    tsUtil_1.assertNever(layerDef.type);
+    utilities_ts_1.assertNever(layerDef.type);
     throw new Error('Unexpected line reached');
 };
 exports.constructTFNetwork = (layerDefs, input) => {

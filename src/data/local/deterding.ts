@@ -1,8 +1,7 @@
 import * as path from 'path';
 
 import * as downloader from '../../utils/downloader';
-import { loadCsvToBuffer } from '../../utils/csv';
-import { allValues } from '../../utils/promise';
+import { csv, promise } from 'utilities-ts';
 import { Data } from '../../data/local/Data';
 import { Matrix } from '../../utils/matrix';
 
@@ -25,11 +24,11 @@ export async function load(location = '.tmp') {
     const t_buf = new Float32Array(testSamples * features);
     const ty_buf = new Float32Array(testSamples * classes);
 
-    const data = await allValues({
-        X: loadCsvToBuffer({ path: path.join(location, 'deterding/deterding_X.csv'), buffer: x_buf }),
-        Y: loadCsvToBuffer({ path: path.join(location, 'deterding/deterding_Y.csv'), buffer: y_buf }),
-        T: loadCsvToBuffer({ path: path.join(location, 'deterding/deterding_T.csv'), buffer: t_buf }),
-        TY: loadCsvToBuffer({ path: path.join(location, 'deterding/deterding_TY.csv'), buffer: ty_buf }),
+    const data = await promise.allValues({
+        X: csv.loadCsvToBuffer({ path: path.join(location, 'deterding/deterding_X.csv'), buffer: x_buf }),
+        Y: csv.loadCsvToBuffer({ path: path.join(location, 'deterding/deterding_Y.csv'), buffer: y_buf }),
+        T: csv.loadCsvToBuffer({ path: path.join(location, 'deterding/deterding_T.csv'), buffer: t_buf }),
+        TY: csv.loadCsvToBuffer({ path: path.join(location, 'deterding/deterding_TY.csv'), buffer: ty_buf }),
     });
 
     return new Data(

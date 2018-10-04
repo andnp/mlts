@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as commandLine from '../utils/commandLine';
 
 import { Algorithm } from "../algorithms/Algorithm";
-import { readJson, fileExists } from '../utils/files';
+import { files } from 'utilities-ts';
 import { TensorflowDataset } from '../data/tensorflow/TensorflowDataset';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 import { getNumberOfRuns, getParameterPermutation } from './metaParameters';
@@ -24,7 +24,7 @@ export class ExperimentDescription {
 
     static async fromJson(location: string, index: number) {
         const ExperimentSchema = getExperimentSchema();
-        const data = await readJson(location, ExperimentSchema);
+        const data = await files.readJson(location, ExperimentSchema);
 
         // ---------------------------------
         // Load Constructors from Registries
@@ -61,7 +61,7 @@ export class ExperimentDescription {
         const expLocation = getResultsPath(data, metaParameters, run);
         const saveLocation = path.join('savedModels', expLocation);
 
-        const exists = await fileExists(saveLocation);
+        const exists = await files.fileExists(saveLocation);
 
         const algorithm = exists
             ? await (algData.constructor as any as typeof Algorithm).fromSavedState(saveLocation)

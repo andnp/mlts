@@ -7,7 +7,7 @@ import { UnresolvedLogs } from '@tensorflow/tfjs-layers/dist/logs';
 import * as random from './random';
 import { Data } from '../data/local/Data';
 import { Matrix } from './matrix';
-import { writeCsv, loadCsvToBuffer } from './csv';
+import { csv } from 'utilities-ts';
 import { Printer } from './printer';
 
 export function autoDispose<F extends AnyFunc>(f: F): F {
@@ -31,13 +31,13 @@ export const datasetToTFDataset = (dataset: Data) => {
 
 export async function writeTensorToCsv(location: string, tensor: tf.Tensor2D) {
     const buf = await tensor.data();
-    return writeCsv(location, new Matrix(tensor.shape[0], tensor.shape[1], buf));
+    return csv.writeCsv(location, new Matrix(tensor.shape[0], tensor.shape[1], buf));
 }
 
 type BufferConstructor = Float32ArrayConstructor | Int32ArrayConstructor | Uint8ArrayConstructor;
 export async function loadTensorFromCsv(location: string, shape: [number, number] , Buffer: BufferConstructor = Float32Array) {
     const buffer = new Buffer(shape[0] * shape[1]);
-    const data = await loadCsvToBuffer({
+    const data = await csv.loadCsvToBuffer({
         buffer,
         path: location,
     });

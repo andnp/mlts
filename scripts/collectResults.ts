@@ -2,8 +2,9 @@
 import * as v from 'validtyped';
 import * as path from 'path';
 import * as tsplot from 'tsplot';
-import * as files from '../src/utils/files';
-import { discriminatedObject } from '../src/utils/objects';
+import { files, objects } from 'utilities-ts';
+
+import { Matrix } from '../src';
 
 const filterUndefined = <T>(x: Array<T | undefined>): T[] => x.filter(d => d !== undefined) as any;
 
@@ -29,7 +30,7 @@ async function execute() {
             const results = contents.map(c => parseFloat(c.toString()));
 
 
-            const resMatrix = tsplot.Matrix.fromData([results]);
+            const resMatrix = Matrix.fromData([results]);
             return {
                 description: tsplot.describeRows(resMatrix)[0],
                 name: resultFile,
@@ -44,7 +45,7 @@ async function execute() {
         const params = await files.readJson(paramsFiles[0], v.any());
         const experiment = await files.readJson(experimentFiles[0], v.any());
 
-        const description = discriminatedObject('name', descriptions);
+        const description = objects.discriminatedObject('name', descriptions);
 
         const result = {
             ...description,

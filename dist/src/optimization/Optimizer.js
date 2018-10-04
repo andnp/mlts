@@ -12,11 +12,10 @@ const tf = require("@tensorflow/tfjs");
 const _ = require("lodash");
 const v = require("validtyped");
 const path = require("path");
-const arrays = require("../utils/arrays");
+const utilities_ts_1 = require("utilities-ts");
 const printer_1 = require("../utils/printer");
 const tasks_1 = require("../utils/tasks");
-const tsUtil_1 = require("../utils/tsUtil");
-const files_1 = require("../utils/files");
+const utilities_ts_2 = require("utilities-ts");
 const History_1 = require("../analysis/History");
 const tensorflow_1 = require("../utils/tensorflow");
 const OptimizerSchemas_1 = require("./OptimizerSchemas");
@@ -66,7 +65,7 @@ class Optimizer {
         if (this.parameters.type === 'rmsprop') {
             return tf.train.rmsprop(this.parameters.learningRate);
         }
-        tsUtil_1.assertNever(this.parameters);
+        utilities_ts_2.assertNever(this.parameters);
         throw new Error('Unexpected line reached');
     }
     fit(model, X, Y, params) {
@@ -82,7 +81,7 @@ class Optimizer {
                 for (let i = this.completedIterations; i < epochs; i += refreshRate) {
                     const remainingEpochs = epochs - i;
                     const epochsToRun = remainingEpochs > refreshRate ? refreshRate : remainingEpochs;
-                    const h = yield model.fit(X, Y, Object.assign({ batchSize: params.batchSize || arrays.getFirst(X).shape[0], yieldEvery: 'epoch' }, params, { epochs: epochsToRun, callbacks: [new tensorflow_1.LoggerCallback(printer, i), new tensorflow_1.EpochCounter(() => this.completedIterations++)] }));
+                    const h = yield model.fit(X, Y, Object.assign({ batchSize: params.batchSize || utilities_ts_1.arrays.getFirst(X).shape[0], yieldEvery: 'epoch' }, params, { epochs: epochsToRun, callbacks: [new tensorflow_1.LoggerCallback(printer, i), new tensorflow_1.EpochCounter(() => this.completedIterations++)] }));
                     if (!cumulativeHistory)
                         cumulativeHistory = h;
                     else
@@ -102,12 +101,12 @@ class Optimizer {
                 iterations: this.completedIterations,
                 parameters: this.parameters,
             };
-            yield files_1.writeJson(path.join(location, 'state.json'), state);
+            yield utilities_ts_2.files.writeJson(path.join(location, 'state.json'), state);
         });
     }
     static fromSavedState(location) {
         return __awaiter(this, void 0, void 0, function* () {
-            const saveData = yield files_1.readJson(path.join(location, 'state.json'), SaveDataSchema);
+            const saveData = yield utilities_ts_2.files.readJson(path.join(location, 'state.json'), SaveDataSchema);
             const optimizer = new Optimizer(saveData.parameters);
             optimizer.completedIterations = saveData.iterations;
             return optimizer;

@@ -20,4 +20,13 @@ exports.getLast = (arr) => {
         throw new Error('Expected a non-empty array');
     return arr[arr.length - 1];
 };
+exports.leaveOut = (arr, idx) => {
+    const r = [];
+    arr.forEach((t, i) => {
+        if (i === idx)
+            return;
+        r.push(t);
+    });
+    return r;
+};
 //# sourceMappingURL=arrays.js.map

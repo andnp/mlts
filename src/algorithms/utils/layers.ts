@@ -1,8 +1,8 @@
 import * as v from 'validtyped';
 import * as tf from '@tensorflow/tfjs';
 
+import { assertNever } from 'utilities-ts';
 import { RegularizerParametersSchema, regularizeLayer } from '../../regularizers/regularizers';
-import { assertNever } from '../../utils/tsUtil';
 
 export const LayerMetaParametersSchema = v.object({
     regularizer: RegularizerParametersSchema,

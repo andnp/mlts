@@ -1,15 +1,10 @@
 import * as tf from '@tensorflow/tfjs';
-import { BufferArray } from './buffers';
-export declare class Matrix {
-    private data;
+import { Matrix as SharedMatrix } from 'utilities-ts';
+import { BufferType } from 'utilities-ts/src/buffers';
+export declare class Matrix extends SharedMatrix {
     private r;
     private c;
-    constructor(rows: number, columns: number, data?: BufferArray);
-    get(i: number, j: number): number;
-    set(i: number, j: number, v: number): void;
+    constructor(rows: number, cols: number, data?: BufferType);
     asTensor(): tf.Tensor<tf.Rank.R2>;
     static fromTensor(X: tf.Tensor2D): Promise<Matrix>;
-    readonly raw: BufferArray;
-    readonly rows: number;
-    readonly cols: number;
 }
