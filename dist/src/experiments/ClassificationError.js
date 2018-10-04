@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const analysis_1 = require("analysis");
+const analysis_1 = require("../analysis");
 const utilities_ts_1 = require("utilities-ts");
 class ClassificationErrorExperiment {
     constructor(description) {

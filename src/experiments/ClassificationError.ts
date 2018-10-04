@@ -1,5 +1,5 @@
 import { ExperimentDescription } from "./ExperimentDescription";
-import { getClassificationError } from "analysis";
+import { getClassificationError } from "../analysis";
 import { files } from "utilities-ts";
 
 export class ClassificationErrorExperiment {
