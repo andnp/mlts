@@ -274,7 +274,7 @@ class Algorithm {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.activeBackup)
                 return;
-            const location = yield this.saveState();
+            const location = yield this.saveState().catch();
             const tmp = this.lastSaveLocation;
             this.lastSaveLocation = location;
             if (tmp)

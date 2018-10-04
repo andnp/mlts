@@ -296,7 +296,7 @@ export abstract class Algorithm {
     private lastSaveLocation: string | undefined;
     private async save() {
         if (this.activeBackup) return;
-        const location = await this.saveState();
+        const location = await this.saveState().catch();
         const tmp = this.lastSaveLocation;
         this.lastSaveLocation = location;
 
