@@ -142,7 +142,7 @@ class Algorithm {
                 const model = this.models[modelName];
                 const location = path.join(subfolder, 'models', modelName);
                 return utilities_ts_2.files.createFolder(location)
-                    .then(() => model.save(`file://${location}`))
+                    .then(() => model.save(`file://${location}`).catch())
                     .then(utilities_ts_1.fp.giveBack(utilities_ts_1.tuple(modelName, location)));
             });
             return _.fromPairs(modelLocationPairs);

@@ -154,7 +154,7 @@ export abstract class Algorithm {
             const model = this.models[modelName];
             const location = path.join(subfolder, 'models', modelName);
             return files.createFolder(location)
-                .then(() => model.save(`file://${location}`))
+                .then(() => model.save(`file://${location}`).catch())
                 .then(fp.giveBack(tuple(modelName, location)));
         });
 
