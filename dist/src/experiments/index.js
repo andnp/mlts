@@ -6,4 +6,5 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./ExperimentDescription"));
 __export(require("./ExperimentRegistry"));
 __export(require("./ExperimentSchema"));
+__export(require("./ClassificationError"));
 //# sourceMappingURL=index.js.map
