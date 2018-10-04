@@ -4,7 +4,6 @@ import * as path from 'path';
 import * as tsplot from 'tsplot';
 import * as _ from 'lodash';
 import { files, objects, promise, arrays } from 'utilities-ts';
-import { invokeProp } from 'utilities-ts/src/fp';
 
 import { Matrix } from '../utils/matrix';
 
