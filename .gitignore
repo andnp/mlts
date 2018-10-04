@@ -6,3 +6,5 @@ savedModels
 *.jpg
 *.eps
 results/
+!src/results/
+!dist/src/results/
