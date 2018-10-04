@@ -22,8 +22,8 @@ export class ClassificationErrorExperiment {
         const Y_hat = await alg.predict(X, this.description.optimization);
         const TY_hat = await alg.predict(T, this.description.optimization);
 
-        const trainError = getClassificationError(Y_hat, Y);
-        const testError = getClassificationError(TY_hat, TY);
+        const trainError = getClassificationError(Y_hat, Y).get();
+        const testError = getClassificationError(TY_hat, TY).get();
 
         const params = alg.getParameters();
 

@@ -24,8 +24,8 @@ class ClassificationErrorExperiment {
             const [T, TY] = d.test;
             const Y_hat = yield alg.predict(X, this.description.optimization);
             const TY_hat = yield alg.predict(T, this.description.optimization);
-            const trainError = analysis_1.getClassificationError(Y_hat, Y);
-            const testError = analysis_1.getClassificationError(TY_hat, TY);
+            const trainError = analysis_1.getClassificationError(Y_hat, Y).get();
+            const testError = analysis_1.getClassificationError(TY_hat, TY).get();
             const params = alg.getParameters();
             const resultsPath = utilities_ts_1.files.filePath(`${root}/${this.description.path}`);
             yield utilities_ts_1.files.writeFile(utilities_ts_1.files.filePath(`${resultsPath}/test.csv`), testError);
