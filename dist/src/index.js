@@ -16,6 +16,8 @@ const tasks_i = require("./utils/tasks");
 exports.tasks = tasks_i;
 const tensorflow_i = require("./utils/tensorflow");
 exports.tensorflow = tensorflow_i;
+const results_i = require("./results");
+exports.results = results_i;
 __export(require("./transformations"));
 __export(require("./regularizers"));
 __export(require("./optimization"));

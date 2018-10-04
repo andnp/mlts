@@ -13,6 +13,8 @@ import * as tasks_i from './utils/tasks';
 export const tasks = tasks_i;
 import * as tensorflow_i from './utils/tensorflow';
 export const tensorflow = tensorflow_i;
+import * as results_i from './results';
+export const results = results_i;
 
 export * from './transformations';
 export * from './regularizers';
