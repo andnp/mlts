@@ -8,7 +8,7 @@ function where(l, value, res) {
 }
 exports.where = where;
 const numericAscending = (a, b) => a - b;
-const parameterLens = exports.lens('metaParameters');
+exports.parameterLens = exports.lens('metaParameters');
 const meanLens = _.flow(exports.lens('description'), exports.lens('mean'));
 exports.createMinMeanReducer = (file) => {
     const minMeanLens = _.flow(exports.lens(file), meanLens);
@@ -18,16 +18,14 @@ exports.createMinMeanReducer = (file) => {
             : b;
     };
 };
-function groupByParameter(p_lens, resultFiles, reducer, res) {
-    const p = _.flow(parameterLens, p_lens);
+function groupByParameter(p_lens, reducer, res) {
+    const p = _.flow(exports.parameterLens, p_lens);
     const values = res.map(p);
     const uniqueValues = _.uniq(values).sort(numericAscending);
     const matched = uniqueValues.map(v => res.filter(r => p(r) === v));
-    const reducerLens = exports.lens(resultFiles[0]);
     return matched.map(group => {
-        // reduce by min first resultFile
         return group.reduce((p, c) => {
-            return reducer(reducerLens(p), reducerLens(c));
+            return reducer(p, c);
         }, group[0]);
     });
 }

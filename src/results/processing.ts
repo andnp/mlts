@@ -17,7 +17,7 @@ export function where(l: Lens, value: any, res: Result[]) {
 
 const numericAscending = (a: number, b: number) => a - b;
 
-const parameterLens = lens('metaParameters');
+export const parameterLens = lens('metaParameters');
 
 type ResultReducer = (a: Result, b: Result) => Result;
 type ResultReducerCreator = (name: string) => ResultReducer;
@@ -40,7 +40,7 @@ export const createMinMeanReducer: ResultReducerCreator = (file: string) => {
     };
 };
 
-export function groupByParameter(p_lens: Lens, resultFiles: string[], reducer: ResultReducer, res: Result[]) {
+export function groupByParameter(p_lens: Lens, reducer: ResultReducer, res: Result[]) {
     const p = _.flow(parameterLens, p_lens);
 
     const values = res.map(p);
@@ -48,13 +48,9 @@ export function groupByParameter(p_lens: Lens, resultFiles: string[], reducer: R
 
     const matched = uniqueValues.map(v => res.filter(r => p(r) === v));
 
-    const reducerLens = lens(resultFiles[0]);
-
     return matched.map(group => {
-        // reduce by min first resultFile
-
         return group.reduce((p, c) => {
-            return reducer(reducerLens(p), reducerLens(c));
+            return reducer(p, c);
         }, group[0]);
     });
 }

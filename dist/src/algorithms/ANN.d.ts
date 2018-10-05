@@ -25,7 +25,7 @@ export declare const ANNMetaParameterSchema: v.Validator<import("simplytyped/typ
             weight: v.Validator<number>;
         }>>;
         units: v.Validator<number>;
-        activation: v.Validator<"linear" | "elu" | "relu" | "sigmoid" | "tanh">;
+        activation: v.Validator<"elu" | "linear" | "relu" | "sigmoid" | "tanh">;
         type: v.Validator<"dense">;
         name: v.Validator<string>;
     }>, "type" | "units" | "activation">>[]>;
