@@ -154,7 +154,7 @@ export abstract class Algorithm {
             const model = this.models[modelName];
             const location = path.join(subfolder, 'models', modelName);
             return files.createFolder(location)
-                .then(() => model.save(`file://${location}`).catch())
+                .then(() => model.save(`file://${location}`).catch(_.noop))
                 .then(fp.giveBack(tuple(modelName, location)));
         });
 
@@ -296,7 +296,9 @@ export abstract class Algorithm {
     private lastSaveLocation: string | undefined;
     private async save() {
         if (this.activeBackup) return;
-        const location = await this.saveState().catch();
+        const location = await this.saveState().catch(_.noop);
+        if (!location) return;
+
         const tmp = this.lastSaveLocation;
         this.lastSaveLocation = location;
 

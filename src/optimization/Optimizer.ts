@@ -10,6 +10,7 @@ import { files, assertNever } from 'utilities-ts';
 import { History } from '../analysis/History';
 import { LoggerCallback, EpochCounter } from '../utils/tensorflow';
 import { OptimizationParameters, OptimizationParametersSchema } from './OptimizerSchemas';
+import { ModelLoggingVerbosity } from '@tensorflow/tfjs-layers/dist/engine/training';
 
 export interface OptimizationOptions {
     printProgress: boolean;
@@ -98,6 +99,7 @@ export class Optimizer {
                     ...params,
                     epochs: epochsToRun,
                     callbacks: [new LoggerCallback(printer, i), new EpochCounter(() => this.completedIterations++)],
+                    verbose: ModelLoggingVerbosity.SILENT,
                 });
 
                 if (!cumulativeHistory) cumulativeHistory = h;
