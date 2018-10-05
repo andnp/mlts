@@ -1,0 +1,11 @@
+import { PlainObject } from 'simplytyped';
+import { Result } from './collectResults';
+export declare type Lens = (o: PlainObject) => any;
+export declare const lens: (k: string) => Lens;
+export declare const createAlgorithmDatasetFilter: (alg: string, data: string) => (a1: Result[]) => Result[];
+export declare function where(l: Lens, value: any, res: Result[]): Result[];
+declare type ResultReducer = (a: Result, b: Result) => Result;
+declare type ResultReducerCreator = (name: string) => ResultReducer;
+export declare const createMinMeanReducer: ResultReducerCreator;
+export declare function groupByParameter(p_lens: Lens, resultFiles: string[], reducer: ResultReducer, res: Result[]): Result[];
+export {};

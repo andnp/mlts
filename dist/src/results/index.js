@@ -5,4 +5,6 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./resultsPath"));
 __export(require("./collectResults"));
+const processing = require("./processing");
+exports.results = processing;
 //# sourceMappingURL=index.js.map

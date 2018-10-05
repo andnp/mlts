@@ -6,6 +6,14 @@ import * as _ from 'lodash';
 import { files, objects, promise, arrays } from 'utilities-ts';
 
 import { Matrix } from '../utils/matrix';
+import { OptimizationParameters } from '../optimization';
+
+export type Result = {
+    metaParameters: any;
+    algorithm: string;
+    dataset: string;
+    optimization: Partial<OptimizationParameters>
+} & Record<string, any>;
 
 export async function collectResults(rootPath: string, resultFileNames: string[]) {
     const hashDirectories = (await files.readdir(rootPath)).map(n => path.join(rootPath, n));
@@ -25,7 +33,7 @@ export async function collectResults(rootPath: string, resultFileNames: string[]
 
         const description = objects.discriminatedObject('name', descriptions);
 
-        const result = {
+        const result: Result = {
             ...description,
             metaParameters: params,
             algorithm: experiment.algorithm,
