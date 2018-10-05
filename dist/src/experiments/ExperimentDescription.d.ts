@@ -6,6 +6,7 @@ export declare class ExperimentDescription {
     readonly definition: ExperimentJson;
     readonly algorithm: Algorithm;
     readonly dataset: TensorflowDataset;
+    readonly metaParameters: Record<string, any>;
     readonly optimization: OptimizationParameters;
     readonly path: string;
     private constructor();

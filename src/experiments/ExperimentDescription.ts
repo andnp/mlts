@@ -18,6 +18,7 @@ export class ExperimentDescription {
         readonly definition: ExperimentJson,
         readonly algorithm: Algorithm,
         readonly dataset: TensorflowDataset,
+        readonly metaParameters: Record<string, any>,
         readonly optimization: OptimizationParameters,
         readonly path: string,
     ) {}
@@ -67,7 +68,7 @@ export class ExperimentDescription {
             ? await (algData.constructor as any as typeof Algorithm).fromSavedState(saveLocation)
             : new algData.constructor(datasetDescriptor, metaParameters, saveLocation);
 
-        return new ExperimentDescription(data, algorithm, dataset, data.optimization, expLocation);
+        return new ExperimentDescription(data, algorithm, dataset, metaParameters, data.optimization, expLocation);
     }
 
     static async fromCommandLine() {

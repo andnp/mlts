@@ -16,10 +16,11 @@ const ExperimentSchema_1 = require("./ExperimentSchema");
 const fileSystem_1 = require("./fileSystem");
 const ExperimentRegistry_1 = require("./ExperimentRegistry");
 class ExperimentDescription {
-    constructor(definition, algorithm, dataset, optimization, path) {
+    constructor(definition, algorithm, dataset, metaParameters, optimization, path) {
         this.definition = definition;
         this.algorithm = algorithm;
         this.dataset = dataset;
+        this.metaParameters = metaParameters;
         this.optimization = optimization;
         this.path = path;
     }
@@ -60,7 +61,7 @@ class ExperimentDescription {
             const algorithm = exists
                 ? yield algData.constructor.fromSavedState(saveLocation)
                 : new algData.constructor(datasetDescriptor, metaParameters, saveLocation);
-            return new ExperimentDescription(data, algorithm, dataset, data.optimization, expLocation);
+            return new ExperimentDescription(data, algorithm, dataset, metaParameters, data.optimization, expLocation);
         });
     }
     static fromCommandLine() {
