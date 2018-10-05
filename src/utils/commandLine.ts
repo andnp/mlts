@@ -11,7 +11,7 @@ export function parseArgs() {
 
         const nextArg = argList[i + 1];
 
-        if (isFlag(nextArg)) {
+        if (!nextArg || isFlag(nextArg)) {
             args[dropFlags(arg)] = 'true';
         } else {
             args[dropFlags(arg)] = nextArg;

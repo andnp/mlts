@@ -8,7 +8,7 @@ function parseArgs() {
         if (!isFlag(arg))
             throw new Error(`Expected to find flag argument. <${arg}>`);
         const nextArg = argList[i + 1];
-        if (isFlag(nextArg)) {
+        if (!nextArg || isFlag(nextArg)) {
             args[dropFlags(arg)] = 'true';
         }
         else {
