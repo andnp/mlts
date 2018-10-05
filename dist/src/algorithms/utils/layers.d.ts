@@ -18,7 +18,7 @@ export declare const LayerMetaParametersSchema: v.Validator<import("simplytyped/
         weight: v.Validator<number>;
     }>>;
     units: v.Validator<number>;
-    activation: v.Validator<"elu" | "linear" | "relu" | "sigmoid" | "tanh">;
+    activation: v.Validator<"linear" | "elu" | "relu" | "sigmoid" | "tanh">;
     type: v.Validator<"dense">;
     name: v.Validator<string>;
 }>, "type" | "units" | "activation">>>;
@@ -41,7 +41,7 @@ export declare const constructTFLayer: (layerDef: import("simplytyped/types/obje
         weight: v.Validator<number>;
     }>>;
     units: v.Validator<number>;
-    activation: v.Validator<"elu" | "linear" | "relu" | "sigmoid" | "tanh">;
+    activation: v.Validator<"linear" | "elu" | "relu" | "sigmoid" | "tanh">;
     type: v.Validator<"dense">;
     name: v.Validator<string>;
 }>, "type" | "units" | "activation">>) => tf.layers.Layer;
@@ -63,7 +63,7 @@ export declare const constructTFNetwork: (layerDefs: import("simplytyped/types/o
         weight: v.Validator<number>;
     }>>;
     units: v.Validator<number>;
-    activation: v.Validator<"elu" | "linear" | "relu" | "sigmoid" | "tanh">;
+    activation: v.Validator<"linear" | "elu" | "relu" | "sigmoid" | "tanh">;
     type: v.Validator<"dense">;
     name: v.Validator<string>;
 }>, "type" | "units" | "activation">>[], input: tf.SymbolicTensor) => tf.SymbolicTensor[];

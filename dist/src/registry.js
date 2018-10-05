@@ -8,6 +8,7 @@ const GreyCifar10_1 = require("./data/tensorflow/GreyCifar10");
 const Deterding_1 = require("./data/tensorflow/Deterding");
 const SusyComplete_1 = require("./data/tensorflow/SusyComplete");
 const mnist_1 = require("./data/tensorflow/mnist");
+const FashionMnist_1 = require("./data/tensorflow/FashionMnist");
 // ----------
 // Algorithms
 // ----------
@@ -32,5 +33,6 @@ ExperimentRegistry_1.registerDataset('cifar', GreyCifar10_1.GreyCifar10);
 ExperimentRegistry_1.registerDataset('deterding', Deterding_1.Deterding);
 ExperimentRegistry_1.registerDataset('susy', SusyComplete_1.SusyComplete);
 ExperimentRegistry_1.registerDataset('mnist', mnist_1.Mnist);
+ExperimentRegistry_1.registerDataset('fashion_mnist', FashionMnist_1.FashionMnist);
 ExperimentRegistry_1.registerTransformation('GaussianKernel', GaussianKernel_1.GaussianKernelTransformation, GaussianKernel_1.GaussianKernelParametersSchema);
 //# sourceMappingURL=registry.js.map

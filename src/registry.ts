@@ -7,6 +7,7 @@ import { GreyCifar10 } from './data/tensorflow/GreyCifar10';
 import { Deterding } from './data/tensorflow/Deterding';
 import { SusyComplete } from './data/tensorflow/SusyComplete';
 import { Mnist } from './data/tensorflow/mnist';
+import { FashionMnist } from './data/tensorflow/FashionMnist';
 
 // ----------
 // Algorithms
@@ -34,4 +35,5 @@ registerDataset('cifar', GreyCifar10);
 registerDataset('deterding', Deterding);
 registerDataset('susy', SusyComplete);
 registerDataset('mnist', Mnist);
+registerDataset('fashion_mnist', FashionMnist);
 registerTransformation('GaussianKernel', GaussianKernelTransformation, GaussianKernelParametersSchema);

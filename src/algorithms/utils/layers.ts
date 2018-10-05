@@ -7,7 +7,7 @@ import { RegularizerParametersSchema, regularizeLayer } from '../../regularizers
 export const LayerMetaParametersSchema = v.object({
     regularizer: RegularizerParametersSchema,
     units: v.number(),
-    activation: v.string(['sigmoid', 'linear', 'relu', 'tanh', 'elu']),
+    activation: v.string(['elu', 'linear', 'relu', 'sigmoid', 'tanh']),
     type: v.string(['dense']),
     name: v.string(),
 }, { optional: ['name', 'regularizer'] });

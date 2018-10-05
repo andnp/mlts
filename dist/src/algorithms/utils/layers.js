@@ -7,7 +7,7 @@ const regularizers_1 = require("../../regularizers/regularizers");
 exports.LayerMetaParametersSchema = v.object({
     regularizer: regularizers_1.RegularizerParametersSchema,
     units: v.number(),
-    activation: v.string(['sigmoid', 'linear', 'relu', 'tanh', 'elu']),
+    activation: v.string(['elu', 'linear', 'relu', 'sigmoid', 'tanh']),
     type: v.string(['dense']),
     name: v.string(),
 }, { optional: ['name', 'regularizer'] });
