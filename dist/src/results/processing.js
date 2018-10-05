@@ -11,7 +11,7 @@ const numericAscending = (a, b) => a - b;
 const parameterLens = exports.lens('metaParameters');
 const meanLens = _.flow(exports.lens('description'), exports.lens('mean'));
 exports.createMinMeanReducer = (file) => {
-    const minMeanLens = _.flow(exports.lens(name), meanLens);
+    const minMeanLens = _.flow(exports.lens(file), meanLens);
     return (a, b) => {
         return minMeanLens(a) < minMeanLens(b)
             ? a

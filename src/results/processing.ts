@@ -29,7 +29,7 @@ const meanLens = _.flow(
 
 export const createMinMeanReducer: ResultReducerCreator = (file: string) => {
     const minMeanLens = _.flow(
-        lens(name),
+        lens(file),
         meanLens,
     );
 
