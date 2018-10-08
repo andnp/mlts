@@ -40,13 +40,11 @@ export const createMinMeanReducer: ResultReducerCreator = (file: string) => {
     };
 };
 
-export function groupByParameter(p_lens: Lens, reducer: ResultReducer, res: Result[]) {
-    const p = _.flow(parameterLens, p_lens);
-
-    const values = res.map(p);
+export function group(p_lens: Lens, reducer: ResultReducer, res: Result[]) {
+    const values = res.map(p_lens);
     const uniqueValues = _.uniq(values).sort(numericAscending);
 
-    const matched = uniqueValues.map(v => res.filter(r => p(r) === v));
+    const matched = uniqueValues.map(v => res.filter(r => p_lens(r) === v));
 
     return matched.map(group => {
         return group.reduce((p, c) => {

@@ -8,5 +8,5 @@ export declare const parameterLens: Lens;
 declare type ResultReducer = (a: Result, b: Result) => Result;
 declare type ResultReducerCreator = (name: string) => ResultReducer;
 export declare const createMinMeanReducer: ResultReducerCreator;
-export declare function groupByParameter(p_lens: Lens, reducer: ResultReducer, res: Result[]): Result[];
+export declare function group(p_lens: Lens, reducer: ResultReducer, res: Result[]): Result[];
 export {};

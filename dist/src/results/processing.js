@@ -18,16 +18,15 @@ exports.createMinMeanReducer = (file) => {
             : b;
     };
 };
-function groupByParameter(p_lens, reducer, res) {
-    const p = _.flow(exports.parameterLens, p_lens);
-    const values = res.map(p);
+function group(p_lens, reducer, res) {
+    const values = res.map(p_lens);
     const uniqueValues = _.uniq(values).sort(numericAscending);
-    const matched = uniqueValues.map(v => res.filter(r => p(r) === v));
+    const matched = uniqueValues.map(v => res.filter(r => p_lens(r) === v));
     return matched.map(group => {
         return group.reduce((p, c) => {
             return reducer(p, c);
         }, group[0]);
     });
 }
-exports.groupByParameter = groupByParameter;
+exports.group = group;
 //# sourceMappingURL=processing.js.map
