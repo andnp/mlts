@@ -7,4 +7,5 @@ __export(require("./ExperimentDescription"));
 __export(require("./ExperimentRegistry"));
 __export(require("./ExperimentSchema"));
 __export(require("./ClassificationError"));
+__export(require("./metaParameters"));
 //# sourceMappingURL=index.js.map
