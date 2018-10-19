@@ -17,6 +17,7 @@ import { SupervisedDictionaryLearning, SupervisedDictionaryLearningMetaParameter
 import { LogisticRegression, LogisticRegressionMetaParameterSchema } from './algorithms/LogisticRegression';
 import { SupervisedAutoencoder, SupervisedAutoencoderMetaParameterSchema } from './algorithms/SupervisedAutoencoder';
 import { TwoStageAutoencoder, TwoStageAutoencoderMetaParameterSchema } from './algorithms/TwoStageAutoencoder';
+import { ANN, ANNMetaParameterSchema } from './algorithms/ANN';
 
 // ---------------
 // Transformations
@@ -26,6 +27,7 @@ import { GaussianKernelTransformation, GaussianKernelParametersSchema } from './
 // --------
 // Registry
 // --------
+registerAlgorithm('ann', ANN, ANNMetaParameterSchema);
 registerAlgorithm('twostage', TwoStageDictionaryLearning, TwoStageDictionaryLearningMetaParametersSchema);
 registerAlgorithm('sdl', SupervisedDictionaryLearning, SupervisedDictionaryLearningMetaParameterSchema);
 registerAlgorithm('logisticRegression', LogisticRegression, LogisticRegressionMetaParameterSchema);
