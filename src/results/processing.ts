@@ -15,6 +15,10 @@ export function where(l: Lens, value: any, res: Result[]) {
     return res.filter(result => l(result) === value);
 }
 
+export function whereNot(l: Lens, value: any, res: Result[]) {
+    return res.filter(result => l(result) !== value);
+}
+
 const numericAscending = (a: number, b: number) => a - b;
 
 export const parameterLens = lens('metaParameters');

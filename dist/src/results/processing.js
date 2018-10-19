@@ -7,6 +7,10 @@ function where(l, value, res) {
     return res.filter(result => l(result) === value);
 }
 exports.where = where;
+function whereNot(l, value, res) {
+    return res.filter(result => l(result) !== value);
+}
+exports.whereNot = whereNot;
 const numericAscending = (a, b) => a - b;
 exports.parameterLens = exports.lens('metaParameters');
 const meanLens = _.flow(exports.lens('description'), exports.lens('mean'));
