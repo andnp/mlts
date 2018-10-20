@@ -27,8 +27,9 @@ function collectResults(rootPath, resultFileNames) {
             const params = yield utilities_ts_1.files.readJson(paramsFiles[0], v.any());
             const experiment = yield utilities_ts_1.files.readJson(experimentFiles[0], v.any());
             const description = utilities_ts_1.objects.discriminatedObject('name', descriptions);
-            const result = Object.assign({}, description, { metaParameters: params, algorithm: experiment.algorithm, dataset: experiment.dataset, optimization: experiment.optimization });
-            yield utilities_ts_1.files.writeJson(path.join(hashDir, 'results.json'), result);
+            const resultPath = path.join(hashDir, 'results.json');
+            const result = Object.assign({}, description, { path: resultPath, metaParameters: params, algorithm: experiment.algorithm, dataset: experiment.dataset, optimization: experiment.optimization });
+            yield utilities_ts_1.files.writeJson(resultPath, result);
             return result;
         }));
         const oldResultsHashes = _.difference(hashDirectories, uncollectedResults);

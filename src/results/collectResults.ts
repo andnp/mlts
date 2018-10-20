@@ -33,15 +33,17 @@ export async function collectResults(rootPath: string, resultFileNames: string[]
 
         const description = objects.discriminatedObject('name', descriptions);
 
+        const resultPath = path.join(hashDir, 'results.json');
         const result: Result = {
             ...description,
+            path: resultPath,
             metaParameters: params,
             algorithm: experiment.algorithm,
             dataset: experiment.dataset,
             optimization: experiment.optimization,
         };
 
-        await files.writeJson(path.join(hashDir, 'results.json'), result);
+        await files.writeJson(resultPath, result);
 
         return result;
     });
