@@ -25,6 +25,8 @@ __export(require("./experiments"));
 __export(require("./data"));
 __export(require("./analysis"));
 __export(require("./algorithms"));
+var flatten_1 = require("./utils/flatten");
+exports.flattenToArray = flatten_1.flattenToArray;
 var matrix_1 = require("./utils/matrix");
 exports.Matrix = matrix_1.Matrix;
 //# sourceMappingURL=index.js.map
