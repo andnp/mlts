@@ -24,6 +24,11 @@ class ExperimentDescription {
         this.optimization = optimization;
         this.path = path;
     }
+    static getResultsPath(data, index) {
+        const permutation = metaParameters_1.getParameterPermutation(data.metaParameters, index);
+        const run = Math.floor(index / metaParameters_1.getNumberOfRuns(data.metaParameters));
+        return fileSystem_1.getResultsPath(data, permutation, run);
+    }
     static fromJson(location, index) {
         return __awaiter(this, void 0, void 0, function* () {
             const ExperimentSchema = ExperimentSchema_1.getExperimentSchema();
@@ -54,8 +59,7 @@ class ExperimentDescription {
                 classes: dataset.classes,
                 samples: dataset.samples,
             };
-            const run = Math.floor(index / metaParameters_1.getNumberOfRuns(data.metaParameters));
-            const expLocation = fileSystem_1.getResultsPath(data, metaParameters, run);
+            const expLocation = ExperimentDescription.getResultsPath(data, index);
             const saveLocation = path.join('savedModels', expLocation);
             const exists = yield utilities_ts_1.files.fileExists(saveLocation);
             const algorithm = exists

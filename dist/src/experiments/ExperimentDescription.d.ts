@@ -10,6 +10,7 @@ export declare class ExperimentDescription {
     readonly optimization: OptimizationParameters;
     readonly path: string;
     private constructor();
+    static getResultsPath(data: ExperimentJson, index: number): string;
     static fromJson(location: string, index: number): Promise<ExperimentDescription>;
     static fromCommandLine(): Promise<ExperimentDescription>;
 }

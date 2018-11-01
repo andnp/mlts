@@ -23,6 +23,12 @@ export class ExperimentDescription {
         readonly path: string,
     ) {}
 
+    static getResultsPath(data: ExperimentJson, index: number) {
+        const permutation = getParameterPermutation(data.metaParameters, index);
+        const run = Math.floor(index / getNumberOfRuns(data.metaParameters));
+        return getResultsPath(data, permutation, run);
+    }
+
     static async fromJson(location: string, index: number) {
         const ExperimentSchema = getExperimentSchema();
         const data = await files.readJson(location, ExperimentSchema);
@@ -58,8 +64,7 @@ export class ExperimentDescription {
             samples: dataset.samples,
         };
 
-        const run = Math.floor(index / getNumberOfRuns(data.metaParameters));
-        const expLocation = getResultsPath(data, metaParameters, run);
+        const expLocation = ExperimentDescription.getResultsPath(data, index);
         const saveLocation = path.join('savedModels', expLocation);
 
         const exists = await files.fileExists(saveLocation);

@@ -46,8 +46,11 @@ function describeResultFiles(resultFilePaths, resultFileName) {
             return;
         const contents = yield utilities_ts_1.promise.map(resultFiles, file => utilities_ts_1.files.readFile(file));
         const results = contents.map(c => parseFloat(c.toString()));
+        // create an 1*n matrix so that we can use description utility methods
         const resMatrix = matrix_1.Matrix.fromData([results]);
         return {
+            // describeRows will get mean/stderr over columns for each row
+            // since we only have one row, grab only that description
             description: tsplot.describeRows(resMatrix)[0],
             name: resultFileName,
         };
