@@ -19,7 +19,7 @@ const utilities_ts_2 = require("utilities-ts");
 const History_1 = require("../analysis/History");
 const tensorflow_1 = require("../utils/tensorflow");
 const OptimizerSchemas_1 = require("./OptimizerSchemas");
-const training_1 = require("@tensorflow/tfjs-layers/dist/engine/training");
+const base_callbacks_1 = require("@tensorflow/tfjs-layers/dist/base_callbacks");
 // ---------
 // Optimizer
 // ---------
@@ -82,7 +82,7 @@ class Optimizer {
                 for (let i = this.completedIterations; i < epochs; i += refreshRate) {
                     const remainingEpochs = epochs - i;
                     const epochsToRun = remainingEpochs > refreshRate ? refreshRate : remainingEpochs;
-                    const h = yield model.fit(X, Y, Object.assign({ batchSize: params.batchSize || utilities_ts_1.arrays.getFirst(X).shape[0], yieldEvery: 'epoch' }, params, { epochs: epochsToRun, callbacks: [new tensorflow_1.LoggerCallback(printer, i), new tensorflow_1.EpochCounter(() => this.completedIterations++)], verbose: training_1.ModelLoggingVerbosity.SILENT }));
+                    const h = yield model.fit(X, Y, Object.assign({ batchSize: params.batchSize || utilities_ts_1.arrays.getFirst(X).shape[0], yieldEvery: 'epoch' }, params, { epochs: epochsToRun, callbacks: [new tensorflow_1.LoggerCallback(printer, i), new tensorflow_1.EpochCounter(() => this.completedIterations++)], verbose: base_callbacks_1.ModelLoggingVerbosity.SILENT }));
                     if (!cumulativeHistory)
                         cumulativeHistory = h;
                     else

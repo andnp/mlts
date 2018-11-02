@@ -10,7 +10,7 @@ import { files, assertNever } from 'utilities-ts';
 import { History } from '../analysis/History';
 import { LoggerCallback, EpochCounter } from '../utils/tensorflow';
 import { OptimizationParameters, OptimizationParametersSchema } from './OptimizerSchemas';
-import { ModelLoggingVerbosity } from '@tensorflow/tfjs-layers/dist/engine/training';
+import { ModelLoggingVerbosity } from '@tensorflow/tfjs-layers/dist/base_callbacks';
 
 export interface OptimizationOptions {
     printProgress: boolean;
