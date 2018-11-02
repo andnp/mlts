@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 
 import { onExit } from './onExit';
 
-const isTestOrProd: boolean = (global as any).__TEST__ || (global as any).__PROD__;
+const isTestOrProd: boolean = (global as any).__TEST__ || process.env.env === 'PROD';
 
 const childFile = path.join(__dirname, 'childPrinter.js');
 const cp = !isTestOrProd && fork(childFile);
