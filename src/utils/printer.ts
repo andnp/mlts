@@ -4,8 +4,10 @@ import * as _ from 'lodash';
 
 import { onExit } from './onExit';
 
+const isTestOrProd: boolean = (global as any).__TEST__ || (global as any).__PROD__;
+
 const childFile = path.join(__dirname, 'childPrinter.js');
-const cp = !(global as any).__TEST__ && fork(childFile);
+const cp = !isTestOrProd && fork(childFile);
 onExit(() => cp && cp.kill());
 
 const print = (data: Printable) => {
