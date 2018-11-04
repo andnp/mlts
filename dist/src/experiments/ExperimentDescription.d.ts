@@ -8,9 +8,10 @@ export declare class ExperimentDescription {
     readonly dataset: TensorflowDataset;
     readonly metaParameters: Record<string, any>;
     readonly optimization: OptimizationParameters;
+    readonly resultsBase: string;
     readonly path: string;
     private constructor();
     static getResultsPath(data: ExperimentJson, index: number): string;
-    static fromJson(location: string, index: number, saveRoot?: string): Promise<ExperimentDescription>;
+    static fromJson(location: string, index: number, resultsPath?: string, saveRoot?: string): Promise<ExperimentDescription>;
     static fromCommandLine(): Promise<ExperimentDescription>;
 }

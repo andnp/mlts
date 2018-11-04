@@ -16,12 +16,13 @@ const ExperimentSchema_1 = require("./ExperimentSchema");
 const fileSystem_1 = require("./fileSystem");
 const ExperimentRegistry_1 = require("./ExperimentRegistry");
 class ExperimentDescription {
-    constructor(definition, algorithm, dataset, metaParameters, optimization, path) {
+    constructor(definition, algorithm, dataset, metaParameters, optimization, resultsBase, path) {
         this.definition = definition;
         this.algorithm = algorithm;
         this.dataset = dataset;
         this.metaParameters = metaParameters;
         this.optimization = optimization;
+        this.resultsBase = resultsBase;
         this.path = path;
     }
     static getResultsPath(data, index) {
@@ -29,7 +30,7 @@ class ExperimentDescription {
         const run = Math.floor(index / metaParameters_1.getNumberOfRuns(data.metaParameters));
         return fileSystem_1.getResultsPath(data, permutation, run);
     }
-    static fromJson(location, index, saveRoot) {
+    static fromJson(location, index, resultsPath, saveRoot) {
         return __awaiter(this, void 0, void 0, function* () {
             const ExperimentSchema = ExperimentSchema_1.getExperimentSchema();
             const data = yield utilities_ts_1.files.readJson(location, ExperimentSchema);
@@ -69,7 +70,7 @@ class ExperimentDescription {
                     .fromSavedState(saveLocation) // load algorithm from save state
                     .catch(instantiateAlgorithm) // if that fails, build a fresh version instead
                 : instantiateAlgorithm();
-            return new ExperimentDescription(data, algorithm, dataset, metaParameters, data.optimization, expLocation);
+            return new ExperimentDescription(data, algorithm, dataset, metaParameters, data.optimization, resultsPath || 'results', expLocation);
         });
     }
     static fromCommandLine() {
@@ -77,12 +78,13 @@ class ExperimentDescription {
             const cla = commandLine.parseArgs();
             const index = cla.i || cla.index;
             const experimentPath = cla.e || cla.experiment;
+            const results = cla.r || cla.results;
             const save = cla.s || cla.save;
             if (!index)
                 throw new Error('Expected -i or --index to be specified');
             if (!experimentPath)
                 throw new Error('Expected -e or --experiment to be specified');
-            return this.fromJson(experimentPath, parseInt(index), save);
+            return this.fromJson(experimentPath, parseInt(index), results, save);
         });
     }
 }

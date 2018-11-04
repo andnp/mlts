@@ -20,6 +20,7 @@ export class ExperimentDescription {
         readonly dataset: TensorflowDataset,
         readonly metaParameters: Record<string, any>,
         readonly optimization: OptimizationParameters,
+        readonly resultsBase: string,
         readonly path: string,
     ) {}
 
@@ -29,7 +30,7 @@ export class ExperimentDescription {
         return getResultsPath(data, permutation, run);
     }
 
-    static async fromJson(location: string, index: number, saveRoot?: string) {
+    static async fromJson(location: string, index: number, resultsPath?: string, saveRoot?: string) {
         const ExperimentSchema = getExperimentSchema();
         const data = await files.readJson(location, ExperimentSchema);
 
@@ -77,7 +78,7 @@ export class ExperimentDescription {
                 .catch(instantiateAlgorithm)  // if that fails, build a fresh version instead
             : instantiateAlgorithm();
 
-        return new ExperimentDescription(data, algorithm, dataset, metaParameters, data.optimization, expLocation);
+        return new ExperimentDescription(data, algorithm, dataset, metaParameters, data.optimization, resultsPath || 'results', expLocation);
     }
 
     static async fromCommandLine() {
@@ -85,11 +86,12 @@ export class ExperimentDescription {
 
         const index = cla.i || cla.index;
         const experimentPath = cla.e || cla.experiment;
+        const results = cla.r || cla.results;
         const save = cla.s || cla.save;
 
         if (!index) throw new Error('Expected -i or --index to be specified');
         if (!experimentPath) throw new Error('Expected -e or --experiment to be specified');
 
-        return this.fromJson(experimentPath, parseInt(index), save);
+        return this.fromJson(experimentPath, parseInt(index), results, save);
     }
 }
