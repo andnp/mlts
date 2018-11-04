@@ -11,7 +11,7 @@ exports.getExperimentSchema = () => {
     return v.object({
         algorithm: v.string(),
         dataset: v.string(),
-        metaParameters: v.any(),
+        metaParameters: v.record(v.any()),
         transformation: TransformationSchema,
         optimization: OptimizerSchemas_1.OptimizationParametersSchema,
     }, { optional: ['transformation'] });

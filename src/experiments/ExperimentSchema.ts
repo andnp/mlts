@@ -12,7 +12,7 @@ export const getExperimentSchema = () => {
     return v.object({
         algorithm: v.string(),
         dataset: v.string(),
-        metaParameters: v.any(),
+        metaParameters: v.record(v.any()),
         transformation: TransformationSchema,
         optimization: OptimizationParametersSchema,
     }, { optional: ['transformation'] });

@@ -3,7 +3,7 @@ export declare const getResultsPath: (experiment: import("simplytyped/types/obje
 } & Pick<import("validtyped").ObjectValidator<{
     algorithm: import("validtyped").Validator<string>;
     dataset: import("validtyped").Validator<string>;
-    metaParameters: import("validtyped").Validator<any>;
+    metaParameters: import("validtyped").Validator<Record<string, any>>;
     transformation: import("validtyped").Validator<any>;
     optimization: import("validtyped").Validator<(import("simplytyped/types/objects").ObjectType<{
         threshold?: number | undefined;

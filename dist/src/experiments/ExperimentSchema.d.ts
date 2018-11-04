@@ -4,7 +4,7 @@ export declare const getExperimentSchema: () => v.Validator<import("simplytyped/
 } & Pick<v.ObjectValidator<{
     algorithm: v.Validator<string>;
     dataset: v.Validator<string>;
-    metaParameters: v.Validator<any>;
+    metaParameters: v.Validator<Record<string, any>>;
     transformation: v.Validator<any>;
     optimization: v.Validator<(import("simplytyped/types/objects").ObjectType<{
         threshold?: number | undefined;
