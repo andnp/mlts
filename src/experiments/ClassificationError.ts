@@ -15,7 +15,7 @@ export class ClassificationErrorExperiment {
 
         const [ X, Y ] = d.train;
 
-        await alg.train(X, Y, this.description.optimization, { autosave: false });
+        await alg.train(X, Y, this.description.optimization);
 
         const [ T, TY ] = d.test;
 

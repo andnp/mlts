@@ -13,7 +13,8 @@ const src_1 = require("../src");
 function execute() {
     return __awaiter(this, void 0, void 0, function* () {
         const d = yield src_1.Deterding.load();
-        const alg = new src_1.ANN(d.description());
+        // const alg = new ANN(d.description());
+        const alg = yield src_1.ANN.fromSavedState('savedModels');
         const [X, Y] = d.train;
         yield alg.train(X, Y, { iterations: 100 });
         const [T, TY] = d.test;

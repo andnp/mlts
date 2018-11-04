@@ -11,7 +11,7 @@
     "prepush": "npm run -s lint && npm test",
     "file": "NODE_PATH=src ts-node",
     "tsc": "tsc",
-    "start": "npm run -s build; NODE_PATH=dist/src node --max-old-space-size=8192 dist/src/index.js",
+    "start": "npm run -s build; NODE_PATH=dist/src node --max-old-space-size=8192 dist/scripts/test.js",
     "watch": "tsc --watch"
   },
   "author": "",

@@ -53,7 +53,7 @@ export abstract class Algorithm {
 
         const history = await this._train(X, Y, opts);
 
-        if (shouldAutosave) this.stopBackup();
+        if (shouldAutosave) await this.stopBackup();
         return history;
     }
 
@@ -321,14 +321,14 @@ export abstract class Algorithm {
             if (this.activeBackup) return;
             this.activeBackup = this.save()
                 .then(() => this.activeBackup = undefined);
-        }, time.minutes(5));
+        }, time.minutes(15));
     }
 
-    private stopBackup() {
+    private async stopBackup() {
         // if we stop backing up while there is no backup occurring, save one more time
-        if (!this.activeBackup) this.save();
+        if (!this.activeBackup) await this.save();
         // if we stop while a save is occurring, save once more afterwards to guarantee we get the algorithm's final state
-        else this.activeBackup.then(() => this.save());
+        else await this.activeBackup.then(() => this.save());
         clearInterval(this.backupHandler as any);
     }
 }

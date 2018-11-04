@@ -29,7 +29,7 @@ class ExperimentDescription {
         const run = Math.floor(index / metaParameters_1.getNumberOfRuns(data.metaParameters));
         return fileSystem_1.getResultsPath(data, permutation, run);
     }
-    static fromJson(location, index) {
+    static fromJson(location, index, saveRoot) {
         return __awaiter(this, void 0, void 0, function* () {
             const ExperimentSchema = ExperimentSchema_1.getExperimentSchema();
             const data = yield utilities_ts_1.files.readJson(location, ExperimentSchema);
@@ -60,11 +60,15 @@ class ExperimentDescription {
                 samples: dataset.samples,
             };
             const expLocation = ExperimentDescription.getResultsPath(data, index);
-            const saveLocation = path.join('savedModels', expLocation);
+            const root = saveRoot || 'savedModels';
+            const saveLocation = path.join(root, expLocation);
             const exists = yield utilities_ts_1.files.fileExists(saveLocation);
+            const instantiateAlgorithm = () => new algData.constructor(datasetDescriptor, metaParameters, saveLocation);
             const algorithm = exists
-                ? yield algData.constructor.fromSavedState(saveLocation)
-                : new algData.constructor(datasetDescriptor, metaParameters, saveLocation);
+                ? yield algData.constructor
+                    .fromSavedState(saveLocation) // load algorithm from save state
+                    .catch(instantiateAlgorithm) // if that fails, build a fresh version instead
+                : instantiateAlgorithm();
             return new ExperimentDescription(data, algorithm, dataset, metaParameters, data.optimization, expLocation);
         });
     }
@@ -73,11 +77,12 @@ class ExperimentDescription {
             const cla = commandLine.parseArgs();
             const index = cla.i || cla.index;
             const experimentPath = cla.e || cla.experiment;
+            const save = cla.s || cla.save;
             if (!index)
                 throw new Error('Expected -i or --index to be specified');
             if (!experimentPath)
                 throw new Error('Expected -e or --experiment to be specified');
-            return this.fromJson(experimentPath, parseInt(index));
+            return this.fromJson(experimentPath, parseInt(index), save);
         });
     }
 }

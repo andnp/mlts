@@ -71,24 +71,9 @@ class Optimizer {
     }
     fit(model, X, Y, params) {
         return __awaiter(this, void 0, void 0, function* () {
-            const refreshRate = 100;
             const history = yield printer_1.printProgressAsync((printer) => __awaiter(this, void 0, void 0, function* () {
-                const epochs = params.epochs;
-                let cumulativeHistory;
-                // this all sucks.. I'd much rather _not_ do this, but there is currently a major
-                // memory leak in tfjs that is causing catastrophic slow downs of models that need
-                // to run over many epochs. By splitting up the epochs like this, I manage to get
-                // around that memory leak. One day, I hope that this will be appropriately fixed
-                for (let i = this.completedIterations; i < epochs; i += refreshRate) {
-                    const remainingEpochs = epochs - i;
-                    const epochsToRun = remainingEpochs > refreshRate ? refreshRate : remainingEpochs;
-                    const h = yield model.fit(X, Y, Object.assign({ batchSize: params.batchSize || utilities_ts_1.arrays.getFirst(X).shape[0], yieldEvery: 'epoch' }, params, { epochs: epochsToRun, callbacks: [new tensorflow_1.LoggerCallback(printer, i), new tensorflow_1.EpochCounter(() => this.completedIterations++)], verbose: base_callbacks_1.ModelLoggingVerbosity.SILENT }));
-                    if (!cumulativeHistory)
-                        cumulativeHistory = h;
-                    else
-                        cumulativeHistory.history.loss = cumulativeHistory.history.loss.concat(h.history.loss);
-                }
-                return cumulativeHistory;
+                const epochs = params.epochs - this.completedIterations;
+                return model.fit(X, Y, Object.assign({ batchSize: params.batchSize || utilities_ts_1.arrays.getFirst(X).shape[0], yieldEvery: 'epoch' }, params, { epochs, callbacks: [new tensorflow_1.LoggerCallback(printer, this.completedIterations), new tensorflow_1.EpochCounter(() => this.completedIterations++)], verbose: base_callbacks_1.ModelLoggingVerbosity.SILENT }));
             }));
             return history;
         });

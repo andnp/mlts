@@ -80,33 +80,17 @@ export class Optimizer {
         throw new Error('Unexpected line reached');
     }
     async fit(model: tf.Model, X: tf.Tensor | tf.Tensor[], Y: tf.Tensor | tf.Tensor[], params: tf.ModelFitConfig) {
-        const refreshRate = 100;
-
         const history = await printProgressAsync(async (printer) => {
-            const epochs = params.epochs!;
-            let cumulativeHistory: tf.History | undefined;
+            const epochs = params.epochs! - this.completedIterations;
 
-            // this all sucks.. I'd much rather _not_ do this, but there is currently a major
-            // memory leak in tfjs that is causing catastrophic slow downs of models that need
-            // to run over many epochs. By splitting up the epochs like this, I manage to get
-            // around that memory leak. One day, I hope that this will be appropriately fixed
-            for (let i = this.completedIterations; i < epochs; i += refreshRate) {
-                const remainingEpochs = epochs - i;
-                const epochsToRun = remainingEpochs > refreshRate ? refreshRate : remainingEpochs;
-                const h = await model.fit(X, Y, {
-                    batchSize: params.batchSize || arrays.getFirst(X).shape[0],
-                    yieldEvery: 'epoch',
-                    ...params,
-                    epochs: epochsToRun,
-                    callbacks: [new LoggerCallback(printer, i), new EpochCounter(() => this.completedIterations++)],
-                    verbose: ModelLoggingVerbosity.SILENT,
-                });
-
-                if (!cumulativeHistory) cumulativeHistory = h;
-                else cumulativeHistory.history.loss = cumulativeHistory.history.loss.concat(h.history.loss);
-            }
-
-            return cumulativeHistory!;
+            return model.fit(X, Y, {
+                batchSize: params.batchSize || arrays.getFirst(X).shape[0],
+                yieldEvery: 'epoch',
+                ...params,
+                epochs,
+                callbacks: [new LoggerCallback(printer, this.completedIterations), new EpochCounter(() => this.completedIterations++)],
+                verbose: ModelLoggingVerbosity.SILENT,
+            });
         });
 
         return history;

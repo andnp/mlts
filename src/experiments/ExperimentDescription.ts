@@ -29,7 +29,7 @@ export class ExperimentDescription {
         return getResultsPath(data, permutation, run);
     }
 
-    static async fromJson(location: string, index: number) {
+    static async fromJson(location: string, index: number, saveRoot?: string) {
         const ExperimentSchema = getExperimentSchema();
         const data = await files.readJson(location, ExperimentSchema);
 
@@ -65,13 +65,17 @@ export class ExperimentDescription {
         };
 
         const expLocation = ExperimentDescription.getResultsPath(data, index);
-        const saveLocation = path.join('savedModels', expLocation);
+        const root = saveRoot || 'savedModels';
+        const saveLocation = path.join(root, expLocation);
 
         const exists = await files.fileExists(saveLocation);
 
+        const instantiateAlgorithm = () => new algData.constructor(datasetDescriptor, metaParameters, saveLocation);
         const algorithm = exists
-            ? await (algData.constructor as any as typeof Algorithm).fromSavedState(saveLocation)
-            : new algData.constructor(datasetDescriptor, metaParameters, saveLocation);
+            ? await (algData.constructor as any as typeof Algorithm)
+                .fromSavedState(saveLocation) // load algorithm from save state
+                .catch(instantiateAlgorithm)  // if that fails, build a fresh version instead
+            : instantiateAlgorithm();
 
         return new ExperimentDescription(data, algorithm, dataset, metaParameters, data.optimization, expLocation);
     }
@@ -81,10 +85,11 @@ export class ExperimentDescription {
 
         const index = cla.i || cla.index;
         const experimentPath = cla.e || cla.experiment;
+        const save = cla.s || cla.save;
 
         if (!index) throw new Error('Expected -i or --index to be specified');
         if (!experimentPath) throw new Error('Expected -e or --experiment to be specified');
 
-        return this.fromJson(experimentPath, parseInt(index));
+        return this.fromJson(experimentPath, parseInt(index), save);
     }
 }

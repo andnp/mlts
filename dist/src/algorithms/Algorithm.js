@@ -46,7 +46,7 @@ class Algorithm {
                 this.startBackup();
             const history = yield this._train(X, Y, opts);
             if (shouldAutosave)
-                this.stopBackup();
+                yield this.stopBackup();
             return history;
         });
     }
@@ -299,16 +299,18 @@ class Algorithm {
                 return;
             this.activeBackup = this.save()
                 .then(() => this.activeBackup = undefined);
-        }, utilities_ts_1.time.minutes(5));
+        }, utilities_ts_1.time.minutes(15));
     }
     stopBackup() {
-        // if we stop backing up while there is no backup occurring, save one more time
-        if (!this.activeBackup)
-            this.save();
-        // if we stop while a save is occurring, save once more afterwards to guarantee we get the algorithm's final state
-        else
-            this.activeBackup.then(() => this.save());
-        clearInterval(this.backupHandler);
+        return __awaiter(this, void 0, void 0, function* () {
+            // if we stop backing up while there is no backup occurring, save one more time
+            if (!this.activeBackup)
+                yield this.save();
+            // if we stop while a save is occurring, save once more afterwards to guarantee we get the algorithm's final state
+            else
+                yield this.activeBackup.then(() => this.save());
+            clearInterval(this.backupHandler);
+        });
     }
 }
 exports.Algorithm = Algorithm;
