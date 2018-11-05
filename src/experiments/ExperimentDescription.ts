@@ -91,7 +91,7 @@ export class ExperimentDescription {
         const gpu = cla.gpu;
         const slotId = cla.slotId; // gnu-parallel slot id. used to determine whether gpu should be used.
 
-        if (gpu && (slotId === '0' || slotId === undefined)) {
+        if (gpu && (slotId === '1' || slotId === undefined)) {
             try {
                 require('@tensorflow/tfjs-node-gpu');
             } catch(e) {
