@@ -88,6 +88,15 @@ export class ExperimentDescription {
         const experimentPath = cla.e || cla.experiment;
         const results = cla.r || cla.results;
         const save = cla.s || cla.save;
+        const gpu = cla.gpu;
+
+        if (gpu) {
+            try {
+                require('@tensorflow/tfjs-node-gpu');
+            } catch(e) {
+                console.error('Attempted to start with GPU, but failed', e); // tslint:disable-line no-console
+            }
+        }
 
         if (!index) throw new Error('Expected -i or --index to be specified');
         if (!experimentPath) throw new Error('Expected -e or --experiment to be specified');
