@@ -96,7 +96,10 @@ export class ExperimentDescription {
                 require('@tensorflow/tfjs-node-gpu');
             } catch(e) {
                 console.error('Attempted to start with GPU, but failed', e); // tslint:disable-line no-console
+                require('@tensorflow/tfjs-node');
             }
+        } else {
+            require('@tensorflow/tfjs-node');
         }
 
         if (!index) throw new Error('Expected -i or --index to be specified');
