@@ -85,7 +85,7 @@ class ExperimentDescription {
             const reslot = cla.reslot; // gnu-parallel doesn't start the slot count over for each device. Use this number to do so here.
             const slot = slotId ? parseInt(slotId) : false;
             const reslotted = reslot && slot ? (slot % parseInt(reslot)) + 1 : slot;
-            if (gpu && reslotted === 1) {
+            if (gpu && (slot === false || reslotted === 1)) {
                 try {
                     require('@tensorflow/tfjs-node-gpu');
                 }

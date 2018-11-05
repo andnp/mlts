@@ -95,7 +95,7 @@ export class ExperimentDescription {
         const slot = slotId ? parseInt(slotId) : false;
         const reslotted = reslot && slot ? (slot % parseInt(reslot)) + 1 : slot;
 
-        if (gpu && reslotted === 1) {
+        if (gpu && (slot === false || reslotted === 1)) {
             try {
                 require('@tensorflow/tfjs-node-gpu');
             } catch(e) {
