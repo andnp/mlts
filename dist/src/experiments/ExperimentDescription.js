@@ -81,7 +81,8 @@ class ExperimentDescription {
             const results = cla.r || cla.results;
             const save = cla.s || cla.save;
             const gpu = cla.gpu;
-            if (gpu) {
+            const slotId = cla.slotId; // gnu-parallel slot id. used to determine whether gpu should be used.
+            if (gpu && (slotId === '0' || slotId === undefined)) {
                 try {
                     require('@tensorflow/tfjs-node-gpu');
                 }
