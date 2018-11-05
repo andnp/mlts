@@ -8,4 +8,5 @@ __export(require("./GreyCifar10"));
 __export(require("./mnist"));
 __export(require("./SusyComplete"));
 __export(require("./TensorflowDataset"));
+__export(require("./FashionMnist"));
 //# sourceMappingURL=index.js.map

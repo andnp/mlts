@@ -3,3 +3,4 @@ export * from './GreyCifar10';
 export * from './mnist';
 export * from './SusyComplete';
 export * from './TensorflowDataset';
+export * from './FashionMnist';
