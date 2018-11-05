@@ -45,7 +45,15 @@ export declare const TwoStageDictionaryLearningMetaParametersSchema: v.Validator
         }>>;
         hidden: v.Validator<number>;
     }>>>;
-    stage2: v.Validator<Partial<v.ObjectValidator<{
+    stage2: v.Validator<Partial<import("simplytyped/types/objects").ObjectType<{
+        regularizer?: v.ObjectValidator<{
+            type: v.Validator<"l1">;
+            weight: v.Validator<number>;
+        }> | v.ObjectValidator<{
+            type: v.Validator<"l2">;
+            weight: v.Validator<number>;
+        }> | undefined;
+    } & Pick<v.ObjectValidator<{
         regularizer: v.Validator<v.ObjectValidator<{
             type: v.Validator<"l1">;
             weight: v.Validator<number>;
@@ -53,7 +61,7 @@ export declare const TwoStageDictionaryLearningMetaParametersSchema: v.Validator
             type: v.Validator<"l2">;
             weight: v.Validator<number>;
         }>>;
-    }>>>;
+    }>, never>>>>;
     hidden: v.Validator<number>;
 }>>;
 export declare type TwoStageDictionaryLearningMetaParameters = v.ValidType<typeof TwoStageDictionaryLearningMetaParametersSchema>;

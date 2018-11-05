@@ -4,7 +4,15 @@ import { Algorithm } from "../algorithms/Algorithm";
 import { SupervisedDatasetDescription } from '../data/DatasetDescription';
 import { History } from '../analysis/History';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
-export declare const LogisticRegressionMetaParameterSchema: v.Validator<v.ObjectValidator<{
+export declare const LogisticRegressionMetaParameterSchema: v.Validator<import("simplytyped/types/objects").ObjectType<{
+    regularizer?: v.ObjectValidator<{
+        type: v.Validator<"l1">;
+        weight: v.Validator<number>;
+    }> | v.ObjectValidator<{
+        type: v.Validator<"l2">;
+        weight: v.Validator<number>;
+    }> | undefined;
+} & Pick<v.ObjectValidator<{
     regularizer: v.Validator<v.ObjectValidator<{
         type: v.Validator<"l1">;
         weight: v.Validator<number>;
@@ -12,7 +20,7 @@ export declare const LogisticRegressionMetaParameterSchema: v.Validator<v.Object
         type: v.Validator<"l2">;
         weight: v.Validator<number>;
     }>>;
-}>>;
+}>, never>>>;
 export declare type LogisticRegressionMetaParameters = v.ValidType<typeof LogisticRegressionMetaParameterSchema>;
 export declare class LogisticRegression extends Algorithm {
     protected datasetDescription: SupervisedDatasetDescription;

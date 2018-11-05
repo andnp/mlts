@@ -17,7 +17,7 @@ const regularizers_1 = require("../regularizers/regularizers");
 const History_1 = require("../analysis/History");
 exports.LogisticRegressionMetaParameterSchema = v.object({
     regularizer: regularizers_1.RegularizerParametersSchema,
-});
+}, { optional: ['regularizer'] });
 class LogisticRegression extends Algorithm_1.Algorithm {
     constructor(datasetDescription, opts, saveLocation = 'savedModels') {
         super(datasetDescription, saveLocation);
@@ -32,7 +32,12 @@ class LogisticRegression extends Algorithm_1.Algorithm {
             this.model = this.registerModel('model', () => {
                 const model = tf.sequential();
                 model.add(tf.layers.inputLayer({ inputShape: [this.datasetDescription.features] }));
-                model.add(tf.layers.dense({ units: this.datasetDescription.classes, activation: 'sigmoid', kernelRegularizer: regularizers_1.regularizeLayer(this.opts.regularizer), name: 'W' }));
+                model.add(tf.layers.dense({
+                    units: this.datasetDescription.classes,
+                    activation: 'sigmoid',
+                    kernelRegularizer: this.opts.regularizer && regularizers_1.regularizeLayer(this.opts.regularizer),
+                    name: 'W',
+                }));
                 return model;
             });
         });

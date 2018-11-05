@@ -11,7 +11,7 @@ import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 
 export const LogisticRegressionMetaParameterSchema = v.object({
     regularizer: RegularizerParametersSchema,
-});
+}, { optional: ['regularizer'] });
 
 export type LogisticRegressionMetaParameters = v.ValidType<typeof LogisticRegressionMetaParameterSchema>;
 
@@ -35,7 +35,12 @@ export class LogisticRegression extends Algorithm {
         this.model = this.registerModel('model', () => {
             const model = tf.sequential();
             model.add(tf.layers.inputLayer({ inputShape: [this.datasetDescription.features] }));
-            model.add(tf.layers.dense({ units: this.datasetDescription.classes, activation: 'sigmoid', kernelRegularizer: regularizeLayer(this.opts.regularizer), name: 'W' }));
+            model.add(tf.layers.dense({
+                units: this.datasetDescription.classes,
+                activation: 'sigmoid',
+                kernelRegularizer: this.opts.regularizer && regularizeLayer(this.opts.regularizer),
+                name: 'W',
+            }));
             return model;
         });
     }
