@@ -1,6 +1,6 @@
 import { ExperimentDescription } from "./ExperimentDescription";
 import { getClassificationError } from "../analysis";
-import { files } from "utilities-ts";
+import { files, csv, Matrix } from "utilities-ts";
 
 export class ClassificationErrorExperiment {
     constructor (
@@ -15,7 +15,7 @@ export class ClassificationErrorExperiment {
 
         const [ X, Y ] = d.train;
 
-        await alg.train(X, Y, this.description.optimization);
+        const history = await alg.train(X, Y, this.description.optimization);
 
         const [ T, TY ] = d.test;
 
@@ -34,5 +34,10 @@ export class ClassificationErrorExperiment {
 
         await files.writeJson(files.filePath(`${resultsPath}/params.json`), params);
         await files.writeJson(files.filePath(`${resultsPath}/experiment.json`), this.description.definition);
+
+        const loss = Matrix.fromData([history.loss]);
+        await csv.writeCsv(files.filePath(`${resultsPath}/loss.csv`), loss);
+
+        console.log('Train:', trainError, 'Test:', testError); // tslint:disable-line no-console
     }
 }

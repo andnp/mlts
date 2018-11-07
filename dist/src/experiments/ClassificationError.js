@@ -20,7 +20,7 @@ class ClassificationErrorExperiment {
             const d = this.description.dataset;
             yield alg.build();
             const [X, Y] = d.train;
-            yield alg.train(X, Y, this.description.optimization);
+            const history = yield alg.train(X, Y, this.description.optimization);
             const [T, TY] = d.test;
             const Y_hat = yield alg.predict(X, this.description.optimization);
             const TY_hat = yield alg.predict(T, this.description.optimization);
@@ -32,6 +32,9 @@ class ClassificationErrorExperiment {
             yield utilities_ts_1.files.writeFile(utilities_ts_1.files.filePath(`${resultsPath}/train.csv`), trainError);
             yield utilities_ts_1.files.writeJson(utilities_ts_1.files.filePath(`${resultsPath}/params.json`), params);
             yield utilities_ts_1.files.writeJson(utilities_ts_1.files.filePath(`${resultsPath}/experiment.json`), this.description.definition);
+            const loss = utilities_ts_1.Matrix.fromData([history.loss]);
+            yield utilities_ts_1.csv.writeCsv(utilities_ts_1.files.filePath(`${resultsPath}/loss.csv`), loss);
+            console.log('Train:', trainError, 'Test:', testError); // tslint:disable-line no-console
         });
     }
 }
