@@ -101,9 +101,8 @@ class SupervisedAutoencoder extends Algorithm_1.Algorithm {
     _predict(X) {
         return __awaiter(this, void 0, void 0, function* () {
             const model = this.assertModel(MODEL);
-            const Y_hat_batches = X.split(10).map(d => model.predictOnBatch(d)[0]);
-            const Y_hat = tf.concat(Y_hat_batches, 0);
-            return Y_hat;
+            const Y_hat = model.predictOnBatch(X);
+            return Y_hat[0];
         });
     }
     // ------

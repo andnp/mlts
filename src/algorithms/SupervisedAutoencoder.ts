@@ -119,10 +119,8 @@ export class SupervisedAutoencoder extends Algorithm implements RepresentationAl
 
     protected async _predict(X: tf.Tensor2D) {
         const model = this.assertModel(MODEL);
-        const Y_hat_batches = X.split(10).map(d => (model.predictOnBatch(d) as tf.Tensor2D[])[0]);
-
-        const Y_hat = tf.concat(Y_hat_batches, 0);
-        return Y_hat;
+        const Y_hat = model.predictOnBatch(X)  as tf.Tensor2D[];
+        return Y_hat[0];
     }
 
     // ------
