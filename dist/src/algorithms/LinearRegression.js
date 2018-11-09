@@ -17,7 +17,11 @@ const regularizers_1 = require("../regularizers/regularizers");
 const History_1 = require("../analysis/History");
 exports.LinearRegressionMetaParameterSchema = v.object({
     regularizer: regularizers_1.RegularizerParametersSchema,
-});
+    initialParameters: v.object({
+        mean: v.number(),
+        stddev: v.number(),
+    }),
+}, { optional: ['initialParameters'] });
 class LinearRegression extends Algorithm_1.Algorithm {
     constructor(datasetDescription, opts, saveLocation = 'savedModels') {
         super(datasetDescription, saveLocation);
@@ -25,6 +29,7 @@ class LinearRegression extends Algorithm_1.Algorithm {
         this.name = LinearRegression.name;
         this.opts = _.merge({
             regularizer: { type: 'l1', weight: 0 },
+            initialParameters: { mean: 0, variance: 1 },
         }, opts);
     }
     _build() {
@@ -32,7 +37,13 @@ class LinearRegression extends Algorithm_1.Algorithm {
             this.model = this.registerModel('model', () => {
                 const model = tf.sequential();
                 model.add(tf.layers.inputLayer({ inputShape: [this.datasetDescription.features] }));
-                model.add(tf.layers.dense({ units: this.datasetDescription.classes, activation: 'linear', kernelRegularizer: regularizers_1.regularizeLayer(this.opts.regularizer), name: 'W' }));
+                model.add(tf.layers.dense({
+                    units: this.datasetDescription.classes,
+                    kernelInitializer: tf.initializers.randomNormal(Object.assign({}, this.opts.initialParameters)),
+                    activation: 'linear',
+                    kernelRegularizer: regularizers_1.regularizeLayer(this.opts.regularizer),
+                    name: 'W',
+                }));
                 return model;
             });
         });

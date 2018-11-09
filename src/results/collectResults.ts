@@ -12,6 +12,7 @@ export type Result = {
     metaParameters: any;
     algorithm: string;
     dataset: string;
+    path: string;
     optimization: Partial<OptimizationParameters>
 } & Record<string, any>;
 

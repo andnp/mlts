@@ -11,7 +11,11 @@ import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 
 export const LinearRegressionMetaParameterSchema = v.object({
     regularizer: RegularizerParametersSchema,
-});
+    initialParameters: v.object({
+        mean: v.number(),
+        stddev: v.number(),
+    }),
+}, { optional: [ 'initialParameters' ]});
 
 export type LinearRegressionMetaParameters = v.ValidType<typeof LinearRegressionMetaParameterSchema>;
 
@@ -28,6 +32,7 @@ export class LinearRegression extends Algorithm {
         super(datasetDescription, saveLocation);
         this.opts = _.merge({
             regularizer: { type: 'l1', weight: 0 },
+            initialParameters: { mean: 0, variance: 1 },
         }, opts);
     }
 
@@ -35,7 +40,13 @@ export class LinearRegression extends Algorithm {
         this.model = this.registerModel('model', () => {
             const model = tf.sequential();
             model.add(tf.layers.inputLayer({ inputShape: [this.datasetDescription.features] }));
-            model.add(tf.layers.dense({ units: this.datasetDescription.classes, activation: 'linear', kernelRegularizer: regularizeLayer(this.opts.regularizer), name: 'W' }));
+            model.add(tf.layers.dense({
+                units: this.datasetDescription.classes,
+                kernelInitializer: tf.initializers.randomNormal({ ...this.opts.initialParameters }),
+                activation: 'linear',
+                kernelRegularizer: regularizeLayer(this.opts.regularizer),
+                name: 'W',
+            }));
             return model;
         });
     }
