@@ -22,7 +22,6 @@ export type LinearRegressionMetaParameters = v.ValidType<typeof LinearRegression
 export class LinearRegression extends Algorithm {
     protected readonly name = LinearRegression.name;
     protected readonly opts: LinearRegressionMetaParameters;
-    protected model: tf.Model | undefined;
 
     constructor (
         protected datasetDescription: SupervisedDatasetDescription,
@@ -37,7 +36,7 @@ export class LinearRegression extends Algorithm {
     }
 
     protected async _build() {
-        this.model = this.registerModel('model', () => {
+        this.registerModel('model', () => {
             const model = tf.sequential();
             model.add(tf.layers.inputLayer({ inputShape: [this.datasetDescription.features] }));
             model.add(tf.layers.dense({
@@ -55,12 +54,12 @@ export class LinearRegression extends Algorithm {
         const o = this.getDefaultOptimizationParameters(opts);
         const optimizer = this.registerOptimizer('optimizer', () => new Optimizer(o));
 
-        this.model!.compile({
+        this.getModel().compile({
             optimizer: optimizer.getTfOptimizer(),
             loss: 'meanSquaredError',
         });
 
-        const history = await optimizer.fit(this.model!, X, Y, {
+        const history = await optimizer.fit(this.getModel(), X, Y, {
             batchSize: o.batchSize || X.shape[0],
             epochs: o.iterations,
             shuffle: true,
@@ -72,19 +71,20 @@ export class LinearRegression extends Algorithm {
     }
 
     loss(X: tf.Tensor2D, Y: tf.Tensor2D) {
-        const Y_hat = this.model!.predict(X) as tf.Tensor2D;
+        const Y_hat = this.getModel().predict(X) as tf.Tensor2D;
         return tf.losses.meanSquaredError(Y, Y_hat);
     }
 
     protected async _predict(X: tf.Tensor2D) {
-        return this.model!.predict(X) as tf.Tensor2D;
+        return this.getModel().predict(X) as tf.Tensor2D;
     }
 
     static async fromSavedState(location: string) {
         return new LinearRegression({} as SupervisedDatasetDescription).loadFromDisk(location);
     }
 
-    get W() { return this.model!.getLayer('W').getWeights()[0] as tf.Tensor2D; }
+    get W() { return this.getModel().getLayer('W').getWeights()[0] as tf.Tensor2D; }
+    set W(w: tf.Tensor2D) { this.getModel().getLayer('W').setWeights([w]); }
 
     private getDefaultOptimizationParameters(o?: Partial<OptimizationParameters>): OptimizationParameters {
         return _.merge({

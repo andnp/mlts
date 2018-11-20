@@ -34,7 +34,7 @@ class LinearRegression extends Algorithm_1.Algorithm {
     }
     _build() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.model = this.registerModel('model', () => {
+            this.registerModel('model', () => {
                 const model = tf.sequential();
                 model.add(tf.layers.inputLayer({ inputShape: [this.datasetDescription.features] }));
                 model.add(tf.layers.dense({
@@ -52,11 +52,11 @@ class LinearRegression extends Algorithm_1.Algorithm {
         return __awaiter(this, void 0, void 0, function* () {
             const o = this.getDefaultOptimizationParameters(opts);
             const optimizer = this.registerOptimizer('optimizer', () => new Optimizer_1.Optimizer(o));
-            this.model.compile({
+            this.getModel().compile({
                 optimizer: optimizer.getTfOptimizer(),
                 loss: 'meanSquaredError',
             });
-            const history = yield optimizer.fit(this.model, X, Y, {
+            const history = yield optimizer.fit(this.getModel(), X, Y, {
                 batchSize: o.batchSize || X.shape[0],
                 epochs: o.iterations,
                 shuffle: true,
@@ -66,12 +66,12 @@ class LinearRegression extends Algorithm_1.Algorithm {
         });
     }
     loss(X, Y) {
-        const Y_hat = this.model.predict(X);
+        const Y_hat = this.getModel().predict(X);
         return tf.losses.meanSquaredError(Y, Y_hat);
     }
     _predict(X) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.model.predict(X);
+            return this.getModel().predict(X);
         });
     }
     static fromSavedState(location) {
@@ -79,7 +79,8 @@ class LinearRegression extends Algorithm_1.Algorithm {
             return new LinearRegression({}).loadFromDisk(location);
         });
     }
-    get W() { return this.model.getLayer('W').getWeights()[0]; }
+    get W() { return this.getModel().getLayer('W').getWeights()[0]; }
+    set W(w) { this.getModel().getLayer('W').setWeights([w]); }
     getDefaultOptimizationParameters(o) {
         return _.merge({
             iterations: 100,

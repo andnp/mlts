@@ -27,13 +27,12 @@ export declare class LinearRegression extends Algorithm {
     protected datasetDescription: SupervisedDatasetDescription;
     protected readonly name: string;
     protected readonly opts: LinearRegressionMetaParameters;
-    protected model: tf.Model | undefined;
     constructor(datasetDescription: SupervisedDatasetDescription, opts?: Partial<LinearRegressionMetaParameters>, saveLocation?: string);
     protected _build(): Promise<void>;
     protected _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<History>;
     loss(X: tf.Tensor2D, Y: tf.Tensor2D): tf.Tensor<tf.Rank>;
     protected _predict(X: tf.Tensor2D): Promise<tf.Tensor<tf.Rank.R2>>;
     static fromSavedState(location: string): Promise<LinearRegression>;
-    readonly W: tf.Tensor<tf.Rank.R2>;
+    W: tf.Tensor2D;
     private getDefaultOptimizationParameters;
 }
