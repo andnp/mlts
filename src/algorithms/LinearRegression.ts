@@ -84,7 +84,7 @@ export class LinearRegression extends Algorithm {
     }
 
     get W() { return this.getModel().getLayer('W').getWeights()[0] as tf.Tensor2D; }
-    set W(w: tf.Tensor2D) { this.getModel().getLayer('W').setWeights([w]); }
+    set W(w: tf.Tensor2D) { this.getModel().getLayer('W').setWeights([w, this.getModel().getLayer('W').getWeights()[1]]); }
 
     private getDefaultOptimizationParameters(o?: Partial<OptimizationParameters>): OptimizationParameters {
         return _.merge({

@@ -80,7 +80,7 @@ class LinearRegression extends Algorithm_1.Algorithm {
         });
     }
     get W() { return this.getModel().getLayer('W').getWeights()[0]; }
-    set W(w) { this.getModel().getLayer('W').setWeights([w]); }
+    set W(w) { this.getModel().getLayer('W').setWeights([w, this.getModel().getLayer('W').getWeights()[1]]); }
     getDefaultOptimizationParameters(o) {
         return _.merge({
             iterations: 100,
