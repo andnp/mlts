@@ -81,6 +81,9 @@ class Optimizer {
     // ------------------
     // Saving and Loading
     // ------------------
+    reset() {
+        this.completedIterations = 0;
+    }
     saveState(location) {
         return __awaiter(this, void 0, void 0, function* () {
             const state = {

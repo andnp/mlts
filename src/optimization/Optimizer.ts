@@ -100,6 +100,10 @@ export class Optimizer {
     // Saving and Loading
     // ------------------
 
+    reset() {
+        this.completedIterations = 0;
+    }
+
     async saveState(location: string) {
         const state: SaveData = {
             iterations: this.completedIterations,
