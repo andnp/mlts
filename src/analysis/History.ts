@@ -1,5 +1,5 @@
 import * as tf from '@tensorflow/tfjs';
-import { lens } from 'results';
+import { lens } from '../results';
 
 const lossLens = lens('history.loss');
 

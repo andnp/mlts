@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const results_1 = require("results");
+const results_1 = require("../results");
 const lossLens = results_1.lens('history.loss');
 class History {
     constructor(name, params, loss) {
