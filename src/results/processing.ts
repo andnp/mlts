@@ -1,10 +1,11 @@
 import { PlainObject } from 'simplytyped';
 import { Result } from './collectResults';
+import { lens as lens_t, Lens as Lens_t } from '../utils/fp';
 
 import * as _ from 'lodash';
 
-export type Lens = (o: PlainObject) => any;
-export const lens = (k: string): Lens => (o: PlainObject) => _.get(o, k);
+export type Lens = Lens_t;
+export const lens = lens_t;
 
 export const createAlgorithmDatasetFilter = (alg: string, data: string) => _.flow(
     _.partial(where, lens('dataset'), data),

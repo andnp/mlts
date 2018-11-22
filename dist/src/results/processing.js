@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const fp_1 = require("../utils/fp");
 const _ = require("lodash");
-exports.lens = (k) => (o) => _.get(o, k);
+exports.lens = fp_1.lens;
 exports.createAlgorithmDatasetFilter = (alg, data) => _.flow(_.partial(where, exports.lens('dataset'), data), _.partial(where, exports.lens('algorithm'), alg));
 function where(l, value, res) {
     return res.filter(result => l(result) === value);

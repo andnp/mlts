@@ -37,5 +37,5 @@ export declare const getExperimentSchema: () => v.Validator<import("simplytyped/
         type: v.Validator<"rmsprop">;
         learningRate: v.Validator<number>;
     }>)>;
-}>, "algorithm" | "dataset" | "metaParameters" | "optimization">>>;
+}>, "metaParameters" | "algorithm" | "dataset" | "optimization">>>;
 export declare type ExperimentJson = v.ValidType<ReturnType<typeof getExperimentSchema>>;
