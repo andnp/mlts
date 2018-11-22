@@ -1,4 +1,7 @@
 import * as tf from '@tensorflow/tfjs';
+import { lens } from 'results';
+
+const lossLens = lens('history.loss');
 
 export class History {
     constructor(
@@ -8,8 +11,20 @@ export class History {
     ) {}
 
     static fromTensorflowHistory(name: string, params: {}, hist: tf.History) {
-        if (typeof hist.history.loss[0] !== 'number') throw new Error(`I don't know how to deal with tensor histories`);
-        return new History(name, params, hist.history.loss as number[]);
+        return History.fromTensorflowHistories(name, params, [hist]);
+    }
+
+    static fromTensorflowHistories(name: string, params: {}, hists: tf.History[]) {
+        const rawHists = hists.map(hist => {
+            const loss = lossLens(hist);
+            if (typeof loss[0] !== 'number') throw new Error(`I don't know how to deal with tensor histories`);
+
+            return { loss: loss as number[] };
+        });
+
+        const loss = rawHists.reduce((coll, hist) => coll.concat(hist.loss), [] as number[]);
+
+        return new History(name, params, loss);
     }
 
     static initializeEmpty(name: string, params: {}) {

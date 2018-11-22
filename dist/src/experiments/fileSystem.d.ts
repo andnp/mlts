@@ -36,4 +36,4 @@ export declare const getResultsPath: (experiment: import("simplytyped/types/obje
         type: import("validtyped").Validator<"rmsprop">;
         learningRate: import("validtyped").Validator<number>;
     }>)>;
-}>, "metaParameters" | "algorithm" | "dataset" | "optimization">>, metaParameters: object, run: number) => string;
+}>, "algorithm" | "dataset" | "metaParameters" | "optimization">>, metaParameters: object, run: number) => string;
