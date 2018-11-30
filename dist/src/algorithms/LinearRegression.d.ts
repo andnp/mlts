@@ -5,6 +5,13 @@ import { SupervisedDatasetDescription } from '../data/DatasetDescription';
 import { History } from '../analysis/History';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 export declare const LinearRegressionMetaParameterSchema: v.Validator<import("simplytyped/types/objects").ObjectType<{
+    regularizer?: v.ObjectValidator<{
+        type: v.Validator<"l1">;
+        weight: v.Validator<number>;
+    }> | v.ObjectValidator<{
+        type: v.Validator<"l2">;
+        weight: v.Validator<number>;
+    }> | undefined;
     initialParameters?: v.ObjectValidator<{
         mean: v.Validator<number>;
         stddev: v.Validator<number>;
@@ -21,7 +28,7 @@ export declare const LinearRegressionMetaParameterSchema: v.Validator<import("si
         mean: v.Validator<number>;
         stddev: v.Validator<number>;
     }>>;
-}>, "regularizer">>>;
+}>, never>>>;
 export declare type LinearRegressionMetaParameters = v.ValidType<typeof LinearRegressionMetaParameterSchema>;
 export declare class LinearRegression extends Algorithm {
     protected datasetDescription: SupervisedDatasetDescription;

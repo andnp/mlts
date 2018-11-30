@@ -15,7 +15,7 @@ export const LinearRegressionMetaParameterSchema = v.object({
         mean: v.number(),
         stddev: v.number(),
     }),
-}, { optional: [ 'initialParameters' ]});
+}, { optional: [ 'initialParameters', 'regularizer' ]});
 
 export type LinearRegressionMetaParameters = v.ValidType<typeof LinearRegressionMetaParameterSchema>;
 
@@ -43,7 +43,7 @@ export class LinearRegression extends Algorithm {
                 units: this.datasetDescription.classes,
                 kernelInitializer: tf.initializers.randomNormal({ ...this.opts.initialParameters }),
                 activation: 'linear',
-                kernelRegularizer: regularizeLayer(this.opts.regularizer),
+                kernelRegularizer: this.opts.regularizer && regularizeLayer(this.opts.regularizer),
                 name: 'W',
             }));
             return model;

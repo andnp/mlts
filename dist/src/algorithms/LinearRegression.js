@@ -21,7 +21,7 @@ exports.LinearRegressionMetaParameterSchema = v.object({
         mean: v.number(),
         stddev: v.number(),
     }),
-}, { optional: ['initialParameters'] });
+}, { optional: ['initialParameters', 'regularizer'] });
 class LinearRegression extends Algorithm_1.Algorithm {
     constructor(datasetDescription, opts, saveLocation = 'savedModels') {
         super(datasetDescription, saveLocation);
@@ -41,7 +41,7 @@ class LinearRegression extends Algorithm_1.Algorithm {
                     units: this.datasetDescription.classes,
                     kernelInitializer: tf.initializers.randomNormal(Object.assign({}, this.opts.initialParameters)),
                     activation: 'linear',
-                    kernelRegularizer: regularizers_1.regularizeLayer(this.opts.regularizer),
+                    kernelRegularizer: this.opts.regularizer && regularizers_1.regularizeLayer(this.opts.regularizer),
                     name: 'W',
                 }));
                 return model;
