@@ -15,6 +15,7 @@ const FashionMnist_1 = require("./data/tensorflow/FashionMnist");
 const TwoStageDictionaryLearning_1 = require("./algorithms/TwoStageDictionaryLearning");
 const SupervisedDictionaryLearning_1 = require("./algorithms/SupervisedDictionaryLearning");
 const LogisticRegression_1 = require("./algorithms/LogisticRegression");
+const LinearRegression_1 = require("./algorithms/LinearRegression");
 const SupervisedAutoencoder_1 = require("./algorithms/SupervisedAutoencoder");
 const TwoStageAutoencoder_1 = require("./algorithms/TwoStageAutoencoder");
 const ANN_1 = require("./algorithms/ANN");
@@ -29,6 +30,7 @@ ExperimentRegistry_1.registerAlgorithm('ann', ANN_1.ANN, ANN_1.ANNMetaParameterS
 ExperimentRegistry_1.registerAlgorithm('twostage', TwoStageDictionaryLearning_1.TwoStageDictionaryLearning, TwoStageDictionaryLearning_1.TwoStageDictionaryLearningMetaParametersSchema);
 ExperimentRegistry_1.registerAlgorithm('sdl', SupervisedDictionaryLearning_1.SupervisedDictionaryLearning, SupervisedDictionaryLearning_1.SupervisedDictionaryLearningMetaParameterSchema);
 ExperimentRegistry_1.registerAlgorithm('logisticRegression', LogisticRegression_1.LogisticRegression, LogisticRegression_1.LogisticRegressionMetaParameterSchema);
+ExperimentRegistry_1.registerAlgorithm('linearRegression', LinearRegression_1.LinearRegression, LinearRegression_1.LinearRegressionMetaParameterSchema);
 ExperimentRegistry_1.registerAlgorithm('sae', SupervisedAutoencoder_1.SupervisedAutoencoder, SupervisedAutoencoder_1.SupervisedAutoencoderMetaParameterSchema);
 ExperimentRegistry_1.registerAlgorithm('twostage-ae', TwoStageAutoencoder_1.TwoStageAutoencoder, TwoStageAutoencoder_1.TwoStageAutoencoderMetaParameterSchema);
 ExperimentRegistry_1.registerDataset('cifar', GreyCifar10_1.GreyCifar10);
