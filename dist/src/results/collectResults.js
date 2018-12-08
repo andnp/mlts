@@ -15,11 +15,17 @@ const tsplot = require("tsplot");
 const _ = require("lodash");
 const utilities_ts_1 = require("utilities-ts");
 const matrix_1 = require("../utils/matrix");
+const observable_1 = require("../utils/observable");
 function collectResults(rootPath, resultFileNames) {
     return __awaiter(this, void 0, void 0, function* () {
-        const hashDirectories = (yield utilities_ts_1.files.readdir(rootPath)).map(n => path.join(rootPath, n));
-        const uncollectedResults = yield Promise.all(hashDirectories.filter(dir => utilities_ts_1.files.fileExists(path.join(dir, 'results.json'))));
-        const newResults = yield utilities_ts_1.promise.map(uncollectedResults, (hashDir) => __awaiter(this, void 0, void 0, function* () {
+        const hashDirectories = yield observable_1.Observable.fromArray(yield utilities_ts_1.files.readdir(rootPath))
+            .map(n => path.join(rootPath, n))
+            .collect();
+        const uncollectedResults = yield observable_1.Observable.fromArray(hashDirectories)
+            .filter(dir => utilities_ts_1.files.fileExists(path.join(dir, 'results.json')))
+            .collect();
+        const newResultsObservable = observable_1.Observable.fromArray(uncollectedResults)
+            .map((hashDir) => __awaiter(this, void 0, void 0, function* () {
             const descriptionsOrUndefined = yield utilities_ts_1.promise.map(resultFileNames, resultFile => describeResultFiles(hashDir, resultFile));
             const descriptions = utilities_ts_1.arrays.filterUndefined(descriptionsOrUndefined);
             const paramsFiles = yield utilities_ts_1.files.glob(path.join(hashDir, '*', 'params.json'));
@@ -33,8 +39,10 @@ function collectResults(rootPath, resultFileNames) {
             return result;
         }));
         const oldResultsHashes = _.difference(hashDirectories, uncollectedResults);
-        const oldResults = yield utilities_ts_1.promise.map(oldResultsHashes, hashDir => utilities_ts_1.files.readJson(path.join(hashDir, 'results.json'), v.any()));
-        const results = newResults.concat(oldResults);
+        const results = yield observable_1.Observable.fromArray(oldResultsHashes)
+            .map(hashDir => utilities_ts_1.files.readJson(path.join(hashDir, 'results.json'), v.any()))
+            .concat(newResultsObservable)
+            .collect();
         return results;
     });
 }
@@ -44,8 +52,10 @@ function describeResultFiles(resultFilePaths, resultFileName) {
         const resultFiles = yield utilities_ts_1.files.glob(path.join(resultFilePaths, '*', resultFileName));
         if (resultFiles.length === 0)
             return;
-        const contents = yield utilities_ts_1.promise.map(resultFiles, file => utilities_ts_1.files.readFile(file));
-        const results = contents.map(c => parseFloat(c.toString()));
+        const results = yield observable_1.Observable.fromArray(resultFiles)
+            .map(file => utilities_ts_1.files.readFile(file))
+            .map(c => parseFloat(c.toString()))
+            .collect();
         // create an 1*n matrix so that we can use description utility methods
         const resMatrix = matrix_1.Matrix.fromData([results]);
         return {

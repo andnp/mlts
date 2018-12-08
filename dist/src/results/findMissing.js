@@ -24,7 +24,7 @@ function findMissing(base_path, path, runs) {
                 const found = paths.find(p => p.startsWith(full_path));
                 if (!found)
                     incomplete.push(i);
-                print(`Searching for missing results: ${(i / count).toPrecision(3)}%`);
+                print(`Searching for missing results: ${((i / count) * 100).toPrecision(3)}%`);
             }
         });
         return incomplete;
