@@ -72,6 +72,14 @@ test('Can map over promise returning functions', () => __awaiter(this, void 0, v
         .subscribe(data => expect(data).toBe(state++));
     expect(state).toBe(4);
 }));
+test('Can filter over promise returning functions', () => __awaiter(this, void 0, void 0, function* () {
+    let state = 0;
+    yield observable_1.Observable.fromArray([0, 1, 2, 3])
+        .map(i => utilities_ts_1.promise.delay(i * 100).then(utilities_ts_1.fp.giveBack(i)))
+        .filter(i => utilities_ts_1.promise.delay(i * 100).then(utilities_ts_1.fp.giveBack(i < 2)))
+        .subscribe(data => expect(data).toBe(state++));
+    expect(state).toBe(2);
+}));
 // ----------
 // Aggregates
 // ----------

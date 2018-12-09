@@ -22,7 +22,7 @@ function collectResults(rootPath, resultFileNames) {
             .map(n => path.join(rootPath, n))
             .collect();
         const uncollectedResults = yield observable_1.Observable.fromArray(hashDirectories)
-            .filter(dir => utilities_ts_1.files.fileExists(path.join(dir, 'results.json')))
+            .filter(dir => utilities_ts_1.files.fileExists(path.join(dir, 'results.json')).then(b => !b))
             .collect();
         const newResultsObservable = observable_1.Observable.fromArray(uncollectedResults)
             .map((hashDir) => __awaiter(this, void 0, void 0, function* () {

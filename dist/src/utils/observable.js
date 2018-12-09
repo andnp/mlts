@@ -16,6 +16,7 @@ class Observable {
         // -----
         this.completed = false;
         this.queue = [];
+        this.parallel = 0;
         // -------------
         // Subscriptions
         // -------------
@@ -97,7 +98,7 @@ class Observable {
         if (this.completed || this.err)
             return;
         this.queue.push(data);
-        this.flush();
+        this.execute();
     }
     end() {
         if (this.completed || this.err)
@@ -105,6 +106,7 @@ class Observable {
         this.completed = true;
         this.flush().then(() => {
             this.endHandlers.forEach(utilities_ts_1.fp.invoke);
+            this.dispose();
         });
     }
     error(e) {
@@ -113,6 +115,7 @@ class Observable {
         this.err = e;
         this.flush().then(() => {
             this.errorHandlers.forEach(f => f(e));
+            this.dispose();
         });
     }
     // -----
@@ -130,17 +133,24 @@ class Observable {
             }).then(f);
         });
     }
+    execute() {
+        const active = Object.keys(this.activeTasks).length;
+        const remaining = this.queue.length;
+        const shouldExecute = this.parallel > 0 ? min(this.parallel - active, remaining) : remaining;
+        for (let i = 0; i < shouldExecute; ++i) {
+            const id = this.getId();
+            const d = this.queue.shift();
+            const task = utilities_ts_1.promise.map(this.subscriptions, s => s(d));
+            this.activeTasks[id] = task;
+            task.then(() => {
+                delete this.activeTasks[id];
+            });
+        }
+        this.queue = [];
+    }
     flush() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.queue.forEach(d => this.subscriptions.forEach((s) => __awaiter(this, void 0, void 0, function* () {
-                const id = this.getId();
-                this.activeTasks[id] = new Promise(resolve => {
-                    Promise.resolve(s(d)).then(resolve);
-                }).then(() => {
-                    delete this.activeTasks[id];
-                });
-            })));
-            this.queue = [];
+            this.execute();
             yield utilities_ts_1.promise.allValues(this.activeTasks);
         });
     }
@@ -176,6 +186,10 @@ class Observable {
         });
         return joint;
     }
+    bottleneck(num) {
+        this.parallel = num;
+        return this;
+    }
     // ---------
     // Utilities
     // ---------
@@ -183,10 +197,20 @@ class Observable {
         this.onEnd(() => obs.end());
         this.onError(e => obs.error(e));
     }
+    dispose() {
+        if (!(this.completed || this.err))
+            this.end();
+        this.activeTasks = {};
+        this.queue = [];
+        this.errorHandlers = [];
+        this.endHandlers = [];
+        this.subscriptions = [];
+    }
 }
 exports.Observable = Observable;
 const uniqueId = () => {
     let i = 0;
     return () => i++;
 };
+const min = (a, b) => a < b ? a : b;
 //# sourceMappingURL=observable.js.map

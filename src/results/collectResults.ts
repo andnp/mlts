@@ -23,7 +23,7 @@ export async function collectResults(rootPath: string, resultFileNames: string[]
         .collect();
 
     const uncollectedResults = await Observable.fromArray(hashDirectories)
-        .filter(dir => files.fileExists(path.join(dir, 'results.json')))
+        .filter(dir => files.fileExists(path.join(dir, 'results.json')).then(b => !b))
         .collect();
 
     const newResultsObservable = Observable.fromArray(uncollectedResults)

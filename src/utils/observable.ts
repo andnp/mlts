@@ -20,6 +20,7 @@ export class Observable<T> {
     protected completed = false;
     protected err: Error | string | undefined;
     protected queue: T[] = [];
+    protected parallel: number = 0;
 
     // --------
     // Creators
@@ -114,7 +115,7 @@ export class Observable<T> {
     protected next(data: T) {
         if (this.completed || this.err) return;
         this.queue.push(data);
-        this.flush();
+        this.execute();
     }
 
     protected end() {
@@ -122,6 +123,7 @@ export class Observable<T> {
         this.completed = true;
         this.flush().then(() => {
             this.endHandlers.forEach(fp.invoke);
+            this.dispose();
         });
     }
 
@@ -130,6 +132,7 @@ export class Observable<T> {
         this.err = e;
         this.flush().then(() => {
             this.errorHandlers.forEach(f => f(e));
+            this.dispose();
         });
     }
 
@@ -149,17 +152,28 @@ export class Observable<T> {
 
     private activeTasks: Record<string, Promise<any>> = {};
     private getId = uniqueId();
-    async flush() {
-        this.queue.forEach(d => this.subscriptions.forEach(async (s) => {
+    private execute() {
+        const active = Object.keys(this.activeTasks).length;
+        const remaining = this.queue.length;
+        const shouldExecute = this.parallel > 0 ? min(this.parallel - active, remaining) : remaining;
+
+        for (let i = 0; i < shouldExecute; ++i) {
             const id = this.getId();
-            this.activeTasks[id] = new Promise(resolve => {
-                Promise.resolve(s(d)).then(resolve);
-            }).then(() => {
+            const d = this.queue.shift()!;
+
+            const task = promise.map(this.subscriptions, s => s(d));
+            this.activeTasks[id] = task;
+
+            task.then(() => {
                 delete this.activeTasks[id];
             });
-        }));
+        }
 
         this.queue = [];
+    }
+
+    async flush() {
+        this.execute();
         await promise.allValues(this.activeTasks);
     }
 
@@ -198,12 +212,27 @@ export class Observable<T> {
         return joint;
     }
 
+    bottleneck(num: number): Observable<T> {
+        this.parallel = num;
+        return this;
+    }
+
     // ---------
     // Utilities
     // ---------
     protected bindEndAndError(obs: Observable<any>) {
         this.onEnd(() => obs.end());
         this.onError(e => obs.error(e));
+    }
+
+    dispose() {
+        if (!(this.completed || this.err)) this.end();
+
+        this.activeTasks = {};
+        this.queue = [];
+        this.errorHandlers = [];
+        this.endHandlers = [];
+        this.subscriptions = [];
     }
 }
 
@@ -212,3 +241,5 @@ const uniqueId = () => {
     let i = 0;
     return () => i++;
 };
+
+const min = (a: number, b: number) => a < b ? a : b;

@@ -12,6 +12,7 @@ export declare class Observable<T> {
     protected completed: boolean;
     protected err: Error | string | undefined;
     protected queue: T[];
+    protected parallel: number;
     static create<T>(creator: ObservableCreatorFunction<T>): Observable<T>;
     static fromPromises<T>(promises: Array<Promise<T>>): Observable<T>;
     static fromArray<T>(arr: T[]): Observable<T>;
@@ -29,8 +30,11 @@ export declare class Observable<T> {
     then<R>(f: () => R | Promise<R>): Promise<R>;
     private activeTasks;
     private getId;
+    private execute;
     flush(): Promise<void>;
     collect(): Promise<T[]>;
     concat(obs: Observable<T>): Observable<T>;
+    bottleneck(num: number): Observable<T>;
     protected bindEndAndError(obs: Observable<any>): void;
+    dispose(): void;
 }
