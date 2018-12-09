@@ -150,7 +150,6 @@ export class Observable<T> {
     private activeTasks: Record<string, Promise<any>> = {};
     private getId = uniqueId();
     async flush() {
-        if (this.queue.length === 0) return;
         this.queue.forEach(d => this.subscriptions.forEach(async (s) => {
             const id = this.getId();
             this.activeTasks[id] = new Promise(resolve => {

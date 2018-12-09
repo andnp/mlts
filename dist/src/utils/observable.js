@@ -132,8 +132,6 @@ class Observable {
     }
     flush() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.queue.length === 0)
-                return;
             this.queue.forEach(d => this.subscriptions.forEach((s) => __awaiter(this, void 0, void 0, function* () {
                 const id = this.getId();
                 this.activeTasks[id] = new Promise(resolve => {

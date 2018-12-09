@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const observable_1 = require("utils/observable");
+const utilities_ts_1 = require("utilities-ts");
 // --------
 // Creation
 // --------
@@ -54,6 +55,22 @@ test('Can concatenate two observables', () => __awaiter(this, void 0, void 0, fu
     const obs2 = observable_1.Observable.fromArray([3, 4, 5]);
     yield obs1.concat(obs2).subscribe(data => expect(data).toBe(state++));
     expect(state).toBe(6);
+}));
+test('Can concatenate slow obervables', () => __awaiter(this, void 0, void 0, function* () {
+    let state = 0;
+    const prom1 = [0, 1, 2, 3].map(i => utilities_ts_1.promise.delay(i * 100).then(utilities_ts_1.fp.giveBack(i)));
+    const prom2 = [4, 5, 6, 7].map(i => utilities_ts_1.promise.delay(i * 200).then(utilities_ts_1.fp.giveBack(i)));
+    const obs1 = observable_1.Observable.fromPromises(prom1);
+    const obs2 = observable_1.Observable.fromPromises(prom2);
+    yield obs1.concat(obs2).subscribe(data => expect(data).toBe(state++));
+    expect(state).toBe(8);
+}));
+test('Can map over promise returning functions', () => __awaiter(this, void 0, void 0, function* () {
+    let state = 0;
+    yield observable_1.Observable.fromArray([0, 1, 2, 3])
+        .map(i => utilities_ts_1.promise.delay(i * 100).then(utilities_ts_1.fp.giveBack(i)))
+        .subscribe(data => expect(data).toBe(state++));
+    expect(state).toBe(4);
 }));
 // ----------
 // Aggregates

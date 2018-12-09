@@ -1,4 +1,6 @@
 import { Observable } from 'utils/observable';
+import { promise, fp } from 'utilities-ts';
+import { Milliseconds } from 'utilities-ts/src/time';
 
 // --------
 // Creation
@@ -62,6 +64,29 @@ test('Can concatenate two observables', async () => {
     await obs1.concat(obs2).subscribe(data => expect(data).toBe(state++));
 
     expect(state).toBe(6);
+});
+
+test('Can concatenate slow obervables', async () => {
+    let state = 0;
+
+    const prom1 = [0, 1, 2, 3].map(i => promise.delay(i * 100 as Milliseconds).then(fp.giveBack(i)));
+    const prom2 = [4, 5, 6, 7].map(i => promise.delay(i * 200 as Milliseconds).then(fp.giveBack(i)));
+    const obs1 = Observable.fromPromises(prom1);
+    const obs2 = Observable.fromPromises(prom2);
+
+    await obs1.concat(obs2).subscribe(data => expect(data).toBe(state++));
+
+    expect(state).toBe(8);
+});
+
+test('Can map over promise returning functions', async () => {
+    let state = 0;
+
+    await Observable.fromArray([0, 1, 2, 3])
+        .map(i => promise.delay(i * 100 as Milliseconds).then(fp.giveBack(i)))
+        .subscribe(data => expect(data).toBe(state++));
+
+    expect(state).toBe(4);
 });
 
 // ----------
