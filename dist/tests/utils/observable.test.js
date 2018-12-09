@@ -48,6 +48,13 @@ test('Can map from one observable to another', () => __awaiter(this, void 0, voi
         .subscribe(data => expect(data).toBe(state++));
     expect(state).toBe(5);
 }));
+test('Can concatenate two observables', () => __awaiter(this, void 0, void 0, function* () {
+    let state = 0;
+    const obs1 = observable_1.Observable.fromArray([0, 1, 2]);
+    const obs2 = observable_1.Observable.fromArray([3, 4, 5]);
+    yield obs1.concat(obs2).subscribe(data => expect(data).toBe(state++));
+    expect(state).toBe(6);
+}));
 // ----------
 // Aggregates
 // ----------

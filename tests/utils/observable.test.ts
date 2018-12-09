@@ -53,6 +53,17 @@ test('Can map from one observable to another', async () => {
     expect(state).toBe(5);
 });
 
+test('Can concatenate two observables', async () => {
+    let state = 0;
+
+    const obs1 = Observable.fromArray([0, 1, 2]);
+    const obs2 = Observable.fromArray([3, 4, 5]);
+
+    await obs1.concat(obs2).subscribe(data => expect(data).toBe(state++));
+
+    expect(state).toBe(6);
+});
+
 // ----------
 // Aggregates
 // ----------

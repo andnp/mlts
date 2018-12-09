@@ -177,24 +177,23 @@ export class Observable<T> {
     }
 
     concat(obs: Observable<T>): Observable<T> {
-        const joint = Observable.create<T>(creator => {
-            this.subscribe(creator.next);
-            this.onError(creator.error);
+        const joint = new Observable<T>();
+        this.subscribe(d => joint.next(d));
+        this.onError(e => joint.error(e));
 
-            obs.subscribe(creator.next);
-            obs.onError(creator.error);
+        obs.subscribe(d => joint.next(d));
+        obs.onError(e => joint.error(e));
 
-            // only end when both have ended
-            let otherEnded = false;
-            this.onEnd(() => {
-                if (otherEnded) creator.end();
-                otherEnded = true;
-            });
+        // only end when both have ended
+        let otherEnded = false;
+        this.onEnd(() => {
+            if (otherEnded) joint.end();
+            otherEnded = true;
+        });
 
-            obs.onEnd(() => {
-                if (otherEnded) creator.end();
-                otherEnded = true;
-            });
+        obs.onEnd(() => {
+            if (otherEnded) joint.end();
+            otherEnded = true;
         });
 
         return joint;

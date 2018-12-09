@@ -159,23 +159,22 @@ class Observable {
         });
     }
     concat(obs) {
-        const joint = Observable.create(creator => {
-            this.subscribe(creator.next);
-            this.onError(creator.error);
-            obs.subscribe(creator.next);
-            obs.onError(creator.error);
-            // only end when both have ended
-            let otherEnded = false;
-            this.onEnd(() => {
-                if (otherEnded)
-                    creator.end();
-                otherEnded = true;
-            });
-            obs.onEnd(() => {
-                if (otherEnded)
-                    creator.end();
-                otherEnded = true;
-            });
+        const joint = new Observable();
+        this.subscribe(d => joint.next(d));
+        this.onError(e => joint.error(e));
+        obs.subscribe(d => joint.next(d));
+        obs.onError(e => joint.error(e));
+        // only end when both have ended
+        let otherEnded = false;
+        this.onEnd(() => {
+            if (otherEnded)
+                joint.end();
+            otherEnded = true;
+        });
+        obs.onEnd(() => {
+            if (otherEnded)
+                joint.end();
+            otherEnded = true;
         });
         return joint;
     }
