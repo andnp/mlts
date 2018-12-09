@@ -1,12 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 const commandLine = require("../utils/commandLine");
@@ -30,79 +22,75 @@ class ExperimentDescription {
         const run = Math.floor(index / metaParameters_1.getNumberOfRuns(data.metaParameters));
         return fileSystem_1.getResultsPath(data, permutation, run);
     }
-    static fromJson(location, index, resultsPath, saveRoot) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const ExperimentSchema = ExperimentSchema_1.getExperimentSchema();
-            const data = yield utilities_ts_1.files.readJson(location, ExperimentSchema);
-            // ---------------------------------
-            // Load Constructors from Registries
-            // ---------------------------------
-            const datasetConstructor = ExperimentRegistry_1.getDatasetConstructor(data.dataset);
-            const algData = ExperimentRegistry_1.getAlgorithmRegistryData(data.algorithm);
-            const transformationData = data.transformation && ExperimentRegistry_1.getTransformationRegistryData(data.transformation.type);
-            // ------------
-            // Load Dataset
-            // ------------
-            const dataset = yield datasetConstructor.load();
-            if (transformationData) {
-                const Transformation = transformationData.constructor;
-                yield dataset.applyTransformation(new Transformation(data.transformation));
-            }
-            // --------------
-            // Load Algorithm
-            // --------------
-            const metaParameters = metaParameters_1.getParameterPermutation(data.metaParameters, index);
-            const paramsValid = algData.schema.validate(metaParameters);
-            if (!paramsValid.valid)
-                throw new Error(`Incorrect parameters for algorithms. <${JSON.stringify(paramsValid.errors, undefined, 2)}>`);
-            const datasetDescriptor = {
-                features: dataset.features,
-                classes: dataset.classes,
-                samples: dataset.samples,
-            };
-            const expLocation = ExperimentDescription.getResultsPath(data, index);
-            const root = saveRoot || 'savedModels';
-            const saveLocation = path.join(root, expLocation);
-            const exists = yield utilities_ts_1.files.fileExists(saveLocation);
-            const instantiateAlgorithm = () => new algData.constructor(datasetDescriptor, metaParameters, saveLocation);
-            const algorithm = exists
-                ? yield algData.constructor
-                    .fromSavedState(saveLocation) // load algorithm from save state
-                    .catch(instantiateAlgorithm) // if that fails, build a fresh version instead
-                : instantiateAlgorithm();
-            return new ExperimentDescription(data, algorithm, dataset, metaParameters, data.optimization, resultsPath || 'results', expLocation);
-        });
+    static async fromJson(location, index, resultsPath, saveRoot) {
+        const ExperimentSchema = ExperimentSchema_1.getExperimentSchema();
+        const data = await utilities_ts_1.files.readJson(location, ExperimentSchema);
+        // ---------------------------------
+        // Load Constructors from Registries
+        // ---------------------------------
+        const datasetConstructor = ExperimentRegistry_1.getDatasetConstructor(data.dataset);
+        const algData = ExperimentRegistry_1.getAlgorithmRegistryData(data.algorithm);
+        const transformationData = data.transformation && ExperimentRegistry_1.getTransformationRegistryData(data.transformation.type);
+        // ------------
+        // Load Dataset
+        // ------------
+        const dataset = await datasetConstructor.load();
+        if (transformationData) {
+            const Transformation = transformationData.constructor;
+            await dataset.applyTransformation(new Transformation(data.transformation));
+        }
+        // --------------
+        // Load Algorithm
+        // --------------
+        const metaParameters = metaParameters_1.getParameterPermutation(data.metaParameters, index);
+        const paramsValid = algData.schema.validate(metaParameters);
+        if (!paramsValid.valid)
+            throw new Error(`Incorrect parameters for algorithms. <${JSON.stringify(paramsValid.errors, undefined, 2)}>`);
+        const datasetDescriptor = {
+            features: dataset.features,
+            classes: dataset.classes,
+            samples: dataset.samples,
+        };
+        const expLocation = ExperimentDescription.getResultsPath(data, index);
+        const root = saveRoot || 'savedModels';
+        const saveLocation = path.join(root, expLocation);
+        const exists = await utilities_ts_1.files.fileExists(saveLocation);
+        const instantiateAlgorithm = () => new algData.constructor(datasetDescriptor, metaParameters, saveLocation);
+        const algorithm = exists
+            ? await algData.constructor
+                .fromSavedState(saveLocation) // load algorithm from save state
+                .catch(instantiateAlgorithm) // if that fails, build a fresh version instead
+            : instantiateAlgorithm();
+        return new ExperimentDescription(data, algorithm, dataset, metaParameters, data.optimization, resultsPath || 'results', expLocation);
     }
-    static fromCommandLine() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const cla = commandLine.parseArgs();
-            const index = cla.i || cla.index;
-            const experimentPath = cla.e || cla.experiment;
-            const results = cla.r || cla.results;
-            const save = cla.s || cla.save;
-            const gpu = cla.gpu;
-            const slotId = cla.slotId; // gnu-parallel slot id. used to determine whether gpu should be used.
-            const reslot = cla.reslot; // gnu-parallel doesn't start the slot count over for each device. Use this number to do so here.
-            const slot = slotId ? parseInt(slotId) : false;
-            const reslotted = reslot && slot ? (slot % parseInt(reslot)) + 1 : slot;
-            if (gpu && (slot === false || reslotted === 1)) {
-                try {
-                    require('@tensorflow/tfjs-node-gpu');
-                }
-                catch (e) {
-                    console.error('Attempted to start with GPU, but failed', e); // tslint:disable-line no-console
-                    require('@tensorflow/tfjs-node');
-                }
+    static async fromCommandLine() {
+        const cla = commandLine.parseArgs();
+        const index = cla.i || cla.index;
+        const experimentPath = cla.e || cla.experiment;
+        const results = cla.r || cla.results;
+        const save = cla.s || cla.save;
+        const gpu = cla.gpu;
+        const slotId = cla.slotId; // gnu-parallel slot id. used to determine whether gpu should be used.
+        const reslot = cla.reslot; // gnu-parallel doesn't start the slot count over for each device. Use this number to do so here.
+        const slot = slotId ? parseInt(slotId) : false;
+        const reslotted = reslot && slot ? (slot % parseInt(reslot)) + 1 : slot;
+        if (gpu && (slot === false || reslotted === 1)) {
+            try {
+                require('@tensorflow/tfjs-node-gpu');
             }
-            else {
+            catch (e) {
+                console.error('Attempted to start with GPU, but failed', e); // tslint:disable-line no-console
                 require('@tensorflow/tfjs-node');
             }
-            if (!index)
-                throw new Error('Expected -i or --index to be specified');
-            if (!experimentPath)
-                throw new Error('Expected -e or --experiment to be specified');
-            return this.fromJson(experimentPath, parseInt(index), results, save);
-        });
+        }
+        else {
+            require('@tensorflow/tfjs-node');
+        }
+        if (!index)
+            throw new Error('Expected -i or --index to be specified');
+        if (!experimentPath)
+            throw new Error('Expected -e or --experiment to be specified');
+        return this.fromJson(experimentPath, parseInt(index), results, save);
     }
 }
 exports.ExperimentDescription = ExperimentDescription;

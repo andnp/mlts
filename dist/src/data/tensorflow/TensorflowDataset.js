@@ -1,12 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const utilities_ts_1 = require("utilities-ts");
 const _ = require("lodash");
@@ -81,15 +73,13 @@ class TensorflowDataset {
         });
         this.limitedSamples = this._x.shape[0];
     }
-    applyTransformation(transform) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const newData = yield transform.applyTransformation(this);
-            this._x = newData._x;
-            this._y = newData._y;
-            this._t = newData._t;
-            this._ty = newData._ty;
-            return this;
-        });
+    async applyTransformation(transform) {
+        const newData = await transform.applyTransformation(this);
+        this._x = newData._x;
+        this._y = newData._y;
+        this._t = newData._t;
+        this._ty = newData._ty;
+        return this;
     }
     limitSamples(samples) {
         this.limitedSamples = samples;
@@ -142,10 +132,8 @@ class TensorflowDataset {
     static fromDataset(dataset) {
         return new TensorflowDataset(tfUtil.matrixToTensor(dataset.train[0]), tfUtil.matrixToTensor(dataset.train[1]), tfUtil.matrixToTensor(dataset.test[0]), tfUtil.matrixToTensor(dataset.test[1]));
     }
-    static load() {
-        return __awaiter(this, void 0, void 0, function* () {
-            throw new Error('Should implement the static "load" method for all datasets extending TensorflowDataset');
-        });
+    static async load() {
+        throw new Error('Should implement the static "load" method for all datasets extending TensorflowDataset');
     }
 }
 exports.TensorflowDataset = TensorflowDataset;

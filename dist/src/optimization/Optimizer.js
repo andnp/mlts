@@ -1,12 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const tf = require("@tensorflow/tfjs");
 const _ = require("lodash");
@@ -40,21 +32,19 @@ class Optimizer {
         }, this.parameters);
         this.optimizer = this.constructOptimizer();
     }
-    minimize(lossFunc, vars) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const losses = yield printer_1.printProgressAsync(printer => {
-                return tasks_1.repeat(this.parameters.iterations - this.completedIterations, () => {
-                    const lossTensor = this.optimizer.minimize(lossFunc, true, vars);
-                    const loss = lossTensor.get();
-                    lossTensor.dispose();
-                    if (this.opts.printProgress)
-                        printer(`${this.completedIterations}: ${loss}`);
-                    this.completedIterations++;
-                    return loss;
-                });
+    async minimize(lossFunc, vars) {
+        const losses = await printer_1.printProgressAsync(printer => {
+            return tasks_1.repeat(this.parameters.iterations - this.completedIterations, () => {
+                const lossTensor = this.optimizer.minimize(lossFunc, true, vars);
+                const loss = lossTensor.get();
+                lossTensor.dispose();
+                if (this.opts.printProgress)
+                    printer(`${this.completedIterations}: ${loss}`);
+                this.completedIterations++;
+                return loss;
             });
-            return new History_1.History('', {}, losses);
         });
+        return new History_1.History('', {}, losses);
     }
     constructOptimizer() {
         if (this.parameters.type === 'adadelta') {
@@ -69,14 +59,19 @@ class Optimizer {
         utilities_ts_2.assertNever(this.parameters);
         throw new Error('Unexpected line reached');
     }
-    fit(model, X, Y, params) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const history = yield printer_1.printProgressAsync((printer) => __awaiter(this, void 0, void 0, function* () {
-                const epochs = params.epochs - this.completedIterations;
-                return model.fit(X, Y, Object.assign({ batchSize: params.batchSize || utilities_ts_1.arrays.getFirst(X).shape[0], yieldEvery: 'epoch' }, params, { epochs, callbacks: [new tensorflow_1.LoggerCallback(printer, this.completedIterations), new tensorflow_1.EpochCounter(() => this.completedIterations++)], verbose: base_callbacks_1.ModelLoggingVerbosity.SILENT }));
-            }));
-            return history;
+    async fit(model, X, Y, params) {
+        const history = await printer_1.printProgressAsync(async (printer) => {
+            const epochs = params.epochs - this.completedIterations;
+            return model.fit(X, Y, {
+                batchSize: params.batchSize || utilities_ts_1.arrays.getFirst(X).shape[0],
+                yieldEvery: 'epoch',
+                ...params,
+                epochs,
+                callbacks: [new tensorflow_1.LoggerCallback(printer, this.completedIterations), new tensorflow_1.EpochCounter(() => this.completedIterations++)],
+                verbose: base_callbacks_1.ModelLoggingVerbosity.SILENT,
+            });
         });
+        return history;
     }
     // ------------------
     // Saving and Loading
@@ -84,22 +79,18 @@ class Optimizer {
     reset() {
         this.completedIterations = 0;
     }
-    saveState(location) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const state = {
-                iterations: this.completedIterations,
-                parameters: this.parameters,
-            };
-            yield utilities_ts_2.files.writeJson(path.join(location, 'state.json'), state);
-        });
+    async saveState(location) {
+        const state = {
+            iterations: this.completedIterations,
+            parameters: this.parameters,
+        };
+        await utilities_ts_2.files.writeJson(path.join(location, 'state.json'), state);
     }
-    static fromSavedState(location) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const saveData = yield utilities_ts_2.files.readJson(path.join(location, 'state.json'), SaveDataSchema);
-            const optimizer = new Optimizer(saveData.parameters);
-            optimizer.completedIterations = saveData.iterations;
-            return optimizer;
-        });
+    static async fromSavedState(location) {
+        const saveData = await utilities_ts_2.files.readJson(path.join(location, 'state.json'), SaveDataSchema);
+        const optimizer = new Optimizer(saveData.parameters);
+        optimizer.completedIterations = saveData.iterations;
+        return optimizer;
     }
     getTfOptimizer() {
         return this.optimizer;

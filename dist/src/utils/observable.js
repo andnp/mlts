@@ -1,12 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const utilities_ts_1 = require("utilities-ts");
 class Observable {
@@ -74,20 +66,20 @@ class Observable {
     // ---------------------
     map(sub) {
         const obs = new Observable();
-        this.subscribe((data) => __awaiter(this, void 0, void 0, function* () {
-            const r = yield sub(data);
+        this.subscribe(async (data) => {
+            const r = await sub(data);
             obs.next(r);
-        }));
+        });
         this.bindEndAndError(obs);
         return obs;
     }
     filter(test) {
         const obs = new Observable();
-        this.subscribe((data) => __awaiter(this, void 0, void 0, function* () {
-            const filter = yield test(data);
+        this.subscribe(async (data) => {
+            const filter = await test(data);
             if (filter)
                 obs.next(data);
-        }));
+        });
         this.bindEndAndError(obs);
         return obs;
     }
@@ -121,19 +113,17 @@ class Observable {
     // -----
     // Async
     // -----
-    then(f) {
-        return __awaiter(this, void 0, void 0, function* () {
-            // if this observable is already done, just return
-            if (this.completed || this.err)
-                return f();
-            // otherwise, return once the `end` or `error` function is called
-            return new Promise((resolve, reject) => {
-                this.onEnd(resolve);
-                this.onError(reject);
-            }).then(f);
-        });
+    async then(f) {
+        // if this observable is already done, just return
+        if (this.completed || this.err)
+            return f();
+        // otherwise, return once the `end` or `error` function is called
+        return new Promise((resolve, reject) => {
+            this.onEnd(resolve);
+            this.onError(reject);
+        }).then(f);
     }
-    execute() {
+    async execute() {
         const active = Object.keys(this.activeTasks).length;
         const remaining = this.queue.length;
         const shouldExecute = this.parallel > 0 ? min(this.parallel - active, remaining) : remaining;
@@ -144,27 +134,30 @@ class Observable {
             this.activeTasks[id] = task;
             task.then(() => {
                 delete this.activeTasks[id];
+                this.execute();
             });
         }
-        this.queue = [];
-    }
-    flush() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.execute();
-            yield utilities_ts_1.promise.allValues(this.activeTasks);
+        await utilities_ts_1.promise.allValues(this.activeTasks)
+            .then(() => {
+            if (this.queue.length === 0)
+                return;
+            return this.execute();
         });
+    }
+    async flush() {
+        await this.execute();
+        await utilities_ts_1.promise.allValues(this.activeTasks);
+        this.queue = [];
     }
     // ------------------
     // Advanced Functions
     // ------------------
-    collect() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (this.completed || this.err)
-                return [];
-            const collection = [];
-            this.subscribe(d => collection.push(d));
-            return this.then(() => collection);
-        });
+    async collect() {
+        if (this.completed || this.err)
+            return [];
+        const collection = [];
+        this.subscribe(d => collection.push(d));
+        return this.then(() => collection);
     }
     concat(obs) {
         const joint = new Observable();

@@ -152,7 +152,7 @@ export class Observable<T> {
 
     private activeTasks: Record<string, Promise<any>> = {};
     private getId = uniqueId();
-    private execute() {
+    private async execute() {
         const active = Object.keys(this.activeTasks).length;
         const remaining = this.queue.length;
         const shouldExecute = this.parallel > 0 ? min(this.parallel - active, remaining) : remaining;
@@ -166,15 +166,22 @@ export class Observable<T> {
 
             task.then(() => {
                 delete this.activeTasks[id];
+                this.execute();
             });
         }
 
-        this.queue = [];
+        await promise.allValues(this.activeTasks)
+            .then(() => {
+                if (this.queue.length === 0) return;
+
+                return this.execute();
+            });
     }
 
     async flush() {
-        this.execute();
+        await this.execute();
         await promise.allValues(this.activeTasks);
+        this.queue = [];
     }
 
     // ------------------

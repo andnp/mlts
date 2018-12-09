@@ -1,12 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const tf = require("@tensorflow/tfjs");
 const _ = require("lodash");
@@ -37,33 +29,27 @@ class SupervisedDictionaryLearning extends Algorithm_1.Algorithm {
             hidden: 2,
         }, opts);
     }
-    _build() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.registerParameter('W', () => tensorflow_1.randomInitVariable([this.datasetDescription.classes, this.opts.hidden]));
-            this.registerParameter('H', () => tensorflow_1.randomInitVariable([this.opts.hidden, this.datasetDescription.samples]));
-            this.registerParameter('D', () => tensorflow_1.randomInitVariable([this.datasetDescription.features, this.opts.hidden]));
-        });
+    async _build() {
+        this.registerParameter('W', () => tensorflow_1.randomInitVariable([this.datasetDescription.classes, this.opts.hidden]));
+        this.registerParameter('H', () => tensorflow_1.randomInitVariable([this.opts.hidden, this.datasetDescription.samples]));
+        this.registerParameter('D', () => tensorflow_1.randomInitVariable([this.datasetDescription.features, this.opts.hidden]));
     }
-    _train(X, Y, o) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const optimizer = this.registerOptimizer('opt', () => new Optimizer_1.Optimizer(this.getDefaultOptimizerParameters(o)));
-            const { W, D, H } = this.assertParametersExist(['W', 'H', 'D']);
-            return optimizer.minimize(_.partial(this.loss, X, Y), [W, D, H]);
-        });
+    async _train(X, Y, o) {
+        const optimizer = this.registerOptimizer('opt', () => new Optimizer_1.Optimizer(this.getDefaultOptimizerParameters(o)));
+        const { W, D, H } = this.assertParametersExist(['W', 'H', 'D']);
+        return optimizer.minimize(_.partial(this.loss, X, Y), [W, D, H]);
     }
-    _predict(X, o) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const optimizer = new Optimizer_1.Optimizer(this.getDefaultOptimizerParameters(o));
-            const H_test = (X.shape[0] === this.datasetDescription.samples)
-                ? this.H
-                : tensorflow_1.randomInitVariable([this.opts.hidden, X.shape[0]]);
-            yield optimizer.minimize(() => {
-                const X_hat = tf.matMul(this.D, H_test);
-                return tf.losses.meanSquaredError(X.transpose(), X_hat);
-            }, [H_test]);
-            return tf.tidy(() => {
-                return tf.sigmoid(tf.matMul(this.W, H_test)).transpose();
-            });
+    async _predict(X, o) {
+        const optimizer = new Optimizer_1.Optimizer(this.getDefaultOptimizerParameters(o));
+        const H_test = (X.shape[0] === this.datasetDescription.samples)
+            ? this.H
+            : tensorflow_1.randomInitVariable([this.opts.hidden, X.shape[0]]);
+        await optimizer.minimize(() => {
+            const X_hat = tf.matMul(this.D, H_test);
+            return tf.losses.meanSquaredError(X.transpose(), X_hat);
+        }, [H_test]);
+        return tf.tidy(() => {
+            return tf.sigmoid(tf.matMul(this.W, H_test)).transpose();
         });
     }
     getDefaultOptimizerParameters(o) {
@@ -73,10 +59,8 @@ class SupervisedDictionaryLearning extends Algorithm_1.Algorithm {
             learningRate: 1.0,
         }, o);
     }
-    static fromSavedState(location) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return new SupervisedDictionaryLearning({}).loadFromDisk(location);
-        });
+    static async fromSavedState(location) {
+        return new SupervisedDictionaryLearning({}).loadFromDisk(location);
     }
     get W() { return this.assertParametersExist(['W']).W; }
     get H() { return this.assertParametersExist(['H']).H; }

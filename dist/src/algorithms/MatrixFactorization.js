@@ -1,12 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const tf = require("@tensorflow/tfjs");
 const _ = require("lodash");
@@ -64,14 +56,12 @@ class MatrixFactorization extends Algorithm_1.Algorithm {
             hidden: 2,
         }, opts);
     }
-    _build() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.registerModel(MODEL, () => {
-                const model = tf.sequential();
-                model.add(tf.layers.inputLayer({ inputShape: [this.datasetDescription.features] }));
-                model.add(new DictLayer(Object.assign({}, this.opts, { datasetDescription: this.datasetDescription })));
-                return model;
-            });
+    async _build() {
+        this.registerModel(MODEL, () => {
+            const model = tf.sequential();
+            model.add(tf.layers.inputLayer({ inputShape: [this.datasetDescription.features] }));
+            model.add(new DictLayer({ ...this.opts, datasetDescription: this.datasetDescription }));
+            return model;
         });
     }
     loss(X) {
@@ -79,31 +69,25 @@ class MatrixFactorization extends Algorithm_1.Algorithm {
         const X_hat = model.predict(X);
         return tf.losses.meanSquaredError(X, X_hat);
     }
-    _train(X, Y, o) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const model = this.assertModel(MODEL);
-            const optimizer = this.registerOptimizer('opt', () => new Optimizer_1.Optimizer(o));
-            model.compile({
-                optimizer: optimizer.getTfOptimizer(),
-                loss: 'meanSquaredError',
-            });
-            const history = yield optimizer.fit(model, X, X, {
-                batchSize: X.shape[0],
-                epochs: o.iterations,
-                shuffle: false,
-            });
-            // we've finished optimizing, so we can release our optimizer
-            this.clearOptimizer('opt');
-            return History_1.History.fromTensorflowHistory(this.name, this.opts, history);
+    async _train(X, Y, o) {
+        const model = this.assertModel(MODEL);
+        const optimizer = this.registerOptimizer('opt', () => new Optimizer_1.Optimizer(o));
+        model.compile({
+            optimizer: optimizer.getTfOptimizer(),
+            loss: 'meanSquaredError',
         });
-    }
-    _predict() {
-        return __awaiter(this, void 0, void 0, function* () { throw new Error('Predict not implemented for MatrixFactorization'); });
-    }
-    static fromSavedState(location) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return new MatrixFactorization({}).loadFromDisk(location);
+        const history = await optimizer.fit(model, X, X, {
+            batchSize: X.shape[0],
+            epochs: o.iterations,
+            shuffle: false,
         });
+        // we've finished optimizing, so we can release our optimizer
+        this.clearOptimizer('opt');
+        return History_1.History.fromTensorflowHistory(this.name, this.opts, history);
+    }
+    async _predict() { throw new Error('Predict not implemented for MatrixFactorization'); }
+    static async fromSavedState(location) {
+        return new MatrixFactorization({}).loadFromDisk(location);
     }
     get D() {
         const model = this.assertModel(MODEL);

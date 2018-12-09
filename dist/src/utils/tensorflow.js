@@ -1,12 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const tf = require("@tensorflow/tfjs");
 const base_callbacks_1 = require("@tensorflow/tfjs-layers/dist/base_callbacks");
@@ -29,22 +21,18 @@ exports.datasetToTFDataset = (dataset) => {
         test: dataset.test.map(exports.matrixToTensor),
     };
 };
-function writeTensorToCsv(location, tensor) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const buf = yield tensor.data();
-        return utilities_ts_1.csv.writeCsv(location, new matrix_1.Matrix(tensor.shape[0], tensor.shape[1], buf));
-    });
+async function writeTensorToCsv(location, tensor) {
+    const buf = await tensor.data();
+    return utilities_ts_1.csv.writeCsv(location, new matrix_1.Matrix(tensor.shape[0], tensor.shape[1], buf));
 }
 exports.writeTensorToCsv = writeTensorToCsv;
-function loadTensorFromCsv(location, shape, Buffer = Float32Array) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const buffer = new Buffer(shape[0] * shape[1]);
-        const data = yield utilities_ts_1.csv.loadCsvToBuffer({
-            buffer,
-            path: location,
-        });
-        return tf.tensor2d(data, shape);
+async function loadTensorFromCsv(location, shape, Buffer = Float32Array) {
+    const buffer = new Buffer(shape[0] * shape[1]);
+    const data = await utilities_ts_1.csv.loadCsvToBuffer({
+        buffer,
+        path: location,
     });
+    return tf.tensor2d(data, shape);
 }
 exports.loadTensorFromCsv = loadTensorFromCsv;
 function randomInitVariable(shape) {
@@ -71,35 +59,29 @@ class LoggerCallback extends base_callbacks_1.BaseCallback {
         this.batch = 0;
         this.trainingBegan = 0;
     }
-    onBatchEnd(batch, logs) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (logs) {
-                const keys = Object.keys(logs);
-                const logValues = keys.filter(k => k !== 'batch' && k !== 'size').map(key => {
-                    const log = logs[key];
-                    const value = log instanceof tf.Tensor
-                        ? log.get()
-                        : log;
-                    return { name: key, value };
-                });
-                const avgTimePerBatch = Math.round((Date.now() - this.trainingBegan) / (this.batch + 1));
-                const printStr = logValues.map(v => `${v.name.substr(-4)}: ${v.value.toPrecision(4)}`).join(' ');
-                const epoch = this.epoch + this.startingEpoch;
-                this.print(`${epoch}- ${printStr} atpb: ${avgTimePerBatch}`);
-                this.batch++;
-            }
-        });
+    async onBatchEnd(batch, logs) {
+        if (logs) {
+            const keys = Object.keys(logs);
+            const logValues = keys.filter(k => k !== 'batch' && k !== 'size').map(key => {
+                const log = logs[key];
+                const value = log instanceof tf.Tensor
+                    ? log.get()
+                    : log;
+                return { name: key, value };
+            });
+            const avgTimePerBatch = Math.round((Date.now() - this.trainingBegan) / (this.batch + 1));
+            const printStr = logValues.map(v => `${v.name.substr(-4)}: ${v.value.toPrecision(4)}`).join(' ');
+            const epoch = this.epoch + this.startingEpoch;
+            this.print(`${epoch}- ${printStr} atpb: ${avgTimePerBatch}`);
+            this.batch++;
+        }
     }
-    onEpochBegin() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.trainingBegan)
-                this.trainingBegan = Date.now();
-        });
+    async onEpochBegin() {
+        if (!this.trainingBegan)
+            this.trainingBegan = Date.now();
     }
-    onEpochEnd() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.epoch++;
-        });
+    async onEpochEnd() {
+        this.epoch++;
     }
 }
 exports.LoggerCallback = LoggerCallback;
@@ -108,10 +90,8 @@ class EpochCounter extends base_callbacks_1.BaseCallback {
         super();
         this.callback = callback;
     }
-    onEpochEnd() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.callback();
-        });
+    async onEpochEnd() {
+        this.callback();
     }
 }
 exports.EpochCounter = EpochCounter;

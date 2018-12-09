@@ -1,12 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const tf = require("@tensorflow/tfjs");
 const _ = require("lodash");
@@ -32,52 +24,44 @@ class LinearRegression extends Algorithm_1.Algorithm {
             initialParameters: { mean: 0, variance: 1 },
         }, opts);
     }
-    _build() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.registerModel('model', () => {
-                const model = tf.sequential();
-                model.add(tf.layers.inputLayer({ inputShape: [this.datasetDescription.features] }));
-                model.add(tf.layers.dense({
-                    units: this.datasetDescription.classes,
-                    kernelInitializer: tf.initializers.randomNormal(Object.assign({}, this.opts.initialParameters)),
-                    activation: 'linear',
-                    kernelRegularizer: this.opts.regularizer && regularizers_1.regularizeLayer(this.opts.regularizer),
-                    name: 'W',
-                }));
-                return model;
-            });
+    async _build() {
+        this.registerModel('model', () => {
+            const model = tf.sequential();
+            model.add(tf.layers.inputLayer({ inputShape: [this.datasetDescription.features] }));
+            model.add(tf.layers.dense({
+                units: this.datasetDescription.classes,
+                kernelInitializer: tf.initializers.randomNormal({ ...this.opts.initialParameters }),
+                activation: 'linear',
+                kernelRegularizer: this.opts.regularizer && regularizers_1.regularizeLayer(this.opts.regularizer),
+                name: 'W',
+            }));
+            return model;
         });
     }
-    _train(X, Y, opts) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const o = this.getDefaultOptimizationParameters(opts);
-            const optimizer = this.registerOptimizer('optimizer', () => new Optimizer_1.Optimizer(o));
-            this.getModel().compile({
-                optimizer: optimizer.getTfOptimizer(),
-                loss: 'meanSquaredError',
-            });
-            const history = yield optimizer.fit(this.getModel(), X, Y, {
-                batchSize: o.batchSize || X.shape[0],
-                epochs: o.iterations,
-                shuffle: true,
-            });
-            this.clearOptimizer('optimizer');
-            return History_1.History.fromTensorflowHistory(this.name, this.opts, history);
+    async _train(X, Y, opts) {
+        const o = this.getDefaultOptimizationParameters(opts);
+        const optimizer = this.registerOptimizer('optimizer', () => new Optimizer_1.Optimizer(o));
+        this.getModel().compile({
+            optimizer: optimizer.getTfOptimizer(),
+            loss: 'meanSquaredError',
         });
+        const history = await optimizer.fit(this.getModel(), X, Y, {
+            batchSize: o.batchSize || X.shape[0],
+            epochs: o.iterations,
+            shuffle: true,
+        });
+        this.clearOptimizer('optimizer');
+        return History_1.History.fromTensorflowHistory(this.name, this.opts, history);
     }
     loss(X, Y) {
         const Y_hat = this.getModel().predict(X);
         return tf.losses.meanSquaredError(Y, Y_hat);
     }
-    _predict(X) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.getModel().predict(X);
-        });
+    async _predict(X) {
+        return this.getModel().predict(X);
     }
-    static fromSavedState(location) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return new LinearRegression({}).loadFromDisk(location);
-        });
+    static async fromSavedState(location) {
+        return new LinearRegression({}).loadFromDisk(location);
     }
     get W() { return this.getModel().getLayer('W').getWeights()[0]; }
     set W(w) { this.getModel().getLayer('W').setWeights([w, this.getModel().getLayer('W').getWeights()[1]]); }

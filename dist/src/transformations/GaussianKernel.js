@@ -1,12 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const v = require("validtyped");
 const tf = require("@tensorflow/tfjs");
@@ -19,25 +11,21 @@ class GaussianKernelTransformation extends Transformation_1.Transformation {
         super();
         this.params = params;
     }
-    applyTransformation(data) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const [X, Y] = data.train;
-            const [T, TY] = data.test;
-            const S = tfUtils.randomSamples(X, this.params.centers);
-            const overlap = this.params.overlap || 1;
-            const bandwidths = getBandwidths(S, overlap);
-            const transformed_X = transformGaussian(X, S, bandwidths);
-            const transformed_T = transformGaussian(T, S, bandwidths);
-            return new TensorflowDataset_1.TensorflowDataset(transformed_X, Y, transformed_T, TY);
-        });
+    async applyTransformation(data) {
+        const [X, Y] = data.train;
+        const [T, TY] = data.test;
+        const S = tfUtils.randomSamples(X, this.params.centers);
+        const overlap = this.params.overlap || 1;
+        const bandwidths = getBandwidths(S, overlap);
+        const transformed_X = transformGaussian(X, S, bandwidths);
+        const transformed_T = transformGaussian(T, S, bandwidths);
+        return new TensorflowDataset_1.TensorflowDataset(transformed_X, Y, transformed_T, TY);
     }
-    transformTensor(X) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const S = tfUtils.randomSamples(X, this.params.centers);
-            const overlap = this.params.overlap || 1;
-            const bandwidths = getBandwidths(S, overlap);
-            return transformGaussian(X, S, bandwidths);
-        });
+    async transformTensor(X) {
+        const S = tfUtils.randomSamples(X, this.params.centers);
+        const overlap = this.params.overlap || 1;
+        const bandwidths = getBandwidths(S, overlap);
+        return transformGaussian(X, S, bandwidths);
     }
 }
 exports.GaussianKernelTransformation = GaussianKernelTransformation;

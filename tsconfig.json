@@ -7,7 +7,7 @@
         "moduleResolution": "node",
         "noUnusedLocals": false,
         "module": "commonjs",
-        "target": "es6",
+        "target": "esnext",
         "noImplicitAny": true,
         "noImplicitThis": true,
         "declaration": true,

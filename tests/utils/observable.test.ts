@@ -89,10 +89,11 @@ test('Can map over promise returning functions', async () => {
     expect(state).toBe(4);
 });
 
-test('Can filter over promise returning functions', async () => {
+test.only('Can filter over promise returning functions', async () => {
     let state = 0;
 
     await Observable.fromArray([0, 1, 2, 3])
+        .bottleneck(1)
         .map(i => promise.delay(i * 100 as Milliseconds).then(fp.giveBack(i)))
         .filter(i => promise.delay(i * 100 as Milliseconds).then(fp.giveBack(i < 2)))
         .subscribe(data => expect(data).toBe(state++));
