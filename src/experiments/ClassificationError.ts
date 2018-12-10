@@ -1,17 +1,15 @@
 import { ExperimentDescription } from "./ExperimentDescription";
 import { getClassificationError } from "../analysis";
-import { files, csv, Matrix } from "utilities-ts";
+import { files, csv, Matrix, RawObservable } from "utilities-ts";
+import { SupervisedAlgorithm } from "../algorithms/Algorithm";
+import { Experiment, ExperimentResultMessage } from "./Experiment";
 
-export class ClassificationErrorExperiment {
-    constructor (
-        protected description: ExperimentDescription,
-    ) {}
-
-    async run(root = 'results') {
+export class ClassificationErrorExperiment extends Experiment {
+    async _run(obs: RawObservable<ExperimentResultMessage>) {
         const alg = this.description.algorithm;
         const d = this.description.dataset;
 
-        await alg.build();
+        if (!(alg instanceof SupervisedAlgorithm)) throw new Error('Can only work with supervised algorithms');
 
         const [ X, Y ] = d.train;
 
@@ -27,17 +25,43 @@ export class ClassificationErrorExperiment {
 
         const params = alg.getParameters();
 
-        const resultsPath = files.filePath(`${root}/${this.description.path}`);
+        const resultsPath = this.description.path;
 
-        await files.writeFile(files.filePath(`${resultsPath}/test.csv`), testError);
-        await files.writeFile(files.filePath(`${resultsPath}/train.csv`), trainError);
+        obs.next({
+            tag: 'test',
+            type: 'txt',
+            path: `${resultsPath}/test.csv`,
+            data: testError,
+        });
 
-        await files.writeJson(files.filePath(`${resultsPath}/params.json`), params);
-        await files.writeJson(files.filePath(`${resultsPath}/experiment.json`), this.description.definition);
+        obs.next({
+            tag: 'train',
+            type: 'txt',
+            path: `${resultsPath}/train.csv`,
+            data: trainError,
+        });
+
+        obs.next({
+            tag: 'params',
+            type: 'json',
+            path: `${resultsPath}/params.json`,
+            data: params,
+        });
+
+        obs.next({
+            tag: 'experiment',
+            type: 'json',
+            path: `${resultsPath}/experiment.json`,
+            data: this.description.definition,
+        });
 
         const loss = Matrix.fromData([history.loss]);
-        await csv.writeCsv(files.filePath(`${resultsPath}/loss.csv`), loss);
 
-        console.log('Train:', trainError, 'Test:', testError); // tslint:disable-line no-console
+        obs.next({
+            tag: 'loss',
+            type: 'csv',
+            path: `${resultsPath}/loss.csv`,
+            data: loss,
+        });
     }
 }

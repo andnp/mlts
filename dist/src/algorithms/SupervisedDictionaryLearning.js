@@ -11,11 +11,14 @@ exports.SupervisedDictionaryLearningMetaParameterSchema = v.object({
     regularizer: regularizers_1.RegularizerParametersSchema,
     hidden: v.number(),
 });
-class SupervisedDictionaryLearning extends Algorithm_1.Algorithm {
-    constructor(datasetDescription, opts, saveLocation = 'savedModels') {
-        super(datasetDescription, saveLocation);
+class SupervisedDictionaryLearning extends Algorithm_1.SupervisedAlgorithm {
+    constructor(datasetDescription, opts) {
+        super(datasetDescription);
         this.datasetDescription = datasetDescription;
         this.name = SupervisedDictionaryLearning.name;
+        this.w = tensorflow_1.randomInitVariable([this.datasetDescription.classes, this.opts.hidden]);
+        this.h = tensorflow_1.randomInitVariable([this.opts.hidden, this.datasetDescription.samples]);
+        this.d = tensorflow_1.randomInitVariable([this.datasetDescription.features, this.opts.hidden]);
         this.loss = tensorflow_1.autoDispose((X, Y) => {
             const Y_hat = tf.sigmoid(tf.matMul(this.W, this.H));
             const X_hat = tf.matMul(this.D, this.H);
@@ -29,15 +32,9 @@ class SupervisedDictionaryLearning extends Algorithm_1.Algorithm {
             hidden: 2,
         }, opts);
     }
-    async _build() {
-        this.registerParameter('W', () => tensorflow_1.randomInitVariable([this.datasetDescription.classes, this.opts.hidden]));
-        this.registerParameter('H', () => tensorflow_1.randomInitVariable([this.opts.hidden, this.datasetDescription.samples]));
-        this.registerParameter('D', () => tensorflow_1.randomInitVariable([this.datasetDescription.features, this.opts.hidden]));
-    }
     async _train(X, Y, o) {
-        const optimizer = this.registerOptimizer('opt', () => new Optimizer_1.Optimizer(this.getDefaultOptimizerParameters(o)));
-        const { W, D, H } = this.assertParametersExist(['W', 'H', 'D']);
-        return optimizer.minimize(_.partial(this.loss, X, Y), [W, D, H]);
+        const optimizer = new Optimizer_1.Optimizer(this.getDefaultOptimizerParameters(o));
+        return optimizer.minimize(_.partial(this.loss, X, Y), [this.W, this.D, this.H]);
     }
     async _predict(X, o) {
         const optimizer = new Optimizer_1.Optimizer(this.getDefaultOptimizerParameters(o));
@@ -59,12 +56,9 @@ class SupervisedDictionaryLearning extends Algorithm_1.Algorithm {
             learningRate: 1.0,
         }, o);
     }
-    static async fromSavedState(location) {
-        return new SupervisedDictionaryLearning({}).loadFromDisk(location);
-    }
-    get W() { return this.assertParametersExist(['W']).W; }
-    get H() { return this.assertParametersExist(['H']).H; }
-    get D() { return this.assertParametersExist(['D']).D; }
+    get W() { return this.w; }
+    get H() { return this.h; }
+    get D() { return this.d; }
 }
 exports.SupervisedDictionaryLearning = SupervisedDictionaryLearning;
 //# sourceMappingURL=SupervisedDictionaryLearning.js.map

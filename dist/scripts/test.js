@@ -4,8 +4,7 @@ require("@tensorflow/tfjs-node");
 const src_1 = require("../src");
 async function execute() {
     const d = await src_1.Deterding.load();
-    // const alg = new ANN(d.description());
-    const alg = await src_1.ANN.fromSavedState('savedModels');
+    const alg = new src_1.ANN(d.description());
     const [X, Y] = d.train;
     await alg.train(X, Y, { iterations: 100 });
     const [T, TY] = d.test;

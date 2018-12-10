@@ -3,11 +3,10 @@ import * as _ from 'lodash';
 import * as v from 'validtyped';
 import { LayerConfig } from '@tensorflow/tfjs-layers/dist/engine/topology';
 
-import { Algorithm } from "../algorithms/Algorithm";
+import { UnsupervisedAlgorithm } from "../algorithms/Algorithm";
 import { Optimizer } from '../optimization/Optimizer';
 import { RegularizerParametersSchema, regularizeLayer } from '../regularizers/regularizers';
 import { MatrixFactorizationDatasetDescription } from '../data/DatasetDescription';
-import { History } from '../analysis/History';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 
 class DictLayer extends tf.layers.Layer {
@@ -50,9 +49,9 @@ class DictLayer extends tf.layers.Layer {
 }
 tf.serialization.registerClass(DictLayer);
 
-const MODEL = 'model';
-export class MatrixFactorization extends Algorithm {
+export class MatrixFactorization extends UnsupervisedAlgorithm {
     protected readonly name = MatrixFactorization.name;
+    readonly model: tf.Model;
 
     protected opts: MatrixFactorizationMetaParameters;
 
@@ -73,67 +72,48 @@ export class MatrixFactorization extends Algorithm {
     constructor (
         protected datasetDescription: MatrixFactorizationDatasetDescription,
         opts?: Partial<MatrixFactorizationMetaParameters>,
-        saveLocation = 'savedModels',
     ) {
-        super(datasetDescription, saveLocation);
+        super(datasetDescription);
         this.opts = this.getDefaults(opts);
-    }
 
-    protected async _build() {
-        this.registerModel(MODEL, () => {
-            const model = tf.sequential();
+        const model = tf.sequential();
 
-            model.add(tf.layers.inputLayer({ inputShape: [this.datasetDescription.features] }));
-            model.add(new DictLayer({ ...this.opts, datasetDescription: this.datasetDescription }));
+        model.add(tf.layers.inputLayer({ inputShape: [this.datasetDescription.features] }));
+        model.add(new DictLayer({ ...this.opts, datasetDescription: this.datasetDescription }));
 
-            return model;
-        });
+        this.model = model;
     }
 
     loss(X: tf.Tensor2D) {
-        const model = this.assertModel(MODEL);
-        const X_hat = model.predict(X) as tf.Tensor;
+        const X_hat = this.model.predict(X) as tf.Tensor;
         return tf.losses.meanSquaredError(X, X_hat);
     }
 
-    protected async _train(X: tf.Tensor2D, Y: tf.Tensor2D, o: OptimizationParameters) {
-        const model = this.assertModel(MODEL);
-        const optimizer = this.registerOptimizer('opt', () => new Optimizer(o));
+    protected async _train(X: tf.Tensor2D, o: OptimizationParameters) {
+        const optimizer = new Optimizer(o);
 
-        model.compile({
+        this.model.compile({
             optimizer: optimizer.getTfOptimizer(),
             loss: 'meanSquaredError',
         });
 
-        const history = await optimizer.fit(model, X, X, {
+        return optimizer.fit(this.model, X, X, {
             batchSize: X.shape[0],
             epochs: o.iterations,
             shuffle: false,
         });
-
-        // we've finished optimizing, so we can release our optimizer
-        this.clearOptimizer('opt');
-
-        return History.fromTensorflowHistory(this.name, this.opts, history);
     }
 
     protected async _predict(): Promise<tf.Tensor2D> { throw new Error('Predict not implemented for MatrixFactorization'); }
 
-    static async fromSavedState(location: string) {
-        return new MatrixFactorization({} as MatrixFactorizationDatasetDescription).loadFromDisk(location);
-    }
-
     get D() {
-        const model = this.assertModel(MODEL);
-        return model.getLayer(DictLayer.name).getWeights()[0] as tf.Tensor2D;
+        return this.model.getLayer(DictLayer.name).getWeights()[0] as tf.Tensor2D;
     }
     get H() {
-        const model = this.assertModel(MODEL);
-        return model.getLayer(DictLayer.name).getWeights()[1] as tf.Tensor2D;
+        return this.model.getLayer(DictLayer.name).getWeights()[1] as tf.Tensor2D;
     }
     setD(tensor: tf.Tensor2D) {
-        const model = this.assertModel(MODEL);
-        model.getLayer(DictLayer.name).setWeights([tensor, this.H]);
+        this.model.getLayer(DictLayer.name).setWeights([tensor, this.H]);
     }
 }
 

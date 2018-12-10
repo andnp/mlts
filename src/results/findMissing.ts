@@ -8,10 +8,12 @@ export function findMissing(base_path: string, path: string, runs: number) {
         return Observable.fromPromises([ files.readJson(path, getExperimentSchema()) ])
             .map(raw_exp => ({ exp: raw_exp, count: getNumberOfRuns(raw_exp.metaParameters) * runs}))
             .flatMap(d => arrays.range(d.count).map(i => ({ i, ...d })))
+            // make sure process doesn't run out of memory servicing too many missing files
+            .bottleneck(256)
             .filter(async (data) => {
                 const res_path = ExperimentDescription.getResultsPath(data.exp, data.i);
                 const full_path = `${base_path}/${res_path}/test.csv`;
-                const found = files.fileExists(full_path);
+                const found = await files.fileExists(full_path);
 
                 print(`Searching for missing results: ${((data.i / data.count) * 100).toPrecision(3)}%`);
 

@@ -5,8 +5,7 @@ import { ANN, Deterding, getClassificationError } from '../src';
 
 async function execute() {
     const d = await Deterding.load();
-    // const alg = new ANN(d.description());
-    const alg = await ANN.fromSavedState('savedModels');
+    const alg = new ANN(d.description());
 
     const [ X, Y ] = d.train;
     await alg.train(X, Y, { iterations: 100 });

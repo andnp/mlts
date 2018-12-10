@@ -2,14 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const analysis_1 = require("../analysis");
 const utilities_ts_1 = require("utilities-ts");
-class ClassificationErrorExperiment {
-    constructor(description) {
-        this.description = description;
-    }
-    async run(root = 'results') {
+const Algorithm_1 = require("../algorithms/Algorithm");
+const Experiment_1 = require("./Experiment");
+class ClassificationErrorExperiment extends Experiment_1.Experiment {
+    async _run(obs) {
         const alg = this.description.algorithm;
         const d = this.description.dataset;
-        await alg.build();
+        if (!(alg instanceof Algorithm_1.SupervisedAlgorithm))
+            throw new Error('Can only work with supervised algorithms');
         const [X, Y] = d.train;
         const history = await alg.train(X, Y, this.description.optimization);
         const [T, TY] = d.test;
@@ -18,14 +18,38 @@ class ClassificationErrorExperiment {
         const trainError = analysis_1.getClassificationError(Y_hat, Y).get();
         const testError = analysis_1.getClassificationError(TY_hat, TY).get();
         const params = alg.getParameters();
-        const resultsPath = utilities_ts_1.files.filePath(`${root}/${this.description.path}`);
-        await utilities_ts_1.files.writeFile(utilities_ts_1.files.filePath(`${resultsPath}/test.csv`), testError);
-        await utilities_ts_1.files.writeFile(utilities_ts_1.files.filePath(`${resultsPath}/train.csv`), trainError);
-        await utilities_ts_1.files.writeJson(utilities_ts_1.files.filePath(`${resultsPath}/params.json`), params);
-        await utilities_ts_1.files.writeJson(utilities_ts_1.files.filePath(`${resultsPath}/experiment.json`), this.description.definition);
+        const resultsPath = this.description.path;
+        obs.next({
+            tag: 'test',
+            type: 'txt',
+            path: `${resultsPath}/test.csv`,
+            data: testError,
+        });
+        obs.next({
+            tag: 'train',
+            type: 'txt',
+            path: `${resultsPath}/train.csv`,
+            data: trainError,
+        });
+        obs.next({
+            tag: 'params',
+            type: 'json',
+            path: `${resultsPath}/params.json`,
+            data: params,
+        });
+        obs.next({
+            tag: 'experiment',
+            type: 'json',
+            path: `${resultsPath}/experiment.json`,
+            data: this.description.definition,
+        });
         const loss = utilities_ts_1.Matrix.fromData([history.loss]);
-        await utilities_ts_1.csv.writeCsv(utilities_ts_1.files.filePath(`${resultsPath}/loss.csv`), loss);
-        console.log('Train:', trainError, 'Test:', testError); // tslint:disable-line no-console
+        obs.next({
+            tag: 'loss',
+            type: 'csv',
+            path: `${resultsPath}/loss.csv`,
+            data: loss,
+        });
     }
 }
 exports.ClassificationErrorExperiment = ClassificationErrorExperiment;

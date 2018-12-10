@@ -83,12 +83,14 @@ export class Optimizer {
         const history = await printProgressAsync(async (printer) => {
             const epochs = params.epochs! - this.completedIterations;
 
+            const callbacks = Array.isArray(params.callbacks) ? params.callbacks : [];
+
             return model.fit(X, Y, {
                 batchSize: params.batchSize || arrays.getFirst(X).shape[0],
                 yieldEvery: 'epoch',
                 ...params,
                 epochs,
-                callbacks: [new LoggerCallback(printer, this.completedIterations), new EpochCounter(() => this.completedIterations++)],
+                callbacks: [new LoggerCallback(printer, this.completedIterations), new EpochCounter(() => this.completedIterations++), ...callbacks],
                 verbose: ModelLoggingVerbosity.SILENT,
             });
         });

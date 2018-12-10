@@ -2,7 +2,7 @@ import * as tf from '@tensorflow/tfjs';
 import * as _ from 'lodash';
 import * as v from 'validtyped';
 
-import { Algorithm } from "../algorithms/Algorithm";
+import { SupervisedAlgorithm } from "../algorithms/Algorithm";
 import { Optimizer } from '../optimization/Optimizer';
 import { autoDispose, randomInitVariable } from '../utils/tensorflow';
 import { regularize, RegularizerParametersSchema } from '../regularizers/regularizers';
@@ -16,26 +16,23 @@ export const SupervisedDictionaryLearningMetaParameterSchema = v.object({
 
 export type SupervisedDictionaryLearningMetaParameters = v.ValidType<typeof SupervisedDictionaryLearningMetaParameterSchema>;
 
-export class SupervisedDictionaryLearning extends Algorithm {
+export class SupervisedDictionaryLearning extends SupervisedAlgorithm {
     protected readonly name = SupervisedDictionaryLearning.name;
     protected readonly opts: SupervisedDictionaryLearningMetaParameters;
+
+    readonly w = randomInitVariable([this.datasetDescription.classes, this.opts.hidden]);
+    readonly h = randomInitVariable([this.opts.hidden, this.datasetDescription.samples]);
+    readonly d = randomInitVariable([this.datasetDescription.features, this.opts.hidden]);
 
     constructor (
         protected datasetDescription: SupervisedDictionaryLearningDatasetDescription,
         opts?: Partial<SupervisedDictionaryLearningMetaParameters>,
-        saveLocation = 'savedModels',
     ) {
-        super(datasetDescription, saveLocation);
+        super(datasetDescription);
         this.opts = _.merge({
             regularizer: { type: 'l1', weight: 0 },
             hidden: 2,
         }, opts);
-    }
-
-    async _build() {
-        this.registerParameter('W', () => randomInitVariable([this.datasetDescription.classes, this.opts.hidden]));
-        this.registerParameter('H', () => randomInitVariable([this.opts.hidden, this.datasetDescription.samples]));
-        this.registerParameter('D', () => randomInitVariable([this.datasetDescription.features, this.opts.hidden]));
     }
 
     loss = autoDispose((X: tf.Tensor2D, Y: tf.Tensor2D) => {
@@ -48,10 +45,9 @@ export class SupervisedDictionaryLearning extends Algorithm {
     });
 
     protected async _train(X: tf.Tensor2D, Y: tf.Tensor2D, o: OptimizationParameters) {
-        const optimizer = this.registerOptimizer('opt', () => new Optimizer(this.getDefaultOptimizerParameters(o)));
+        const optimizer = new Optimizer(this.getDefaultOptimizerParameters(o));
 
-        const { W, D, H } = this.assertParametersExist(['W', 'H', 'D']);
-        return optimizer.minimize(_.partial(this.loss, X, Y), [ W, D, H ]);
+        return optimizer.minimize(_.partial(this.loss, X, Y), [ this.W, this.D, this.H ]);
     }
 
     protected async _predict(X: tf.Tensor2D, o?: Partial<OptimizationParameters>) {
@@ -79,11 +75,7 @@ export class SupervisedDictionaryLearning extends Algorithm {
         }, o);
     }
 
-    static async fromSavedState(location: string) {
-        return new SupervisedDictionaryLearning({} as SupervisedDictionaryLearningDatasetDescription).loadFromDisk(location);
-    }
-
-    get W() { return this.assertParametersExist(['W']).W; }
-    get H() { return this.assertParametersExist(['H']).H; }
-    get D() { return this.assertParametersExist(['D']).D; }
+    get W() { return this.w; }
+    get H() { return this.h; }
+    get D() { return this.d; }
 }

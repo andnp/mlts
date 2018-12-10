@@ -1,31 +1,26 @@
 import * as tf from '@tensorflow/tfjs';
 import * as v from 'validtyped';
 import { DeepPartial } from 'simplytyped';
-import { Algorithm } from './Algorithm';
+import { SupervisedAlgorithm } from './Algorithm';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
+import { MatrixFactorization } from './MatrixFactorization';
+import { LogisticRegression } from './LogisticRegression';
 import { SupervisedDictionaryLearningDatasetDescription } from '../data/DatasetDescription';
-import { History } from '../analysis/History';
 import { RepresentationAlgorithm } from '../algorithms/interfaces/RepresentationAlgorithm';
-export declare class TwoStageDictionaryLearning extends Algorithm implements RepresentationAlgorithm {
+export declare class TwoStageDictionaryLearning extends SupervisedAlgorithm implements RepresentationAlgorithm {
     protected datasetDescription: SupervisedDictionaryLearningDatasetDescription;
     protected readonly name: string;
-    private stage1;
-    private stage2;
-    protected state: {
-        activeStage: "complete" | "stage1" | "stage2";
-    };
+    readonly stage1: MatrixFactorization;
+    readonly stage2: LogisticRegression;
     protected opts: TwoStageDictionaryLearningMetaParameters;
-    constructor(datasetDescription: SupervisedDictionaryLearningDatasetDescription, opts?: DeepPartial<TwoStageDictionaryLearningMetaParameters>, saveLocation?: string);
-    protected _build(): Promise<void>;
+    constructor(datasetDescription: SupervisedDictionaryLearningDatasetDescription, opts?: DeepPartial<TwoStageDictionaryLearningMetaParameters>);
     private getDefaults;
     loss(X: tf.Tensor2D, Y: tf.Tensor2D): tf.Tensor<tf.Rank>;
-    protected _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<History>;
+    protected _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<import("../analysis/History").History>;
     protected _predict(T: tf.Tensor2D, opts?: Partial<OptimizationParameters> & {
         useOriginalH?: boolean;
     }): Promise<tf.Tensor<tf.Rank.R2>>;
     getRepresentation(X: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<tf.Tensor<tf.Rank.R2>>;
-    protected _saveState(location: string): Promise<string[]>;
-    static fromSavedState(location: string): Promise<TwoStageDictionaryLearning>;
 }
 export declare const TwoStageDictionaryLearningMetaParametersSchema: v.Validator<v.ObjectValidator<{
     stage1: v.Validator<Partial<v.ObjectValidator<{

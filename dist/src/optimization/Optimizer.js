@@ -62,12 +62,13 @@ class Optimizer {
     async fit(model, X, Y, params) {
         const history = await printer_1.printProgressAsync(async (printer) => {
             const epochs = params.epochs - this.completedIterations;
+            const callbacks = Array.isArray(params.callbacks) ? params.callbacks : [];
             return model.fit(X, Y, {
                 batchSize: params.batchSize || utilities_ts_1.arrays.getFirst(X).shape[0],
                 yieldEvery: 'epoch',
                 ...params,
                 epochs,
-                callbacks: [new tensorflow_1.LoggerCallback(printer, this.completedIterations), new tensorflow_1.EpochCounter(() => this.completedIterations++)],
+                callbacks: [new tensorflow_1.LoggerCallback(printer, this.completedIterations), new tensorflow_1.EpochCounter(() => this.completedIterations++), ...callbacks],
                 verbose: base_callbacks_1.ModelLoggingVerbosity.SILENT,
             });
         });

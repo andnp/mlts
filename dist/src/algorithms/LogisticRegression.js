@@ -6,46 +6,39 @@ const v = require("validtyped");
 const Algorithm_1 = require("../algorithms/Algorithm");
 const Optimizer_1 = require("../optimization/Optimizer");
 const regularizers_1 = require("../regularizers/regularizers");
-const History_1 = require("../analysis/History");
 exports.LogisticRegressionMetaParameterSchema = v.object({
     regularizer: regularizers_1.RegularizerParametersSchema,
 }, { optional: ['regularizer'] });
-class LogisticRegression extends Algorithm_1.Algorithm {
-    constructor(datasetDescription, opts, saveLocation = 'savedModels') {
-        super(datasetDescription, saveLocation);
+class LogisticRegression extends Algorithm_1.SupervisedAlgorithm {
+    constructor(datasetDescription, opts) {
+        super(datasetDescription);
         this.datasetDescription = datasetDescription;
         this.name = LogisticRegression.name;
         this.opts = _.merge({
             regularizer: { type: 'l1', weight: 0 },
         }, opts);
-    }
-    async _build() {
-        this.model = this.registerModel('model', () => {
-            const model = tf.sequential();
-            model.add(tf.layers.inputLayer({ inputShape: [this.datasetDescription.features] }));
-            model.add(tf.layers.dense({
-                units: this.datasetDescription.classes,
-                activation: 'sigmoid',
-                kernelRegularizer: this.opts.regularizer && regularizers_1.regularizeLayer(this.opts.regularizer),
-                name: 'W',
-            }));
-            return model;
-        });
+        const model = tf.sequential();
+        model.add(tf.layers.inputLayer({ inputShape: [this.datasetDescription.features] }));
+        model.add(tf.layers.dense({
+            units: this.datasetDescription.classes,
+            activation: 'sigmoid',
+            kernelRegularizer: this.opts.regularizer && regularizers_1.regularizeLayer(this.opts.regularizer),
+            name: 'W',
+        }));
+        this.model = model;
     }
     async _train(X, Y, opts) {
         const o = this.getDefaultOptimizationParameters(opts);
-        const optimizer = this.registerOptimizer('optimizer', () => new Optimizer_1.Optimizer(o));
+        const optimizer = new Optimizer_1.Optimizer(o);
         this.model.compile({
             optimizer: optimizer.getTfOptimizer(),
             loss: 'binaryCrossentropy',
         });
-        const history = await optimizer.fit(this.model, X, Y, {
+        return optimizer.fit(this.model, X, Y, {
             batchSize: o.batchSize || X.shape[0],
             epochs: o.iterations,
             shuffle: true,
         });
-        this.clearOptimizer('optimizer');
-        return History_1.History.fromTensorflowHistory(this.name, this.opts, history);
     }
     loss(X, Y) {
         const Y_hat = this.model.predict(X);
@@ -53,9 +46,6 @@ class LogisticRegression extends Algorithm_1.Algorithm {
     }
     async _predict(X) {
         return this.model.predict(X);
-    }
-    static async fromSavedState(location) {
-        return new LogisticRegression({}).loadFromDisk(location);
     }
     get W() { return this.model.getLayer('W').getWeights()[0]; }
     setW(W) {

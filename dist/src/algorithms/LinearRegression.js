@@ -6,7 +6,6 @@ const v = require("validtyped");
 const Algorithm_1 = require("../algorithms/Algorithm");
 const Optimizer_1 = require("../optimization/Optimizer");
 const regularizers_1 = require("../regularizers/regularizers");
-const History_1 = require("../analysis/History");
 exports.LinearRegressionMetaParameterSchema = v.object({
     regularizer: regularizers_1.RegularizerParametersSchema,
     initialParameters: v.object({
@@ -14,57 +13,48 @@ exports.LinearRegressionMetaParameterSchema = v.object({
         stddev: v.number(),
     }),
 }, { optional: ['initialParameters', 'regularizer'] });
-class LinearRegression extends Algorithm_1.Algorithm {
-    constructor(datasetDescription, opts, saveLocation = 'savedModels') {
-        super(datasetDescription, saveLocation);
+class LinearRegression extends Algorithm_1.SupervisedAlgorithm {
+    constructor(datasetDescription, opts) {
+        super(datasetDescription);
         this.datasetDescription = datasetDescription;
         this.name = LinearRegression.name;
         this.opts = _.merge({
             regularizer: { type: 'l1', weight: 0 },
             initialParameters: { mean: 0, variance: 1 },
         }, opts);
-    }
-    async _build() {
-        this.registerModel('model', () => {
-            const model = tf.sequential();
-            model.add(tf.layers.inputLayer({ inputShape: [this.datasetDescription.features] }));
-            model.add(tf.layers.dense({
-                units: this.datasetDescription.classes,
-                kernelInitializer: tf.initializers.randomNormal({ ...this.opts.initialParameters }),
-                activation: 'linear',
-                kernelRegularizer: this.opts.regularizer && regularizers_1.regularizeLayer(this.opts.regularizer),
-                name: 'W',
-            }));
-            return model;
-        });
+        const model = tf.sequential();
+        model.add(tf.layers.inputLayer({ inputShape: [this.datasetDescription.features] }));
+        model.add(tf.layers.dense({
+            units: this.datasetDescription.classes,
+            kernelInitializer: tf.initializers.randomNormal({ ...this.opts.initialParameters }),
+            activation: 'linear',
+            kernelRegularizer: this.opts.regularizer && regularizers_1.regularizeLayer(this.opts.regularizer),
+            name: 'W',
+        }));
+        this.model = model;
     }
     async _train(X, Y, opts) {
         const o = this.getDefaultOptimizationParameters(opts);
-        const optimizer = this.registerOptimizer('optimizer', () => new Optimizer_1.Optimizer(o));
-        this.getModel().compile({
+        const optimizer = new Optimizer_1.Optimizer(o);
+        this.model.compile({
             optimizer: optimizer.getTfOptimizer(),
             loss: 'meanSquaredError',
         });
-        const history = await optimizer.fit(this.getModel(), X, Y, {
+        return optimizer.fit(this.model, X, Y, {
             batchSize: o.batchSize || X.shape[0],
             epochs: o.iterations,
             shuffle: true,
         });
-        this.clearOptimizer('optimizer');
-        return History_1.History.fromTensorflowHistory(this.name, this.opts, history);
     }
     loss(X, Y) {
-        const Y_hat = this.getModel().predict(X);
+        const Y_hat = this.model.predict(X);
         return tf.losses.meanSquaredError(Y, Y_hat);
     }
     async _predict(X) {
-        return this.getModel().predict(X);
+        return this.model.predict(X);
     }
-    static async fromSavedState(location) {
-        return new LinearRegression({}).loadFromDisk(location);
-    }
-    get W() { return this.getModel().getLayer('W').getWeights()[0]; }
-    set W(w) { this.getModel().getLayer('W').setWeights([w, this.getModel().getLayer('W').getWeights()[1]]); }
+    get W() { return this.model.getLayer('W').getWeights()[0]; }
+    set W(w) { this.model.getLayer('W').setWeights([w, this.model.getLayer('W').getWeights()[1]]); }
     getDefaultOptimizationParameters(o) {
         return _.merge({
             iterations: 100,

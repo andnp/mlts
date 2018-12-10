@@ -1,8 +1,7 @@
 import * as tf from '@tensorflow/tfjs';
 import * as v from 'validtyped';
-import { Algorithm } from "../algorithms/Algorithm";
+import { SupervisedAlgorithm } from "../algorithms/Algorithm";
 import { SupervisedDatasetDescription } from '../data/DatasetDescription';
-import { History } from '../analysis/History';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 export declare const ANNMetaParameterSchema: v.Validator<import("simplytyped/types/objects").ObjectType<{
     loss?: "meanSquaredError" | "binaryCrossentropy" | undefined;
@@ -32,17 +31,16 @@ export declare const ANNMetaParameterSchema: v.Validator<import("simplytyped/typ
     loss: v.Validator<"meanSquaredError" | "binaryCrossentropy">;
 }>, "layers">>>;
 export declare type ANNMetaParameters = v.ValidType<typeof ANNMetaParameterSchema>;
-export declare class ANN extends Algorithm {
+export declare class ANN extends SupervisedAlgorithm {
     protected datasetDescription: SupervisedDatasetDescription;
     protected readonly name: string;
     protected readonly opts: ANNMetaParameters;
-    constructor(datasetDescription: SupervisedDatasetDescription, opts?: Partial<ANNMetaParameters>, saveLocation?: string);
-    protected _build(): Promise<void>;
+    readonly model: tf.Model;
+    constructor(datasetDescription: SupervisedDatasetDescription, opts?: Partial<ANNMetaParameters>);
     summary(): void;
-    protected _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<History>;
+    protected _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<tf.History>;
     loss(X: tf.Tensor2D, Y: tf.Tensor2D): tf.Tensor<tf.Rank>;
     protected _predict(X: tf.Tensor2D): Promise<tf.Tensor<tf.Rank.R2>>;
-    static fromSavedState(location: string): Promise<ANN>;
     private getDefaultOptimizationParameters;
     static fromANN(ann: ANN, opts?: Partial<FromANNOptions>): Promise<ANN>;
 }

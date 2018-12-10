@@ -1,6 +1,5 @@
-import { ExperimentDescription } from "./ExperimentDescription";
-export declare class ClassificationErrorExperiment {
-    protected description: ExperimentDescription;
-    constructor(description: ExperimentDescription);
-    run(root?: string): Promise<void>;
+import { RawObservable } from "utilities-ts";
+import { Experiment, ExperimentResultMessage } from "./Experiment";
+export declare class ClassificationErrorExperiment extends Experiment {
+    _run(obs: RawObservable<ExperimentResultMessage>): Promise<void>;
 }

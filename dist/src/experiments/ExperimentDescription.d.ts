@@ -12,6 +12,6 @@ export declare class ExperimentDescription {
     readonly path: string;
     private constructor();
     static getResultsPath(data: ExperimentJson, index: number): string;
-    static fromJson(location: string, index: number, resultsPath?: string, saveRoot?: string): Promise<ExperimentDescription>;
+    static fromJson(location: string, index: number, resultsPath?: string): Promise<ExperimentDescription>;
     static fromCommandLine(): Promise<ExperimentDescription>;
 }

@@ -1,57 +1,23 @@
 import * as tf from '@tensorflow/tfjs';
-import { BuilderFunction } from 'utilities-ts/src/fp';
-import { Optimizer } from '../optimization/Optimizer';
-import { DatasetDescription } from '../data/DatasetDescription';
+import { DatasetDescription, SupervisedDatasetDescription } from '../data/DatasetDescription';
 import { History } from '../analysis/History';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 export declare abstract class Algorithm {
     protected datasetDescription: DatasetDescription;
-    private saveLocation;
-    protected abstract readonly name: string;
-    protected opts: object | undefined;
-    protected state: object | undefined;
-    constructor(datasetDescription: DatasetDescription, saveLocation: string);
-    protected abstract _build(): Promise<any>;
-    private hasBuilt;
-    build(): Promise<void>;
-    protected abstract _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<History>;
+    protected opts: object;
+    protected abstract name: string;
+    constructor(datasetDescription: DatasetDescription);
     protected abstract _predict(T: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<tf.Tensor2D>;
-    train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>, trainOptions?: Partial<TrainOptions>): Promise<History>;
     predict(T: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<tf.Tensor2D>;
     getParameters(): Record<string, any>;
-    protected _saveState(location: string): Promise<any>;
-    private models;
-    protected registerModel(name: string, model: BuilderFunction<tf.Model>): tf.Model;
-    protected assertModel(name: string): tf.Model;
-    getModel(name?: string): tf.Model;
-    private parameters;
-    protected registerParameter(name: string, param: BuilderFunction<tf.Variable<tf.Rank.R2>>): tf.Variable<tf.Rank.R2>;
-    protected assertParametersExist<S extends string>(names: S[]): Record<S, tf.Variable<tf.Rank.R2>>;
-    private optimizers;
-    protected registerOptimizer(name: string, optimizer: BuilderFunction<Optimizer>): Optimizer;
-    protected clearOptimizer(name: string): void;
-    saveState(location?: string): Promise<string>;
-    private saveModels;
-    private saveParameters;
-    private saveOptimizers;
-    private saveStateDescription;
-    protected loadFromDisk(location: string): Promise<this>;
-    private loadTableOfContents;
-    private static findAllSavedStates;
-    protected static findSavedState(location: string, name: string): Promise<string>;
-    private loadTensorsFromDisk;
-    private loadSaveState;
-    private loadModels;
-    private loadOptimizers;
-    static fromSavedState(location: string): Promise<Algorithm>;
-    private backupHandler;
-    private activeBackup;
-    private lastSaveLocation;
-    private save;
-    private startBackup;
-    private stopBackup;
 }
-interface TrainOptions {
-    autosave: boolean;
+export declare abstract class SupervisedAlgorithm extends Algorithm {
+    protected datasetDescription: SupervisedDatasetDescription;
+    constructor(datasetDescription: SupervisedDatasetDescription);
+    protected abstract _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<History | tf.History>;
+    train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<History>;
 }
-export {};
+export declare abstract class UnsupervisedAlgorithm extends Algorithm {
+    protected abstract _train(X: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<History | tf.History>;
+    train(X: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<History>;
+}

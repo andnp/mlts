@@ -3,7 +3,7 @@ import * as v from 'validtyped';
 import * as path from 'path';
 import * as tsplot from 'tsplot';
 import * as _ from 'lodash';
-import { files, objects, promise, arrays, Observable } from 'utilities-ts';
+import { files, objects, arrays, Observable } from 'utilities-ts';
 
 import { Matrix } from '../utils/matrix';
 import { OptimizationParameters } from '../optimization';
