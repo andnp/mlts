@@ -12,9 +12,9 @@ class MatrixFactorization extends Algorithm_1.UnsupervisedAlgorithm {
         super(datasetDescription);
         this.datasetDescription = datasetDescription;
         this.name = MatrixFactorization.name;
+        this.opts = this.getDefaults(opts);
         this.d = tensorflow_1.randomInitVariable([this.opts.hidden, this.datasetDescription.features]);
         this.h = tensorflow_1.randomInitVariable([this.datasetDescription.samples, this.opts.hidden]);
-        this.opts = this.getDefaults(opts);
     }
     getDefaults(opts) {
         return _.merge({

@@ -13,8 +13,8 @@ export class MatrixFactorization extends UnsupervisedAlgorithm {
     protected readonly name = MatrixFactorization.name;
     protected opts: MatrixFactorizationMetaParameters;
 
-    d = randomInitVariable([this.opts.hidden, this.datasetDescription.features]);
-    h = randomInitVariable([this.datasetDescription.samples, this.opts.hidden]);
+    d: tf.Variable<tf.Rank.R2>;
+    h: tf.Variable<tf.Rank.R2>;
 
     private getDefaults(opts?: Partial<MatrixFactorizationMetaParameters>): MatrixFactorizationMetaParameters {
         return _.merge({
@@ -36,6 +36,9 @@ export class MatrixFactorization extends UnsupervisedAlgorithm {
     ) {
         super(datasetDescription);
         this.opts = this.getDefaults(opts);
+
+        this.d = randomInitVariable([this.opts.hidden, this.datasetDescription.features]);
+        this.h = randomInitVariable([this.datasetDescription.samples, this.opts.hidden]);
     }
 
     loss(X: tf.Tensor2D, H: tf.Tensor2D, D: tf.Tensor2D) {
