@@ -15,7 +15,7 @@ class Experiment {
             path: `${root}/${msg.path}`,
         }));
     }
-    saveResults(obs) {
+    static saveResults(obs) {
         return obs.subscribe(msg => {
             if (msg.type === 'txt')
                 return utilities_ts_1.files.writeFile(msg.path, msg.data);
@@ -26,7 +26,7 @@ class Experiment {
             throw utilities_ts_1.assertNever(msg);
         });
     }
-    printResults(obs) {
+    static printResults(obs) {
         return obs.subscribe(msg => {
             if (msg.tag === 'train')
                 return console.log(`Train Error: ${msg.data}`);

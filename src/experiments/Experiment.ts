@@ -54,7 +54,7 @@ export abstract class Experiment {
 
     protected abstract async _run(obs: RawObservable<ExperimentResultMessage>): Promise<void>;
 
-    run(root = 'results') {
+    run(root = 'results'): Observable<ExperimentResultMessage> {
         const obs = Observable.create<ExperimentResultMessage>(creator => this._run(creator));
 
         // prefix all of the paths with the root path
@@ -65,7 +65,7 @@ export abstract class Experiment {
         }));
     }
 
-    saveResults(obs: Observable<ExperimentResultMessage>) {
+    static saveResults(obs: Observable<ExperimentResultMessage>) {
         return obs.subscribe(msg => {
             if (msg.type === 'txt') return files.writeFile(msg.path, msg.data);
             if (msg.type === 'json') return files.writeJson(msg.path, msg.data);
@@ -75,7 +75,7 @@ export abstract class Experiment {
         });
     }
 
-    printResults(obs: Observable<ExperimentResultMessage>) {
+    static printResults(obs: Observable<ExperimentResultMessage>) {
         return obs.subscribe(msg => {
             if (msg.tag === 'train') return console.log(`Train Error: ${msg.data}`);
             if (msg.tag === 'test' ) return console.log(`Test Error: ${msg.data}`);
