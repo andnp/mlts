@@ -55,13 +55,32 @@ export abstract class Experiment {
     protected abstract async _run(obs: RawObservable<ExperimentResultMessage>): Promise<void>;
 
     run(root = ''): Observable<ExperimentResultMessage> {
-        const obs = Observable.create<ExperimentResultMessage>(creator => this._run(creator).then(creator.end));
+        const obs = Observable.create<ExperimentResultMessage>(creator => {
+            this._run(creator).then(creator.end);
+
+            const alg = this.description.algorithm;
+            const params = alg.getParameters();
+
+            creator.next({
+                tag: 'params',
+                type: 'json',
+                path: `params.json`,
+                data: params,
+            });
+
+            creator.next({
+                tag: 'experiment',
+                type: 'json',
+                path: `experiment.json`,
+                data: this.description.definition,
+            });
+        });
 
         // prefix all of the paths with the root path
         // before passing the message on to the consumer
         return obs.map(msg => ({
             ...msg,
-            path: `${this.description.resultsBase}/${root}/${msg.path}`,
+            path: `${this.description.resultsBase}/${root}/${this.description.path}/${msg.path}`,
         }));
     }
 

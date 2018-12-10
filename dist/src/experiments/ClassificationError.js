@@ -17,37 +17,23 @@ class ClassificationErrorExperiment extends Experiment_1.Experiment {
         const TY_hat = await alg.predict(T, this.description.optimization);
         const trainError = analysis_1.getClassificationError(Y_hat, Y).get();
         const testError = analysis_1.getClassificationError(TY_hat, TY).get();
-        const params = alg.getParameters();
-        const resultsPath = this.description.path;
         obs.next({
             tag: 'test',
             type: 'txt',
-            path: `${resultsPath}/test.csv`,
+            path: `test.csv`,
             data: testError,
         });
         obs.next({
             tag: 'train',
             type: 'txt',
-            path: `${resultsPath}/train.csv`,
+            path: `train.csv`,
             data: trainError,
-        });
-        obs.next({
-            tag: 'params',
-            type: 'json',
-            path: `${resultsPath}/params.json`,
-            data: params,
-        });
-        obs.next({
-            tag: 'experiment',
-            type: 'json',
-            path: `${resultsPath}/experiment.json`,
-            data: this.description.definition,
         });
         const loss = utilities_ts_1.Matrix.fromData([history.loss]);
         obs.next({
             tag: 'loss',
             type: 'csv',
-            path: `${resultsPath}/loss.csv`,
+            path: `loss.csv`,
             data: loss,
         });
     }
