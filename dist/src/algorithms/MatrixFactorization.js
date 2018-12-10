@@ -84,6 +84,9 @@ class MatrixFactorization extends Algorithm_1.UnsupervisedAlgorithm {
             samples: X.shape[0],
         });
         const dictLayer = predictionModel.getLayer(DictLayer.name);
+        if (!(dictLayer instanceof DictLayer))
+            throw new Error('Expected to find dictionary layer');
+        dictLayer.trainableWeights = [dictLayer.H];
         predictionModel.compile({
             optimizer: optimizer.getTfOptimizer(),
             loss: 'meanSquaredError',

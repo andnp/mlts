@@ -12,8 +12,8 @@ import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 class DictLayer extends tf.layers.Layer {
     static className = DictLayer.name;
     name = DictLayer.name;
-    private D: tf.LayerVariable;
-    private H: tf.LayerVariable;
+    D: tf.LayerVariable;
+    H: tf.LayerVariable;
 
     constructor (
         private config: LayerConfig & MatrixFactorizationMetaParameters & { datasetDescription: MatrixFactorizationDatasetDescription },
@@ -127,6 +127,9 @@ export class MatrixFactorization extends UnsupervisedAlgorithm {
         });
 
         const dictLayer = predictionModel.getLayer(DictLayer.name);
+        if (!(dictLayer instanceof DictLayer)) throw new Error('Expected to find dictionary layer');
+
+        dictLayer.trainableWeights = [dictLayer.H];
 
         predictionModel.compile({
             optimizer: optimizer.getTfOptimizer(),
