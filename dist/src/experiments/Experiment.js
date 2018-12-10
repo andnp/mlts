@@ -6,13 +6,13 @@ class Experiment {
     constructor(description) {
         this.description = description;
     }
-    run(root = 'results') {
+    run(root = '') {
         const obs = utilities_ts_1.Observable.create(creator => this._run(creator).then(creator.end));
         // prefix all of the paths with the root path
         // before passing the message on to the consumer
         return obs.map(msg => ({
             ...msg,
-            path: `${root}/${msg.path}`,
+            path: `${this.description.resultsBase}/${root}/${msg.path}`,
         }));
     }
     static saveResults(obs) {
