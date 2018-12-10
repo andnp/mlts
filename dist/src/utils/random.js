@@ -23,6 +23,8 @@ function setSeed(s) {
 }
 exports.setSeed = setSeed;
 function getSeed() {
+    if (!seed)
+        setSeed('some random string');
     if (seed === undefined)
         throw new Error('Tried to get a seed before it was already set');
     let n = 0;

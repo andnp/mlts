@@ -20,6 +20,7 @@ export function setSeed(s: string) {
 }
 
 export function getSeed() {
+    if (!seed) setSeed('some random string');
     if (seed === undefined) throw new Error('Tried to get a seed before it was already set');
     let n = 0;
     for(let i = 0; i < seed.length; ++i) {
