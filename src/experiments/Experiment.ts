@@ -55,7 +55,7 @@ export abstract class Experiment {
     protected abstract async _run(obs: RawObservable<ExperimentResultMessage>): Promise<void>;
 
     run(root = 'results'): Observable<ExperimentResultMessage> {
-        const obs = Observable.create<ExperimentResultMessage>(creator => this._run(creator));
+        const obs = Observable.create<ExperimentResultMessage>(creator => this._run(creator).then(creator.end));
 
         // prefix all of the paths with the root path
         // before passing the message on to the consumer

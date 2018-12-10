@@ -7,7 +7,7 @@ class Experiment {
         this.description = description;
     }
     run(root = 'results') {
-        const obs = utilities_ts_1.Observable.create(creator => this._run(creator));
+        const obs = utilities_ts_1.Observable.create(creator => this._run(creator).then(creator.end));
         // prefix all of the paths with the root path
         // before passing the message on to the consumer
         return obs.map(msg => ({
