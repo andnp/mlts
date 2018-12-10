@@ -3,11 +3,10 @@ import * as v from 'validtyped';
 import * as path from 'path';
 import * as tsplot from 'tsplot';
 import * as _ from 'lodash';
-import { files, objects, promise, arrays } from 'utilities-ts';
+import { files, objects, promise, arrays, Observable } from 'utilities-ts';
 
 import { Matrix } from '../utils/matrix';
 import { OptimizationParameters } from '../optimization';
-import { Observable } from '../utils/observable';
 
 export type Result = {
     metaParameters: any;
@@ -27,16 +26,26 @@ export async function collectResults(rootPath: string, resultFileNames: string[]
         .collect();
 
     const newResultsObservable = Observable.fromArray(uncollectedResults)
+        // to remain scalable to many results files, we must limit the number we process simultaneously
+        // this slows down processing a little, but prevents out-of-memory errors
+        .bottleneck(6)
         .map(async (hashDir) => {
-            const descriptionsOrUndefined = await promise.map(resultFileNames, resultFile => describeResultFiles(hashDir, resultFile));
+            const descriptions = await Observable.fromArray(resultFileNames)
+                .map(resultFile => describeResultFiles(hashDir, resultFile))
+                .filterUndefined()
+                .collect();
 
-            const descriptions = arrays.filterUndefined(descriptionsOrUndefined);
+            const params = await files.globObservable(path.join(hashDir, '*', 'params.json'))
+                .take(1)
+                .map(loc => files.readJson(loc, v.any()))
+                .collect()
+                .then(arrays.getFirst);
 
-            const paramsFiles = await files.glob(path.join(hashDir, '*', 'params.json'));
-            const experimentFiles = await files.glob(path.join(hashDir, '*', 'experiment.json'));
-
-            const params = await files.readJson(paramsFiles[0], v.any());
-            const experiment = await files.readJson(experimentFiles[0], v.any());
+            const experiment = await files.globObservable(path.join(hashDir, '*', 'experiment.json'))
+                .take(1)
+                .map(loc => files.readJson(loc, v.any()))
+                .collect()
+                .then(arrays.getFirst);
 
             const description = objects.discriminatedObject('name', descriptions);
 
@@ -66,13 +75,12 @@ export async function collectResults(rootPath: string, resultFileNames: string[]
 }
 
 async function describeResultFiles(resultFilePaths: string, resultFileName: string) {
-    const resultFiles = await files.glob(path.join(resultFilePaths, '*', resultFileName));
-    if (resultFiles.length === 0) return;
-
-    const results = await Observable.fromArray(resultFiles)
+    const results = await files.globObservable(path.join(resultFilePaths, '*', resultFileName))
         .map(file => files.readFile(file))
         .map(c => parseFloat(c.toString()))
         .collect();
+
+    if (results.length === 0) return;
 
     // create an 1*n matrix so that we can use description utility methods
     const resMatrix = Matrix.fromData([results]);
