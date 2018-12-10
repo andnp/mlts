@@ -12,8 +12,8 @@ class DictLayer extends tf.layers.Layer {
         this.config = config;
         this.name = DictLayer.name;
         this.trainable = true;
-        this.D = this.addWeight('D', [this.config.hidden, this.config.datasetDescription.features], 'float32', tf.initializers.glorotNormal({}), regularizers_1.regularizeLayer(this.config.regularizerD));
-        this.H = this.addWeight('H', [this.config.datasetDescription.samples, this.config.hidden], 'float32', tf.initializers.glorotNormal({}), regularizers_1.regularizeLayer(this.config.regularizerH));
+        this.D = this.addWeight('D', [this.config.hidden, this.config.datasetDescription.features], 'float32', tf.initializers.glorotNormal({}), this.config.regularizerD && regularizers_1.regularizeLayer(this.config.regularizerD));
+        this.H = this.addWeight('H', [this.config.datasetDescription.samples, this.config.hidden], 'float32', tf.initializers.glorotNormal({}), this.config.regularizerH && regularizers_1.regularizeLayer(this.config.regularizerH));
     }
     build() {
         this.built = true;
@@ -112,5 +112,5 @@ exports.MatrixFactorizationMetaParametersSchema = v.object({
     regularizerD: regularizers_1.RegularizerParametersSchema,
     regularizerH: regularizers_1.RegularizerParametersSchema,
     hidden: v.number(),
-});
+}, { optional: ['regularizerD', 'regularizerH'] });
 //# sourceMappingURL=MatrixFactorization.js.map

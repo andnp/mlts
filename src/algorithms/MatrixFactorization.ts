@@ -20,8 +20,18 @@ class DictLayer extends tf.layers.Layer {
     ) {
         super(config);
 
-        this.D = this.addWeight('D', [this.config.hidden, this.config.datasetDescription.features], 'float32', tf.initializers.glorotNormal({}), regularizeLayer(this.config.regularizerD));
-        this.H = this.addWeight('H', [this.config.datasetDescription.samples, this.config.hidden], 'float32', tf.initializers.glorotNormal({}), regularizeLayer(this.config.regularizerH));
+        this.D = this.addWeight('D',
+            [this.config.hidden, this.config.datasetDescription.features],
+            'float32',
+            tf.initializers.glorotNormal({}),
+            this.config.regularizerD && regularizeLayer(this.config.regularizerD),
+        );
+        this.H = this.addWeight('H',
+            [this.config.datasetDescription.samples, this.config.hidden],
+            'float32',
+            tf.initializers.glorotNormal({}),
+            this.config.regularizerH && regularizeLayer(this.config.regularizerH),
+        );
     }
 
     build() {
@@ -150,5 +160,5 @@ export const MatrixFactorizationMetaParametersSchema = v.object({
     regularizerD: RegularizerParametersSchema,
     regularizerH: RegularizerParametersSchema,
     hidden: v.number(),
-});
+}, { optional: ['regularizerD', 'regularizerH'] });
 export type MatrixFactorizationMetaParameters = v.ValidType<typeof MatrixFactorizationMetaParametersSchema>;

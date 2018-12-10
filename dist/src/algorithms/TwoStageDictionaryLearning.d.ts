@@ -23,7 +23,22 @@ export declare class TwoStageDictionaryLearning extends SupervisedAlgorithm impl
     getRepresentation(X: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<tf.Tensor<tf.Rank.R2>>;
 }
 export declare const TwoStageDictionaryLearningMetaParametersSchema: v.Validator<v.ObjectValidator<{
-    stage1: v.Validator<Partial<v.ObjectValidator<{
+    stage1: v.Validator<Partial<import("simplytyped/types/objects").ObjectType<{
+        regularizerD?: v.ObjectValidator<{
+            type: v.Validator<"l1">;
+            weight: v.Validator<number>;
+        }> | v.ObjectValidator<{
+            type: v.Validator<"l2">;
+            weight: v.Validator<number>;
+        }> | undefined;
+        regularizerH?: v.ObjectValidator<{
+            type: v.Validator<"l1">;
+            weight: v.Validator<number>;
+        }> | v.ObjectValidator<{
+            type: v.Validator<"l2">;
+            weight: v.Validator<number>;
+        }> | undefined;
+    } & Pick<v.ObjectValidator<{
         regularizerD: v.Validator<v.ObjectValidator<{
             type: v.Validator<"l1">;
             weight: v.Validator<number>;
@@ -39,7 +54,7 @@ export declare const TwoStageDictionaryLearningMetaParametersSchema: v.Validator
             weight: v.Validator<number>;
         }>>;
         hidden: v.Validator<number>;
-    }>>>;
+    }>, "hidden">>>>;
     stage2: v.Validator<Partial<import("simplytyped/types/objects").ObjectType<{
         regularizer?: v.ObjectValidator<{
             type: v.Validator<"l1">;

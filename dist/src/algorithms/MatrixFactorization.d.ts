@@ -18,7 +18,22 @@ export declare class MatrixFactorization extends UnsupervisedAlgorithm {
     readonly H: tf.Tensor<tf.Rank.R2>;
     setD(tensor: tf.Tensor2D): void;
 }
-export declare const MatrixFactorizationMetaParametersSchema: v.Validator<v.ObjectValidator<{
+export declare const MatrixFactorizationMetaParametersSchema: v.Validator<import("simplytyped/types/objects").ObjectType<{
+    regularizerD?: v.ObjectValidator<{
+        type: v.Validator<"l1">;
+        weight: v.Validator<number>;
+    }> | v.ObjectValidator<{
+        type: v.Validator<"l2">;
+        weight: v.Validator<number>;
+    }> | undefined;
+    regularizerH?: v.ObjectValidator<{
+        type: v.Validator<"l1">;
+        weight: v.Validator<number>;
+    }> | v.ObjectValidator<{
+        type: v.Validator<"l2">;
+        weight: v.Validator<number>;
+    }> | undefined;
+} & Pick<v.ObjectValidator<{
     regularizerD: v.Validator<v.ObjectValidator<{
         type: v.Validator<"l1">;
         weight: v.Validator<number>;
@@ -34,5 +49,5 @@ export declare const MatrixFactorizationMetaParametersSchema: v.Validator<v.Obje
         weight: v.Validator<number>;
     }>>;
     hidden: v.Validator<number>;
-}>>;
+}>, "hidden">>>;
 export declare type MatrixFactorizationMetaParameters = v.ValidType<typeof MatrixFactorizationMetaParametersSchema>;
