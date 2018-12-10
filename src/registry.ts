@@ -19,6 +19,7 @@ import { LinearRegression, LinearRegressionMetaParameterSchema } from './algorit
 import { SupervisedAutoencoder, SupervisedAutoencoderMetaParameterSchema } from './algorithms/SupervisedAutoencoder';
 import { TwoStageAutoencoder, TwoStageAutoencoderMetaParameterSchema } from './algorithms/TwoStageAutoencoder';
 import { ANN, ANNMetaParameterSchema } from './algorithms/ANN';
+import { MatrixFactorization, MatrixFactorizationMetaParametersSchema } from './algorithms/MatrixFactorization';
 
 // ---------------
 // Transformations
@@ -35,6 +36,7 @@ registerAlgorithm('logisticRegression', LogisticRegression, LogisticRegressionMe
 registerAlgorithm('linearRegression', LinearRegression, LinearRegressionMetaParameterSchema);
 registerAlgorithm('sae', SupervisedAutoencoder, SupervisedAutoencoderMetaParameterSchema);
 registerAlgorithm('twostage-ae', TwoStageAutoencoder, TwoStageAutoencoderMetaParameterSchema);
+registerAlgorithm('matrix_factorization', MatrixFactorization, MatrixFactorizationMetaParametersSchema);
 registerDataset('cifar', GreyCifar10);
 registerDataset('deterding', Deterding);
 registerDataset('susy', SusyComplete);

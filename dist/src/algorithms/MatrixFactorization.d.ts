@@ -10,9 +10,10 @@ export declare class MatrixFactorization extends UnsupervisedAlgorithm {
     protected opts: MatrixFactorizationMetaParameters;
     private getDefaults;
     constructor(datasetDescription: MatrixFactorizationDatasetDescription, opts?: Partial<MatrixFactorizationMetaParameters>);
+    private constructModel;
     loss(X: tf.Tensor2D): tf.Tensor<tf.Rank>;
     protected _train(X: tf.Tensor2D, o: OptimizationParameters): Promise<tf.History>;
-    protected _predict(): Promise<tf.Tensor2D>;
+    protected _predict(X: tf.Tensor2D, o: OptimizationParameters): Promise<tf.Tensor2D>;
     readonly D: tf.Tensor<tf.Rank.R2>;
     readonly H: tf.Tensor<tf.Rank.R2>;
     setD(tensor: tf.Tensor2D): void;

@@ -19,6 +19,7 @@ const LinearRegression_1 = require("./algorithms/LinearRegression");
 const SupervisedAutoencoder_1 = require("./algorithms/SupervisedAutoencoder");
 const TwoStageAutoencoder_1 = require("./algorithms/TwoStageAutoencoder");
 const ANN_1 = require("./algorithms/ANN");
+const MatrixFactorization_1 = require("./algorithms/MatrixFactorization");
 // ---------------
 // Transformations
 // ---------------
@@ -33,6 +34,7 @@ ExperimentRegistry_1.registerAlgorithm('logisticRegression', LogisticRegression_
 ExperimentRegistry_1.registerAlgorithm('linearRegression', LinearRegression_1.LinearRegression, LinearRegression_1.LinearRegressionMetaParameterSchema);
 ExperimentRegistry_1.registerAlgorithm('sae', SupervisedAutoencoder_1.SupervisedAutoencoder, SupervisedAutoencoder_1.SupervisedAutoencoderMetaParameterSchema);
 ExperimentRegistry_1.registerAlgorithm('twostage-ae', TwoStageAutoencoder_1.TwoStageAutoencoder, TwoStageAutoencoder_1.TwoStageAutoencoderMetaParameterSchema);
+ExperimentRegistry_1.registerAlgorithm('matrix_factorization', MatrixFactorization_1.MatrixFactorization, MatrixFactorization_1.MatrixFactorizationMetaParametersSchema);
 ExperimentRegistry_1.registerDataset('cifar', GreyCifar10_1.GreyCifar10);
 ExperimentRegistry_1.registerDataset('deterding', Deterding_1.Deterding);
 ExperimentRegistry_1.registerDataset('susy', SusyComplete_1.SusyComplete);

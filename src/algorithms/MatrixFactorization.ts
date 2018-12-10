@@ -76,12 +76,16 @@ export class MatrixFactorization extends UnsupervisedAlgorithm {
         super(datasetDescription);
         this.opts = this.getDefaults(opts);
 
+        this.model = this.constructModel(this.datasetDescription);
+    }
+
+    private constructModel(desc: MatrixFactorizationDatasetDescription) {
         const model = tf.sequential();
 
-        model.add(tf.layers.inputLayer({ inputShape: [this.datasetDescription.features] }));
-        model.add(new DictLayer({ ...this.opts, datasetDescription: this.datasetDescription }));
+        model.add(tf.layers.inputLayer({ inputShape: [desc.features] }));
+        model.add(new DictLayer({ ...this.opts, datasetDescription: desc }));
 
-        this.model = model;
+        return model;
     }
 
     loss(X: tf.Tensor2D) {
@@ -104,7 +108,32 @@ export class MatrixFactorization extends UnsupervisedAlgorithm {
         });
     }
 
-    protected async _predict(): Promise<tf.Tensor2D> { throw new Error('Predict not implemented for MatrixFactorization'); }
+    protected async _predict(X: tf.Tensor2D, o: OptimizationParameters): Promise<tf.Tensor2D> {
+        const optimizer = new Optimizer(o);
+
+        const predictionModel = this.constructModel({
+            ...this.datasetDescription,
+            samples: X.shape[0],
+        });
+
+        const dictLayer = predictionModel.getLayer(DictLayer.name);
+
+        predictionModel.compile({
+            optimizer: optimizer.getTfOptimizer(),
+            loss: 'meanSquaredError',
+        });
+
+        const randomH = dictLayer.getWeights()[1];
+        dictLayer.setWeights([this.D, randomH]);
+
+        await optimizer.fit(predictionModel, X, X, {
+            batchSize: X.shape[0],
+            epochs: o.iterations,
+            shuffle: false,
+        });
+
+        return predictionModel.predictOnBatch(X) as tf.Tensor2D;
+    }
 
     get D() {
         return this.model.getLayer(DictLayer.name).getWeights()[0] as tf.Tensor2D;

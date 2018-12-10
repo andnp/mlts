@@ -40,10 +40,7 @@ class MatrixFactorization extends Algorithm_1.UnsupervisedAlgorithm {
         this.datasetDescription = datasetDescription;
         this.name = MatrixFactorization.name;
         this.opts = this.getDefaults(opts);
-        const model = tf.sequential();
-        model.add(tf.layers.inputLayer({ inputShape: [this.datasetDescription.features] }));
-        model.add(new DictLayer({ ...this.opts, datasetDescription: this.datasetDescription }));
-        this.model = model;
+        this.model = this.constructModel(this.datasetDescription);
     }
     getDefaults(opts) {
         return _.merge({
@@ -57,6 +54,12 @@ class MatrixFactorization extends Algorithm_1.UnsupervisedAlgorithm {
             },
             hidden: 2,
         }, opts);
+    }
+    constructModel(desc) {
+        const model = tf.sequential();
+        model.add(tf.layers.inputLayer({ inputShape: [desc.features] }));
+        model.add(new DictLayer({ ...this.opts, datasetDescription: desc }));
+        return model;
     }
     loss(X) {
         const X_hat = this.model.predict(X);
@@ -74,7 +77,26 @@ class MatrixFactorization extends Algorithm_1.UnsupervisedAlgorithm {
             shuffle: false,
         });
     }
-    async _predict() { throw new Error('Predict not implemented for MatrixFactorization'); }
+    async _predict(X, o) {
+        const optimizer = new Optimizer_1.Optimizer(o);
+        const predictionModel = this.constructModel({
+            ...this.datasetDescription,
+            samples: X.shape[0],
+        });
+        const dictLayer = predictionModel.getLayer(DictLayer.name);
+        predictionModel.compile({
+            optimizer: optimizer.getTfOptimizer(),
+            loss: 'meanSquaredError',
+        });
+        const randomH = dictLayer.getWeights()[1];
+        dictLayer.setWeights([this.D, randomH]);
+        await optimizer.fit(predictionModel, X, X, {
+            batchSize: X.shape[0],
+            epochs: o.iterations,
+            shuffle: false,
+        });
+        return predictionModel.predictOnBatch(X);
+    }
     get D() {
         return this.model.getLayer(DictLayer.name).getWeights()[0];
     }
