@@ -6,16 +6,16 @@ import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 export declare class MatrixFactorization extends UnsupervisedAlgorithm {
     protected datasetDescription: MatrixFactorizationDatasetDescription;
     protected readonly name: string;
-    readonly model: tf.Model;
     protected opts: MatrixFactorizationMetaParameters;
+    d: tf.Variable<tf.Rank.R2>;
+    h: tf.Variable<tf.Rank.R2>;
     private getDefaults;
     constructor(datasetDescription: MatrixFactorizationDatasetDescription, opts?: Partial<MatrixFactorizationMetaParameters>);
-    private constructModel;
-    loss(X: tf.Tensor2D): tf.Tensor<tf.Rank>;
-    protected _train(X: tf.Tensor2D, o: OptimizationParameters): Promise<tf.History>;
+    loss(X: tf.Tensor2D, H: tf.Tensor2D, D: tf.Tensor2D): tf.Tensor<tf.Rank.R0>;
+    protected _train(X: tf.Tensor2D, o: OptimizationParameters): Promise<import("../analysis/History").History>;
     protected _predict(X: tf.Tensor2D, o: OptimizationParameters): Promise<tf.Tensor2D>;
-    readonly D: tf.Tensor<tf.Rank.R2>;
-    readonly H: tf.Tensor<tf.Rank.R2>;
+    readonly D: tf.Variable<tf.Rank.R2>;
+    readonly H: tf.Variable<tf.Rank.R2>;
     setD(tensor: tf.Tensor2D): void;
 }
 export declare const MatrixFactorizationMetaParametersSchema: v.Validator<import("simplytyped/types/objects").ObjectType<{

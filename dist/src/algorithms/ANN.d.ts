@@ -4,7 +4,7 @@ import { SupervisedAlgorithm } from "../algorithms/Algorithm";
 import { SupervisedDatasetDescription } from '../data/DatasetDescription';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 export declare const ANNMetaParameterSchema: v.Validator<import("simplytyped/types/objects").ObjectType<{
-    loss?: "meanSquaredError" | "binaryCrossentropy" | undefined;
+    loss?: "binaryCrossentropy" | "meanSquaredError" | undefined;
 } & Pick<v.ObjectValidator<{
     layers: v.Validator<import("simplytyped/types/objects").ObjectType<{
         name?: string | undefined;
@@ -28,7 +28,7 @@ export declare const ANNMetaParameterSchema: v.Validator<import("simplytyped/typ
         type: v.Validator<"dense">;
         name: v.Validator<string>;
     }>, "type" | "units" | "activation">>[]>;
-    loss: v.Validator<"meanSquaredError" | "binaryCrossentropy">;
+    loss: v.Validator<"binaryCrossentropy" | "meanSquaredError">;
 }>, "layers">>>;
 export declare type ANNMetaParameters = v.ValidType<typeof ANNMetaParameterSchema>;
 export declare class ANN extends SupervisedAlgorithm {

@@ -6,41 +6,15 @@ const v = require("validtyped");
 const Algorithm_1 = require("../algorithms/Algorithm");
 const Optimizer_1 = require("../optimization/Optimizer");
 const regularizers_1 = require("../regularizers/regularizers");
-class DictLayer extends tf.layers.Layer {
-    constructor(config) {
-        super(config);
-        this.config = config;
-        this.name = DictLayer.name;
-        this.trainable = true;
-        this.D = this.addWeight('D', [this.config.hidden, this.config.datasetDescription.features], 'float32', tf.initializers.glorotNormal({}), this.config.regularizerD && regularizers_1.regularizeLayer(this.config.regularizerD));
-        this.H = this.addWeight('H', [this.config.datasetDescription.samples, this.config.hidden], 'float32', tf.initializers.glorotNormal({}), this.config.regularizerH && regularizers_1.regularizeLayer(this.config.regularizerH));
-    }
-    build() {
-        this.built = true;
-        this.trainableWeights = [this.D, this.H];
-    }
-    computeOutputShape(shape) {
-        return [this.config.datasetDescription.samples, this.config.datasetDescription.features];
-    }
-    call(inputs) {
-        return tf.tidy(() => tf.matMul(this.H.read(), this.D.read()));
-    }
-    getClassName() {
-        return DictLayer.name;
-    }
-    getConfig() {
-        return this.config;
-    }
-}
-DictLayer.className = DictLayer.name;
-tf.serialization.registerClass(DictLayer);
+const tensorflow_1 = require("../utils/tensorflow");
 class MatrixFactorization extends Algorithm_1.UnsupervisedAlgorithm {
     constructor(datasetDescription, opts) {
         super(datasetDescription);
         this.datasetDescription = datasetDescription;
         this.name = MatrixFactorization.name;
+        this.d = tensorflow_1.randomInitVariable([this.opts.hidden, this.datasetDescription.features]);
+        this.h = tensorflow_1.randomInitVariable([this.datasetDescription.samples, this.opts.hidden]);
         this.opts = this.getDefaults(opts);
-        this.model = this.constructModel(this.datasetDescription);
     }
     getDefaults(opts) {
         return _.merge({
@@ -55,59 +29,30 @@ class MatrixFactorization extends Algorithm_1.UnsupervisedAlgorithm {
             hidden: 2,
         }, opts);
     }
-    constructModel(desc) {
-        const model = tf.sequential();
-        model.add(tf.layers.inputLayer({ inputShape: [desc.features] }));
-        model.add(new DictLayer({ ...this.opts, datasetDescription: desc }));
-        return model;
-    }
-    loss(X) {
-        const X_hat = this.model.predict(X);
-        return tf.losses.meanSquaredError(X, X_hat);
+    loss(X, H, D) {
+        const X_hat = H.matMul(D);
+        const regD = this.opts.regularizerD ? regularizers_1.regularize(this.opts.regularizerD, D) : tf.scalar(0);
+        const regH = this.opts.regularizerH ? regularizers_1.regularize(this.opts.regularizerH, H) : tf.scalar(0);
+        return tf.losses.meanSquaredError(X, X_hat).add(regD).add(regH);
     }
     async _train(X, o) {
         const optimizer = new Optimizer_1.Optimizer(o);
-        this.model.compile({
-            optimizer: optimizer.getTfOptimizer(),
-            loss: 'meanSquaredError',
-        });
-        return optimizer.fit(this.model, X, X, {
-            batchSize: X.shape[0],
-            epochs: o.iterations,
-            shuffle: false,
-        });
+        return optimizer.minimize(() => this.loss(X, this.h, this.d), [this.d, this.h]);
     }
     async _predict(X, o) {
         const optimizer = new Optimizer_1.Optimizer(o);
-        const predictionModel = this.constructModel({
-            ...this.datasetDescription,
-            samples: X.shape[0],
-        });
-        const dictLayer = predictionModel.getLayer(DictLayer.name);
-        if (!(dictLayer instanceof DictLayer))
-            throw new Error('Expected to find dictionary layer');
-        dictLayer.trainableWeights = [dictLayer.H];
-        predictionModel.compile({
-            optimizer: optimizer.getTfOptimizer(),
-            loss: 'meanSquaredError',
-        });
-        const randomH = dictLayer.getWeights()[1];
-        dictLayer.setWeights([this.D, randomH]);
-        await optimizer.fit(predictionModel, X, X, {
-            batchSize: X.shape[0],
-            epochs: o.iterations,
-            shuffle: false,
-        });
-        return predictionModel.predictOnBatch(X);
+        const Htest = tensorflow_1.randomInitVariable([X.shape[0], this.opts.hidden]);
+        await optimizer.minimize(() => this.loss(X, Htest, this.d), [Htest]);
+        return tf.tidy(() => Htest.matMul(this.d));
     }
     get D() {
-        return this.model.getLayer(DictLayer.name).getWeights()[0];
+        return this.d;
     }
     get H() {
-        return this.model.getLayer(DictLayer.name).getWeights()[1];
+        return this.h;
     }
     setD(tensor) {
-        this.model.getLayer(DictLayer.name).setWeights([tensor, this.H]);
+        this.d = tf.variable(tensor);
     }
 }
 exports.MatrixFactorization = MatrixFactorization;
