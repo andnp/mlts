@@ -30,7 +30,10 @@ class MatrixFactorization extends Algorithm_1.UnsupervisedAlgorithm {
         }, opts);
     }
     loss(X, H, D) {
-        const X_hat = H.matMul(D);
+        const mask = this.opts.useMissingMask
+            ? tf.where(X.equal(tf.scalar(0)), 0, 1)
+            : tf.onesLike(X);
+        const X_hat = H.matMul(D).mulStrict(mask);
         const regD = this.opts.regularizerD ? regularizers_1.regularize(this.opts.regularizerD, D) : tf.scalar(0);
         const regH = this.opts.regularizerH ? regularizers_1.regularize(this.opts.regularizerH, H) : tf.scalar(0);
         return tf.losses.meanSquaredError(X, X_hat).add(regD).add(regH);
@@ -60,5 +63,6 @@ exports.MatrixFactorizationMetaParametersSchema = v.object({
     regularizerD: regularizers_1.RegularizerParametersSchema,
     regularizerH: regularizers_1.RegularizerParametersSchema,
     hidden: v.number(),
-}, { optional: ['regularizerD', 'regularizerH'] });
+    useMissingMask: v.boolean(),
+}, { optional: ['regularizerD', 'regularizerH', 'useMissingMask'] });
 //# sourceMappingURL=MatrixFactorization.js.map

@@ -42,7 +42,11 @@ export class MatrixFactorization extends UnsupervisedAlgorithm {
     }
 
     loss(X: tf.Tensor2D, H: tf.Tensor2D, D: tf.Tensor2D) {
-        const X_hat = H.matMul(D);
+        const mask = this.opts.useMissingMask
+            ? tf.where(X.equal(tf.scalar(0)), 0, 1) as tf.Tensor2D
+            : tf.onesLike(X) as tf.Tensor2D;
+
+        const X_hat = H.matMul(D).mulStrict(mask);
         const regD = this.opts.regularizerD ? regularize(this.opts.regularizerD, D) : tf.scalar(0);
         const regH = this.opts.regularizerH ? regularize(this.opts.regularizerH, H) : tf.scalar(0);
         return tf.losses.meanSquaredError(X, X_hat).add(regD).add(regH) as tf.Scalar;
@@ -78,5 +82,6 @@ export const MatrixFactorizationMetaParametersSchema = v.object({
     regularizerD: RegularizerParametersSchema,
     regularizerH: RegularizerParametersSchema,
     hidden: v.number(),
-}, { optional: ['regularizerD', 'regularizerH'] });
+    useMissingMask: v.boolean(),
+}, { optional: ['regularizerD', 'regularizerH', 'useMissingMask'] });
 export type MatrixFactorizationMetaParameters = v.ValidType<typeof MatrixFactorizationMetaParametersSchema>;

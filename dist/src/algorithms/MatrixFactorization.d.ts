@@ -33,6 +33,7 @@ export declare const MatrixFactorizationMetaParametersSchema: v.Validator<import
         type: v.Validator<"l2">;
         weight: v.Validator<number>;
     }> | undefined;
+    useMissingMask?: boolean | undefined;
 } & Pick<v.ObjectValidator<{
     regularizerD: v.Validator<v.ObjectValidator<{
         type: v.Validator<"l1">;
@@ -49,5 +50,6 @@ export declare const MatrixFactorizationMetaParametersSchema: v.Validator<import
         weight: v.Validator<number>;
     }>>;
     hidden: v.Validator<number>;
+    useMissingMask: v.Validator<boolean>;
 }>, "hidden">>>;
 export declare type MatrixFactorizationMetaParameters = v.ValidType<typeof MatrixFactorizationMetaParametersSchema>;
