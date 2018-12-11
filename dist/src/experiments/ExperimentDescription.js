@@ -6,6 +6,7 @@ const metaParameters_1 = require("./metaParameters");
 const ExperimentSchema_1 = require("./ExperimentSchema");
 const fileSystem_1 = require("./fileSystem");
 const ExperimentRegistry_1 = require("./ExperimentRegistry");
+const random_1 = require("utils/random");
 class ExperimentDescription {
     constructor(definition, algorithm, dataset, metaParameters, optimization, resultsBase, path) {
         this.definition = definition;
@@ -24,6 +25,8 @@ class ExperimentDescription {
     static async fromJson(location, index, resultsPath) {
         const ExperimentSchema = ExperimentSchema_1.getExperimentSchema();
         const data = await utilities_ts_1.files.readJson(location, ExperimentSchema);
+        const run = Math.floor(index / metaParameters_1.getNumberOfRuns(data.metaParameters));
+        random_1.setSeed(`${run}`);
         // ---------------------------------
         // Load Constructors from Registries
         // ---------------------------------

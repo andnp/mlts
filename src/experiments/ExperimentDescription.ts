@@ -11,6 +11,7 @@ import { getExperimentSchema, ExperimentJson } from './ExperimentSchema';
 import { getResultsPath } from './fileSystem';
 
 import { getDatasetConstructor, getTransformationRegistryData, getAlgorithmRegistryData } from './ExperimentRegistry';
+import { setSeed } from 'utils/random';
 
 export class ExperimentDescription {
     private constructor(
@@ -32,6 +33,9 @@ export class ExperimentDescription {
     static async fromJson(location: string, index: number, resultsPath?: string) {
         const ExperimentSchema = getExperimentSchema();
         const data = await files.readJson(location, ExperimentSchema);
+
+        const run = Math.floor(index / getNumberOfRuns(data.metaParameters));
+        setSeed(`${run}`);
 
         // ---------------------------------
         // Load Constructors from Registries
