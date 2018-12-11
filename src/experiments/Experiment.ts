@@ -3,49 +3,24 @@ import { Observable, RawObservable, Matrix, files, csv, assertNever } from "util
 import { ExperimentDescription } from "./ExperimentDescription";
 import { ExperimentJson } from "./ExperimentSchema";
 
-interface BaseMessage {
+export interface ExperimentResultMessage {
     tag: string;
-    type: string;
+    type: 'txt' | 'csv' | 'json';
     path: string;
     data: any;
 }
 
-export interface TestResultMessage extends BaseMessage {
-    tag: 'test';
-    type: 'txt';
-    data: number;
-}
-
-export interface TrainResultMessage extends BaseMessage {
-    tag: 'train';
-    type: 'txt';
-    data: number;
-}
-
-export interface LossResultMessage extends BaseMessage {
-    tag: 'loss';
-    type: 'csv';
-    data: Matrix;
-}
-
-export interface ParamsResultMessage extends BaseMessage {
+export interface ParamsResultMessage extends ExperimentResultMessage {
     tag: 'params';
     type: 'json';
     data: object;
 }
 
-export interface ExperimentJsonResultMessage extends BaseMessage {
+export interface ExperimentJsonResultMessage extends ExperimentResultMessage {
     tag: 'experiment';
     type: 'json';
     data: ExperimentJson;
 }
-
-export type ExperimentResultMessage =
-    | TestResultMessage
-    | TrainResultMessage
-    | LossResultMessage
-    | ParamsResultMessage
-    | ExperimentJsonResultMessage;
 
 export abstract class Experiment {
     constructor(
@@ -90,7 +65,7 @@ export abstract class Experiment {
             if (msg.type === 'json') return files.writeJson(msg.path, msg.data);
             if (msg.type === 'csv') return csv.writeCsv(msg.path, msg.data);
 
-            throw assertNever(msg);
+            throw assertNever(msg.type);
         });
     }
 

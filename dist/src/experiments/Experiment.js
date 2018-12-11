@@ -39,7 +39,7 @@ class Experiment {
                 return utilities_ts_1.files.writeJson(msg.path, msg.data);
             if (msg.type === 'csv')
                 return utilities_ts_1.csv.writeCsv(msg.path, msg.data);
-            throw utilities_ts_1.assertNever(msg);
+            throw utilities_ts_1.assertNever(msg.type);
         });
     }
     static printResults(obs) {

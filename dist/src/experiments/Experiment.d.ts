@@ -1,38 +1,22 @@
-import { Observable, RawObservable, Matrix } from "utilities-ts";
+import { Observable, RawObservable } from "utilities-ts";
 import { ExperimentDescription } from "./ExperimentDescription";
 import { ExperimentJson } from "./ExperimentSchema";
-interface BaseMessage {
+export interface ExperimentResultMessage {
     tag: string;
-    type: string;
+    type: 'txt' | 'csv' | 'json';
     path: string;
     data: any;
 }
-export interface TestResultMessage extends BaseMessage {
-    tag: 'test';
-    type: 'txt';
-    data: number;
-}
-export interface TrainResultMessage extends BaseMessage {
-    tag: 'train';
-    type: 'txt';
-    data: number;
-}
-export interface LossResultMessage extends BaseMessage {
-    tag: 'loss';
-    type: 'csv';
-    data: Matrix;
-}
-export interface ParamsResultMessage extends BaseMessage {
+export interface ParamsResultMessage extends ExperimentResultMessage {
     tag: 'params';
     type: 'json';
     data: object;
 }
-export interface ExperimentJsonResultMessage extends BaseMessage {
+export interface ExperimentJsonResultMessage extends ExperimentResultMessage {
     tag: 'experiment';
     type: 'json';
     data: ExperimentJson;
 }
-export declare type ExperimentResultMessage = TestResultMessage | TrainResultMessage | LossResultMessage | ParamsResultMessage | ExperimentJsonResultMessage;
 export declare abstract class Experiment {
     protected description: ExperimentDescription;
     constructor(description: ExperimentDescription);
@@ -41,4 +25,3 @@ export declare abstract class Experiment {
     static saveResults(obs: Observable<ExperimentResultMessage>): Observable<ExperimentResultMessage>;
     static printResults(obs: Observable<ExperimentResultMessage>): Observable<ExperimentResultMessage>;
 }
-export {};

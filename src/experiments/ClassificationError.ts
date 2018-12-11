@@ -1,11 +1,35 @@
-import { ExperimentDescription } from "./ExperimentDescription";
 import { getClassificationError } from "../analysis";
-import { files, csv, Matrix, RawObservable } from "utilities-ts";
+import { Matrix, RawObservable } from "utilities-ts";
 import { SupervisedAlgorithm } from "../algorithms/Algorithm";
-import { Experiment, ExperimentResultMessage } from "./Experiment";
+import { Experiment, ExperimentResultMessage, ParamsResultMessage, ExperimentJsonResultMessage } from "./Experiment";
+
+export interface TestResultMessage extends ExperimentResultMessage {
+    tag: 'test';
+    type: 'txt';
+    data: number;
+}
+
+export interface TrainResultMessage extends ExperimentResultMessage {
+    tag: 'train';
+    type: 'txt';
+    data: number;
+}
+
+export interface LossResultMessage extends ExperimentResultMessage {
+    tag: 'loss';
+    type: 'csv';
+    data: Matrix;
+}
+
+export type ClassificationErrorResultMessage =
+     | TestResultMessage
+     | TrainResultMessage
+     | LossResultMessage
+     | ParamsResultMessage
+     | ExperimentJsonResultMessage;
 
 export class ClassificationErrorExperiment extends Experiment {
-    async _run(obs: RawObservable<ExperimentResultMessage>) {
+    async _run(obs: RawObservable<ClassificationErrorResultMessage>) {
         const alg = this.description.algorithm;
         const d = this.description.dataset;
 
