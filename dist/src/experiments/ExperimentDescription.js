@@ -6,7 +6,7 @@ const metaParameters_1 = require("./metaParameters");
 const ExperimentSchema_1 = require("./ExperimentSchema");
 const fileSystem_1 = require("./fileSystem");
 const ExperimentRegistry_1 = require("./ExperimentRegistry");
-const random_1 = require("utils/random");
+const random_1 = require("../utils/random");
 class ExperimentDescription {
     constructor(definition, algorithm, dataset, metaParameters, optimization, resultsBase, path) {
         this.definition = definition;

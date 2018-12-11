@@ -46,7 +46,8 @@ export async function loadTensorFromCsv(location: string, shape: [number, number
 }
 
 export function randomInitVariable(shape: [number, number]): tf.Variable<tf.Rank.R2> {
-    return tf.variable(tf.randomNormal(shape, 0, 1, 'float32', random.getIncrementingSeed()));
+    const init = tf.initializers.glorotNormal({ seed: random.getIncrementingSeed() });
+    return tf.variable(init.apply(shape)) as tf.Variable<tf.Rank.R2>;
 }
 
 export function randomSamples(X: tf.Tensor2D, numSamples: number) {

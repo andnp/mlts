@@ -11,7 +11,7 @@ import { getExperimentSchema, ExperimentJson } from './ExperimentSchema';
 import { getResultsPath } from './fileSystem';
 
 import { getDatasetConstructor, getTransformationRegistryData, getAlgorithmRegistryData } from './ExperimentRegistry';
-import { setSeed } from 'utils/random';
+import { setSeed } from '../utils/random';
 
 export class ExperimentDescription {
     private constructor(

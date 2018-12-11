@@ -36,7 +36,8 @@ async function loadTensorFromCsv(location, shape, Buffer = Float32Array) {
 }
 exports.loadTensorFromCsv = loadTensorFromCsv;
 function randomInitVariable(shape) {
-    return tf.variable(tf.randomNormal(shape, 0, 1, 'float32', random.getIncrementingSeed()));
+    const init = tf.initializers.glorotNormal({ seed: random.getIncrementingSeed() });
+    return tf.variable(init.apply(shape));
 }
 exports.randomInitVariable = randomInitVariable;
 function randomSamples(X, numSamples) {
