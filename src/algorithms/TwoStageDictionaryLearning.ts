@@ -48,7 +48,7 @@ export class TwoStageDictionaryLearning extends SupervisedAlgorithm implements R
     // --------
 
     loss(X: tf.Tensor2D, Y: tf.Tensor2D) {
-        const s1_loss = this.stage1.loss(X, this.stage1.h, this.stage1.d);
+        const s1_loss = this.stage1.loss(X, this.stage1.h, this.stage1.d, tf.onesLike(X));
         const s2_loss = this.stage2.loss(X.transpose(), Y.transpose());
         return s1_loss.add(s2_loss);
     }

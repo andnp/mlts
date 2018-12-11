@@ -41,28 +41,35 @@ export class MatrixFactorization extends UnsupervisedAlgorithm {
         this.h = randomInitVariable([this.datasetDescription.samples, this.opts.hidden]);
     }
 
-    loss(X: tf.Tensor2D, H: tf.Tensor2D, D: tf.Tensor2D) {
-        const mask = this.opts.useMissingMask
-            ? tf.where(X.equal(tf.scalar(0)), 0, 1) as tf.Tensor2D
-            : tf.onesLike(X) as tf.Tensor2D;
-
+    loss(X: tf.Tensor2D, H: tf.Tensor2D, D: tf.Tensor2D, mask: tf.Tensor2D) {
         const X_hat = H.matMul(D).mulStrict(mask);
         const regD = this.opts.regularizerD ? regularize(this.opts.regularizerD, D) : tf.scalar(0);
         const regH = this.opts.regularizerH ? regularize(this.opts.regularizerH, H) : tf.scalar(0);
         return tf.losses.meanSquaredError(X, X_hat).add(regD).add(regH) as tf.Scalar;
     }
 
+    private buildMask(X: tf.Tensor2D) {
+        return tf.tidy(() => this.opts.useMissingMask
+            ? tf.where(X.equal(tf.scalar(0)), tf.zerosLike(X), tf.onesLike(X)) as tf.Tensor2D
+            : tf.onesLike(X) as tf.Tensor2D
+        );
+    }
+
     protected async _train(X: tf.Tensor2D, o: OptimizationParameters) {
         const optimizer = new Optimizer(o);
-        return optimizer.minimize(() => this.loss(X, this.h, this.d), [this.d, this.h]);
+
+        const mask = this.buildMask(X);
+
+        return optimizer.minimize(() => this.loss(X, this.h, this.d, mask), [this.d, this.h]);
     }
 
     protected async _predict(X: tf.Tensor2D, o: OptimizationParameters): Promise<tf.Tensor2D> {
         const optimizer = new Optimizer(o);
 
         const Htest = randomInitVariable([X.shape[0], this.opts.hidden]);
+        const mask = this.buildMask(X);
 
-        await optimizer.minimize(() => this.loss(X, Htest, this.d), [Htest]);
+        await optimizer.minimize(() => this.loss(X, Htest, this.d, mask), [Htest]);
 
         return tf.tidy(() => Htest.matMul(this.d));
     }

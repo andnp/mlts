@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("lodash");
+const tf = require("@tensorflow/tfjs");
 const v = require("validtyped");
 const Algorithm_1 = require("./Algorithm");
 const MatrixFactorization_1 = require("./MatrixFactorization");
@@ -32,7 +33,7 @@ class TwoStageDictionaryLearning extends Algorithm_1.SupervisedAlgorithm {
     // Training
     // --------
     loss(X, Y) {
-        const s1_loss = this.stage1.loss(X, this.stage1.h, this.stage1.d);
+        const s1_loss = this.stage1.loss(X, this.stage1.h, this.stage1.d, tf.onesLike(X));
         const s2_loss = this.stage2.loss(X.transpose(), Y.transpose());
         return s1_loss.add(s2_loss);
     }
