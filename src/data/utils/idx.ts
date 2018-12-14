@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { BufferType } from 'utilities-ts/src/buffers';
-import { assertNever } from 'utilities-ts';
+import { assertNever, files } from 'utilities-ts';
 
 type BufferTypeString = 'float32' | 'int32' | 'uint8';
 
@@ -37,6 +37,7 @@ const getBufferSizeOffset = (b: number) => {
 };
 
 export async function saveBits(data: BufferType, shape: number[], file: string) {
+    await files.createFolder(file);
     const stream = fs.createWriteStream(file, "binary");
 
     const bufferType = getBufferTypeString(data);
