@@ -2,31 +2,31 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("lodash");
 const utilities_ts_1 = require("utilities-ts");
-const deterding = require("data/local/deterding");
+const cifar = require("data/local/gray_cifar10");
 jest.setTimeout(utilities_ts_1.time.minutes(5));
 test('Can download and load the datafile', async () => {
     const root = '.test';
-    const filePath = `${root}/deterding.tar.gz`;
+    const filePath = `${root}/gs_cifar10.tar.gz`;
     const alreadyExists = await utilities_ts_1.files.fileExists(filePath);
     if (alreadyExists)
         await utilities_ts_1.files.removeRecursively(filePath);
-    await deterding.download(root);
+    await cifar.download(root);
     const existsNow = await utilities_ts_1.files.fileExists(filePath);
     expect(existsNow).toBe(true);
-    const unzipped = await utilities_ts_1.files.fileExists(`${root}/deterding`);
+    const unzipped = await utilities_ts_1.files.fileExists(`${root}/cifar`);
     expect(unzipped).toBe(true);
-    const data = await deterding.load(root);
+    const data = await cifar.load(root);
     const [X, Y] = data.train;
     const [T, TY] = data.test;
     expect(data.description()).toEqual({
-        classes: 11,
-        features: 10,
-        samples: 528,
-        testSamples: 462,
+        classes: 1,
+        features: 1024,
+        samples: 50000,
+        testSamples: 10000,
     });
-    expect(_.sum(X.getRow(0))).toBeCloseTo(4.498563699424267);
-    expect(Y.getRow(0)).toEqual([0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]);
-    expect(_.sum(T.getRow(0))).toBeCloseTo(4.64417852461338);
-    expect(TY.getRow(0)).toEqual([0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]);
+    expect(_.sum(X.getRow(0))).toBe(113857);
+    expect(Y.getRow(0)).toEqual([6]);
+    expect(_.sum(T.getRow(0))).toBe(112480);
+    expect(TY.getRow(0)).toEqual([3]);
 });
-//# sourceMappingURL=deterding.test.js.map
+//# sourceMappingURL=cifar.test.js.map

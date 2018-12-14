@@ -7,11 +7,15 @@ async function run() {
     const csvPath = process.argv[2];
     const idxPath = process.argv[3];
     console.log(`Converting <${csvPath}> to idx at <${idxPath}>`);
-    // TODO: consider a way to not make this float32
-    // this should be based on the type of the underlying data
-    const original = await utilities_ts_1.csv.load(csvPath);
-    const shape = [original.rows, original.cols];
-    await idx.saveBits(original.raw, shape, idxPath);
+    const rows = 60000;
+    const cols = 1;
+    const buffer = new Uint8Array(rows * cols);
+    await utilities_ts_1.csv.loadCsvToBuffer({
+        buffer,
+        path: csvPath,
+    });
+    const shape = [rows, cols];
+    await idx.saveBits(buffer, shape, idxPath);
 }
 run().then(() => process.exit(0)).catch(console.log);
 //# sourceMappingURL=csvToIdx.js.map

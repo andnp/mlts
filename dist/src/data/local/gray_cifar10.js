@@ -2,9 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 const downloader = require("../../utils/downloader");
-const utilities_ts_1 = require("utilities-ts");
 const Data_1 = require("../../data/local/Data");
 const matrix_1 = require("../../utils/matrix");
+const idx = require("../utils/idx");
 const dataRemoteLocation = 'https://rawgit.com/andnp/ml_data/master/gs_cifar10.tar.gz';
 function download(location = '.tmp') {
     return downloader.download(dataRemoteLocation, location);
@@ -12,20 +12,15 @@ function download(location = '.tmp') {
 exports.download = download;
 async function load(location = '.tmp') {
     await download(location);
-    const x_buf = new Uint8Array(1024 * 60000);
-    const y_buf = new Int32Array(1 * 60000);
-    const dataX = await utilities_ts_1.csv.loadCsvToBuffer({
-        path: path.join(location, 'cifar/cifar_X.csv'),
-        buffer: x_buf,
-    });
-    const dataY = await utilities_ts_1.csv.loadCsvToBuffer({
-        path: path.join(location, 'cifar/cifar_Y.csv'),
-        buffer: y_buf,
-    });
-    const x = dataX.slice(0, 1024 * 50000);
-    const y = dataY.slice(0, 50000);
-    const t = dataX.slice(1024 * 50000, 1024 * 60000);
-    const ty = dataY.slice(50000, 60000);
+    const root = path.join(location, 'cifar');
+    const [dataX, dataY,] = await Promise.all([
+        idx.loadBits(path.join(root, 'cifar_data.idx')),
+        idx.loadBits(path.join(root, 'cifar_labels.idx')),
+    ]);
+    const x = dataX.data.slice(0, 1024 * 50000);
+    const y = dataY.data.slice(0, 50000);
+    const t = dataX.data.slice(1024 * 50000, 1024 * 60000);
+    const ty = dataY.data.slice(50000, 60000);
     return new Data_1.Data(new matrix_1.Matrix(50000, 1024, x), new matrix_1.Matrix(50000, 1, y), new matrix_1.Matrix(10000, 1024, t), new matrix_1.Matrix(10000, 1, ty));
 }
 exports.load = load;

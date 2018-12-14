@@ -13,7 +13,6 @@ test('Can download and load the datafile', async () => {
     if (alreadyExists) await files.removeRecursively(filePath);
 
     await deterding.download(root);
-    process.stdout.write(`here`);
 
     const existsNow = await files.fileExists(filePath);
     expect(existsNow).toBe(true);
