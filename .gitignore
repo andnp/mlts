@@ -8,3 +8,4 @@ savedModels
 results/
 !src/results/
 !dist/src/results/
+.test/

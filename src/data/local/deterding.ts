@@ -1,9 +1,9 @@
 import * as path from 'path';
 
 import * as downloader from '../../utils/downloader';
-import { csv, promise } from 'utilities-ts';
 import { Data } from '../../data/local/Data';
 import { Matrix } from '../../utils/matrix';
+import * as idx from '../utils/idx';
 
 const dataRemoteLocation = 'https://rawgit.com/andnp/ml_data/master/deterding.tar.gz';
 
@@ -14,27 +14,29 @@ export function download(location = '.tmp') {
 export async function load(location = '.tmp') {
     await download(location);
 
+    const root = path.join(location, 'deterding');
+
     const trainSamples = 528;
     const testSamples = 462;
     const features = 10;
     const classes = 11;
 
-    const x_buf = new Float32Array(trainSamples * features);
-    const y_buf = new Float32Array(trainSamples * classes);
-    const t_buf = new Float32Array(testSamples * features);
-    const ty_buf = new Float32Array(testSamples * classes);
-
-    const data = await promise.allValues({
-        X: csv.loadCsvToBuffer({ path: path.join(location, 'deterding/deterding_X.csv'), buffer: x_buf }),
-        Y: csv.loadCsvToBuffer({ path: path.join(location, 'deterding/deterding_Y.csv'), buffer: y_buf }),
-        T: csv.loadCsvToBuffer({ path: path.join(location, 'deterding/deterding_T.csv'), buffer: t_buf }),
-        TY: csv.loadCsvToBuffer({ path: path.join(location, 'deterding/deterding_TY.csv'), buffer: ty_buf }),
-    });
+    const [
+        dataX,
+        dataY,
+        dataT,
+        dataTY,
+    ] = await Promise.all([
+        idx.loadBits(path.join(root, 'deterding_data.idx')),
+        idx.loadBits(path.join(root, 'deterding_labels.idx')),
+        idx.loadBits(path.join(root, 'deterding_test-data.idx')),
+        idx.loadBits(path.join(root, 'deterding_test-labels.idx')),
+    ]);
 
     return new Data(
-        new Matrix(trainSamples, features, data.X),
-        new Matrix(trainSamples, classes, data.Y),
-        new Matrix(testSamples, features, data.T),
-        new Matrix(testSamples, classes, data.TY),
+        new Matrix(trainSamples, features, dataX.data),
+        new Matrix(trainSamples, classes, dataY.data),
+        new Matrix(testSamples, features, dataT.data),
+        new Matrix(testSamples, classes, dataTY.data),
     );
 }
