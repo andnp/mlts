@@ -25,6 +25,7 @@ __export(require("./experiments"));
 __export(require("./data"));
 __export(require("./analysis"));
 __export(require("./algorithms"));
+__export(require("./plotting"));
 var flatten_1 = require("./utils/flatten");
 exports.flattenToArray = flatten_1.flattenToArray;
 var matrix_1 = require("./utils/matrix");

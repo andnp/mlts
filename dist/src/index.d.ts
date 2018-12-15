@@ -19,5 +19,6 @@ export * from './experiments';
 export * from './data';
 export * from './analysis';
 export * from './algorithms';
+export * from './plotting';
 export { flattenToArray } from './utils/flatten';
 export { Matrix } from './utils/matrix';
