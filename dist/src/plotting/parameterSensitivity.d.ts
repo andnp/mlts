@@ -1,4 +1,4 @@
-import { Color, Palette } from 'tsplot';
+import { Color, Palette, Chart } from 'tsplot';
 import { Lens } from '../results/processing';
 import { Result } from '../results/collectResults';
 declare type Line = string | number | {
@@ -30,11 +30,9 @@ export interface ParameterSensitivityOptions {
      * between multiple plots.
      */
     palette?: Palette;
+    resultFiles?: string[];
+    reducerFile?: string;
     results: Result[];
 }
-export declare function parameterSensitivity(o: ParameterSensitivityOptions): {
-    test: import("tsplot/src/utils/PlotlyCharts").Chart;
-    train: import("tsplot/src/utils/PlotlyCharts").Chart;
-    palette: Palette;
-};
+export declare function parameterSensitivity(o: ParameterSensitivityOptions): Record<string, Chart>;
 export {};

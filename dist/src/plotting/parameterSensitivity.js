@@ -18,12 +18,12 @@ function sortedUniq(arr) {
         return uniq.sort();
     }
 }
-const trainDescriptionLens = _.flow(processing_1.lens('train.csv'), processing_1.lens('description'));
-const testDescriptionLens = _.flow(processing_1.lens('test.csv'), processing_1.lens('description'));
 function parameterSensitivity(o) {
     const l_lens = o.line_lens || (() => '');
     const prefix = o.linePrefix || '';
     const lines = o.lines || sortedUniq(o.results.map(l_lens));
+    const resultFiles = o.resultFiles || ['train.csv', 'test.csv'];
+    const reducerFile = o.reducerFile || 'train.csv';
     const res = o.results;
     const x_lens = o.x_lens;
     const palette = o.palette || tsplot_1.createStandardPalette(lines.length);
@@ -34,30 +34,35 @@ function parameterSensitivity(o) {
         const filtered = processing_1.where(l_lens, name, res);
         if (filtered.length === 0)
             return;
-        const minMeanReducer = processing_1.createMinMeanReducer('train.csv');
+        const minMeanReducer = processing_1.createMinMeanReducer(reducerFile);
         const grouped = processing_1.group(x_lens, minMeanReducer, filtered);
         const x_values = sortedUniq(filtered.map(x_lens));
-        const trainStats = grouped.map(trainDescriptionLens);
-        const testStats = grouped.map(testDescriptionLens);
-        const trainLine = tsplot_1.LineChart.fromArrayStats(trainStats);
-        trainLine.setXValues(x_values);
-        trainLine.setColor(color);
-        const testLine = tsplot_1.LineChart.fromArrayStats(testStats);
-        testLine.setXValues(x_values);
-        testLine.setColor(color);
-        // don't bother creating an entry in the legend if there isn't a name for this algorithm
-        if (name || prefix) {
-            trainLine.label(`${prefix}${name}`);
-            testLine.label(`${prefix}${name}`);
-        }
-        return { trainLine, testLine };
+        const linePlots = resultFiles.reduce((coll, resultFile) => {
+            const stats = grouped.map(_.flow(processing_1.lens(resultFile), processing_1.lens('description')));
+            const line = tsplot_1.LineChart.fromArrayStats(stats);
+            line.setXValues(x_values);
+            line.setColor(color);
+            // don't bother creating an entry in the legend if there isn't a name for this algorithm
+            if (name || prefix) {
+                line.label(`${prefix}${name}`);
+            }
+            const resultFileName = resultFile.replace('.csv', '');
+            return {
+                ...coll,
+                [resultFileName]: line,
+            };
+        }, {});
+        return linePlots;
     });
     const traces = utilities_ts_1.arrays.filterUndefined(tracesOrUndefined);
-    const train = tsplot_1.combineTraces(traces.map(utilities_ts_1.fp.prop('trainLine')), 'experiment');
-    const test = tsplot_1.combineTraces(traces.map(utilities_ts_1.fp.prop('testLine')), 'experiment');
-    train.yLabel('Classification Error');
-    test.yLabel('Classification Error');
-    return { test, train, palette };
+    return resultFiles.reduce((coll, resultFile) => {
+        const resultFileName = resultFile.replace('.csv', '');
+        const comb = tsplot_1.combineTraces(traces.map(utilities_ts_1.fp.prop(resultFileName)), 'experiment');
+        return {
+            ...coll,
+            [resultFileName]: comb,
+        };
+    }, {});
 }
 exports.parameterSensitivity = parameterSensitivity;
 //# sourceMappingURL=parameterSensitivity.js.map
