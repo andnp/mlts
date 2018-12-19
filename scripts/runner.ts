@@ -10,7 +10,7 @@ const remotes = [
     `${cores}/129.128.159.203`,
 ];
 
-const projectFolder = "~/Projects/research/functional_tasks/experiments";
+const projectFolder = process.cwd().replace('/home/andy', '~');
 
 const run = async () => {
     const exps = await parseCLI();

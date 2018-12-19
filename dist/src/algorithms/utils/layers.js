@@ -25,6 +25,11 @@ exports.constructTFLayer = (layerDef) => {
 };
 exports.constructTFNetwork = (layerDefs, input) => {
     let prevLayer = input;
+    // if given an empty set of layers, then just return then input
+    // this reverts the construction to logistic regression
+    if (layerDefs.length === 0)
+        return [input];
+    // iteratively build layers in a feedforward fashion
     return layerDefs.map((layerDef, i) => {
         const layer = exports.constructTFLayer(layerDef);
         prevLayer = layer.apply(prevLayer);

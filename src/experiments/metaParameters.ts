@@ -24,6 +24,13 @@ export function getParameterPermutation(metaParameters: any, index: number): any
     let accum = 1;
     parameterPairs.forEach(pair => {
         const num = pair[1].length;
+
+        // if we have an empty array for a parameter, then add that parameter back as an empty array.
+        // if we do not skip it, then the below accumulant becomes 0; causing many issues
+        if (num === 0) {
+            parameters[pair[0]] = [];
+            return;
+        }
         parameters[pair[0]] = pair[1][Math.floor(index / accum) % num];
         accum *= num;
     });
