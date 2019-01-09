@@ -37,7 +37,7 @@ exports.getParameterPermutation = getParameterPermutation;
 function getNumberOfRuns(metaParameters) {
     const parameterPairs = flatten_1.flattenToArray(metaParameters);
     let accum = 1;
-    parameterPairs.forEach(pair => accum *= pair[1].length);
+    parameterPairs.forEach(pair => accum *= pair[1].length || 1);
     return accum;
 }
 exports.getNumberOfRuns = getNumberOfRuns;

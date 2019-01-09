@@ -41,6 +41,6 @@ export function getParameterPermutation(metaParameters: any, index: number): any
 export function getNumberOfRuns(metaParameters: any): number {
     const parameterPairs = flattenToArray(metaParameters);
     let accum = 1;
-    parameterPairs.forEach(pair => accum *= pair[1].length);
+    parameterPairs.forEach(pair => accum *= pair[1].length || 1);
     return accum;
 }
