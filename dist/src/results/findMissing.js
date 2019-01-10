@@ -10,7 +10,7 @@ function findMissing(base_path, path, runs) {
             .subscribe(raw_exp => exp = raw_exp)
             .flatMap(() => utilities_ts_1.arrays.range(experiments_1.getNumberOfRuns(exp.metaParameters) * runs))
             // make sure process doesn't run out of memory servicing too many missing files
-            .bottleneck(256)
+            .bottleneck(16)
             .filter(async (i) => {
             const res_path = experiments_1.ExperimentDescription.getResultsPath(exp, i);
             const full_path = `${base_path}/${res_path}/test.csv`;
