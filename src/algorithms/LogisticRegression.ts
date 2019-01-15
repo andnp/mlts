@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import * as v from 'validtyped';
 
 import { SupervisedAlgorithm } from "../algorithms/Algorithm";
-import { Optimizer } from '../optimization/Optimizer';
+import * as Optimizer from '../optimization/Optimizer';
 import { RegularizerParametersSchema, regularizeLayer } from '../regularizers/regularizers';
 import { SupervisedDatasetDescription } from '../data/DatasetDescription';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
@@ -41,14 +41,13 @@ export class LogisticRegression extends SupervisedAlgorithm {
 
     protected async _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>) {
         const o = this.getDefaultOptimizationParameters(opts);
-        const optimizer = new Optimizer(o);
 
         this.model.compile({
-            optimizer: optimizer.getTfOptimizer(),
+            optimizer: Optimizer.getTfOptimizer(o),
             loss: 'binaryCrossentropy',
         });
 
-        return optimizer.fit(this.model, X, Y, {
+        return Optimizer.fit(this.model, X, Y, {
             batchSize: o.batchSize || X.shape[0],
             epochs: o.iterations,
             shuffle: true,

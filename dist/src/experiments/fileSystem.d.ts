@@ -12,10 +12,15 @@ export declare const getResultsPath: (experiment: import("simplytyped/types/obje
         threshold: import("validtyped").Validator<number>;
         iterations: import("validtyped").Validator<number>;
         batchSize: import("validtyped").Validator<number>;
-    }>, "iterations">> & import("validtyped").ObjectValidator<{
+    }>, "iterations">> & import("simplytyped/types/objects").ObjectType<{
+        rho?: number | undefined;
+        epsilon?: number | undefined;
+    } & Pick<import("validtyped").ObjectValidator<{
         type: import("validtyped").Validator<"adadelta">;
         learningRate: import("validtyped").Validator<number>;
-    }>) | (import("simplytyped/types/objects").ObjectType<{
+        rho: import("validtyped").Validator<number>;
+        epsilon: import("validtyped").Validator<number>;
+    }>, "type" | "learningRate">>) | (import("simplytyped/types/objects").ObjectType<{
         threshold?: number | undefined;
         batchSize?: number | undefined;
     } & Pick<import("validtyped").ObjectValidator<{

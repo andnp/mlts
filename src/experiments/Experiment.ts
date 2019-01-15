@@ -51,11 +51,14 @@ export abstract class Experiment {
             });
         });
 
+        const resultsBase = this.description.resultsBase || '';
+        const path = this.description.path || 'unnamedExperiment';
+
         // prefix all of the paths with the root path
         // before passing the message on to the consumer
         return obs.map(msg => ({
             ...msg,
-            path: `${this.description.resultsBase}/${root}/${this.description.path}/${msg.path}`,
+            path: `${resultsBase}/${root}/${path}/${msg.path}`,
         }));
     }
 

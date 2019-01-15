@@ -16,7 +16,7 @@ export declare class TwoStageDictionaryLearning extends SupervisedAlgorithm impl
     constructor(datasetDescription: SupervisedDictionaryLearningDatasetDescription, opts?: DeepPartial<TwoStageDictionaryLearningMetaParameters>);
     private getDefaults;
     loss(X: tf.Tensor2D, Y: tf.Tensor2D): tf.Tensor<tf.Rank>;
-    protected _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<import("analysis/History").History>;
+    protected _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<import("../analysis/History").History>;
     protected _predict(T: tf.Tensor2D, opts?: Partial<OptimizationParameters> & {
         useOriginalH?: boolean;
     }): Promise<tf.Tensor<tf.Rank.R2>>;

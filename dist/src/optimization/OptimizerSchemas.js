@@ -7,7 +7,9 @@ const v = require("validtyped");
 exports.AdadeltaParametersSchema = v.object({
     type: v.string(['adadelta']),
     learningRate: v.number(),
-});
+    rho: v.number(),
+    epsilon: v.number(),
+}, { optional: ['rho', 'epsilon'] });
 exports.AdagradParametersSchema = v.object({
     type: v.string(['adagrad']),
     learningRate: v.number(),

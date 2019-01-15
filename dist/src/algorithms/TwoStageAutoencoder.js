@@ -5,7 +5,7 @@ const _ = require("lodash");
 const v = require("validtyped");
 const utilities_ts_1 = require("utilities-ts");
 const Algorithm_1 = require("../algorithms/Algorithm");
-const Optimizer_1 = require("../optimization/Optimizer");
+const Optimizer = require("../optimization/Optimizer");
 const layers_1 = require("../algorithms/utils/layers");
 exports.TwoStageAutoencoderMetaParameterSchema = v.object({
     layers: v.array(layers_1.LayerMetaParametersSchema),
@@ -58,12 +58,11 @@ class TwoStageAutoencoder extends Algorithm_1.SupervisedAlgorithm {
         // -------
         // Stage 1
         // -------
-        let optimizer = new Optimizer_1.Optimizer(o);
         this.model.compile({
-            optimizer: optimizer.getTfOptimizer(),
+            optimizer: Optimizer.getTfOptimizer(o),
             loss: 'meanSquaredError',
         });
-        await optimizer.fit(this.model, X, X, {
+        await Optimizer.fit(this.model, X, X, {
             batchSize: o.batchSize,
             epochs: o.iterations,
             shuffle: true,
@@ -71,7 +70,6 @@ class TwoStageAutoencoder extends Algorithm_1.SupervisedAlgorithm {
         // -------
         // Stage 2
         // -------
-        optimizer = new Optimizer_1.Optimizer(o);
         // transfer weights from learning model to prediction model
         this.predictionModel.layers.forEach((layer, i) => {
             if (i === this.predictionModel.layers.length - 1)
@@ -80,10 +78,10 @@ class TwoStageAutoencoder extends Algorithm_1.SupervisedAlgorithm {
             layer.trainable = this.opts.retrainRepresentation;
         });
         this.predictionModel.compile({
-            optimizer: optimizer.getTfOptimizer(),
+            optimizer: Optimizer.getTfOptimizer(o),
             loss: 'binaryCrossentropy',
         });
-        return optimizer.fit(this.predictionModel, X, Y, {
+        return Optimizer.fit(this.predictionModel, X, Y, {
             batchSize: o.batchSize,
             epochs: o.iterations,
             shuffle: true,

@@ -37,10 +37,7 @@ export declare class SupervisedAutoencoder extends SupervisedAlgorithm implement
     protected representationLayer: tf.SymbolicTensor | undefined;
     protected inputs: tf.SymbolicTensor | undefined;
     constructor(datasetDescription: SupervisedDatasetDescription, opts?: Partial<SupervisedAutoencoderMetaParameters>);
-    protected _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<tf.History>;
-    loss(X: tf.Tensor2D, Y: tf.Tensor2D): tf.Tensor<tf.Rank>;
+    protected _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: OptimizationParameters): Promise<tf.History>;
     getRepresentation(X: tf.Tensor2D): Promise<tf.Tensor<tf.Rank.R2>>;
-    reconstructionLoss(X: tf.Tensor2D): number;
     protected _predict(X: tf.Tensor2D): Promise<tf.Tensor<tf.Rank.R2>>;
-    private getDefaultOptimizationParameters;
 }

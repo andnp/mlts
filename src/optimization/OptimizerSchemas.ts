@@ -7,7 +7,9 @@ import * as v from 'validtyped';
 export const AdadeltaParametersSchema = v.object({
     type: v.string(['adadelta']),
     learningRate: v.number(),
-});
+    rho: v.number(),
+    epsilon: v.number(),
+}, { optional: ['rho', 'epsilon'] });
 
 export const AdagradParametersSchema = v.object({
     type: v.string(['adagrad']),

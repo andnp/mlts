@@ -29,7 +29,7 @@ export type ClassificationErrorResultMessage =
      | ExperimentJsonResultMessage;
 
 export class ClassificationErrorExperiment extends Experiment {
-    async _run(obs: RawObservable<ClassificationErrorResultMessage>) {
+    protected async _run(obs: RawObservable<ClassificationErrorResultMessage>) {
         const alg = this.description.algorithm;
         const d = this.description.dataset;
 

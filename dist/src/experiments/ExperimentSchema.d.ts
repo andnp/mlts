@@ -13,10 +13,15 @@ export declare const getExperimentSchema: () => v.Validator<import("simplytyped/
         threshold: v.Validator<number>;
         iterations: v.Validator<number>;
         batchSize: v.Validator<number>;
-    }>, "iterations">> & v.ObjectValidator<{
+    }>, "iterations">> & import("simplytyped/types/objects").ObjectType<{
+        rho?: number | undefined;
+        epsilon?: number | undefined;
+    } & Pick<v.ObjectValidator<{
         type: v.Validator<"adadelta">;
         learningRate: v.Validator<number>;
-    }>) | (import("simplytyped/types/objects").ObjectType<{
+        rho: v.Validator<number>;
+        epsilon: v.Validator<number>;
+    }>, "type" | "learningRate">>) | (import("simplytyped/types/objects").ObjectType<{
         threshold?: number | undefined;
         batchSize?: number | undefined;
     } & Pick<v.ObjectValidator<{

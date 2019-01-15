@@ -4,4 +4,5 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./RepresentationAlgorithm"));
+__export(require("./ReconstructionAlgorithm"));
 //# sourceMappingURL=index.js.map
