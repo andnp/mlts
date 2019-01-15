@@ -3,11 +3,12 @@ import * as _ from 'lodash';
 import * as v from 'validtyped';
 
 import { UnsupervisedAlgorithm } from "../algorithms/Algorithm";
-import { Optimizer } from '../optimization/Optimizer';
+import * as Optimizer from '../optimization/Optimizer';
 import { RegularizerParametersSchema, regularize } from '../regularizers/regularizers';
 import { MatrixFactorizationDatasetDescription } from '../data/DatasetDescription';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 import { randomInitVariable } from '../utils/tensorflow';
+import { History } from 'analysis';
 
 export class MatrixFactorization extends UnsupervisedAlgorithm {
     protected readonly name = MatrixFactorization.name;
@@ -56,20 +57,18 @@ export class MatrixFactorization extends UnsupervisedAlgorithm {
     }
 
     protected async _train(X: tf.Tensor2D, o: OptimizationParameters) {
-        const optimizer = new Optimizer(o);
-
         const mask = this.buildMask(X);
 
-        return optimizer.minimize(() => this.loss(X, this.h, this.d, mask), [this.d, this.h]);
+        const losses = await Optimizer.minimize(() => this.loss(X, this.h, this.d, mask), o, [this.d, this.h]);
+
+        return new History('MatrixFactorization', this.opts, losses);
     }
 
     protected async _predict(X: tf.Tensor2D, o: OptimizationParameters): Promise<tf.Tensor2D> {
-        const optimizer = new Optimizer(o);
-
         const Htest = randomInitVariable([X.shape[0], this.opts.hidden]);
         const mask = this.buildMask(X);
 
-        await optimizer.minimize(() => this.loss(X, Htest, this.d, mask), [Htest]);
+        await Optimizer.minimize(() => this.loss(X, Htest, this.d, mask), o, [Htest]);
 
         return tf.tidy(() => Htest.matMul(this.d));
     }

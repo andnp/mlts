@@ -2,15 +2,15 @@ import * as tf from '@tensorflow/tfjs';
 import * as _ from 'lodash';
 import * as v from 'validtyped';
 
+import * as Optimizer from '../optimization/Optimizer';
 import { SupervisedAlgorithm } from "../algorithms/Algorithm";
-import { Optimizer } from '../optimization/Optimizer';
 import { SupervisedDatasetDescription } from '../data/DatasetDescription';
 import { LayerMetaParametersSchema, constructTFNetwork } from '../algorithms/utils/layers';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 
 export const ANNMetaParameterSchema = v.object({
     layers: v.array(LayerMetaParametersSchema),
-    loss: v.string(['binaryCrossentropy', 'meanSquaredError']),
+    loss: v.string(['categoricalCrossentropy', 'binaryCrossentropy', 'meanSquaredError']),
 }, { optional: ['loss'] });
 
 export type ANNMetaParameters = v.ValidType<typeof ANNMetaParameterSchema>;
@@ -29,7 +29,7 @@ export class ANN extends SupervisedAlgorithm {
     ) {
         super(datasetDescription);
         this.opts = _.merge({
-            layers: [{ units: 25, regularizer: { type: 'l1', weight: 0 }, activation: 'sigmoid', type: 'dense' }],
+            layers: [],
             loss: 'binaryCrossentropy',
         }, opts);
 
@@ -38,6 +38,7 @@ export class ANN extends SupervisedAlgorithm {
         const network = constructTFNetwork(this.opts.layers, inputs);
 
         const outputType =
+            this.opts.loss === 'categoricalCrossentropy' ? 'softmax' :
             this.opts.loss === 'binaryCrossentropy' ? 'sigmoid' :
             this.opts.loss === 'meanSquaredError' ? 'linear' :
             'sigmoid';
@@ -58,37 +59,23 @@ export class ANN extends SupervisedAlgorithm {
     // Training
     // --------
     protected async _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>) {
-        const o = this.getDefaultOptimizationParameters(opts);
-        const optimizer = new Optimizer(o);
+        const o = Optimizer.getDefaultParameters(opts);
 
         this.model.compile({
-            optimizer: optimizer.getTfOptimizer(),
+            optimizer: Optimizer.getTfOptimizer(o),
             loss: this.opts.loss!,
         });
 
-        return optimizer.fit(this.model, X, Y, {
+        return Optimizer.fit(this.model, X, Y, {
             batchSize: o.batchSize,
             epochs: o.iterations,
             shuffle: true,
         });
     }
 
-    loss(X: tf.Tensor2D, Y: tf.Tensor2D) {
-        const Y_hat = this.model.predict(X) as tf.Tensor2D;
-        return tf.losses.sigmoidCrossEntropy(Y, Y_hat);
-    }
-
     protected async _predict(X: tf.Tensor2D) {
         const Y_hat = this.model.predictOnBatch(X) as tf.Tensor2D;
         return Y_hat;
-    }
-
-    private getDefaultOptimizationParameters(o?: Partial<OptimizationParameters>): OptimizationParameters {
-        return _.merge({
-            iterations: 100,
-            type: 'rmsprop',
-            learningRate: 0.001,
-        }, o);
     }
 
     // -----------------

@@ -4,7 +4,7 @@ const tf = require("@tensorflow/tfjs");
 const _ = require("lodash");
 const v = require("validtyped");
 const Algorithm_1 = require("../algorithms/Algorithm");
-const Optimizer_1 = require("../optimization/Optimizer");
+const Optimizer = require("../optimization/Optimizer");
 const regularizers_1 = require("../regularizers/regularizers");
 exports.LinearRegressionMetaParameterSchema = v.object({
     regularizer: regularizers_1.RegularizerParametersSchema,
@@ -35,12 +35,11 @@ class LinearRegression extends Algorithm_1.SupervisedAlgorithm {
     }
     async _train(X, Y, opts) {
         const o = this.getDefaultOptimizationParameters(opts);
-        const optimizer = new Optimizer_1.Optimizer(o);
         this.model.compile({
-            optimizer: optimizer.getTfOptimizer(),
+            optimizer: Optimizer.getTfOptimizer(o),
             loss: 'meanSquaredError',
         });
-        return optimizer.fit(this.model, X, Y, {
+        return Optimizer.fit(this.model, X, Y, {
             batchSize: o.batchSize || X.shape[0],
             epochs: o.iterations,
             shuffle: true,

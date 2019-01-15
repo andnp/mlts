@@ -17,5 +17,5 @@ export interface LossResultMessage extends ExperimentResultMessage {
 }
 export declare type ClassificationErrorResultMessage = TestResultMessage | TrainResultMessage | LossResultMessage | ParamsResultMessage | ExperimentJsonResultMessage;
 export declare class ClassificationErrorExperiment extends Experiment {
-    _run(obs: RawObservable<ClassificationErrorResultMessage>): Promise<void>;
+    protected _run(obs: RawObservable<ClassificationErrorResultMessage>): Promise<void>;
 }

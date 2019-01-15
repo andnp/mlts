@@ -4,9 +4,10 @@ const tf = require("@tensorflow/tfjs");
 const _ = require("lodash");
 const v = require("validtyped");
 const Algorithm_1 = require("../algorithms/Algorithm");
-const Optimizer_1 = require("../optimization/Optimizer");
+const Optimizer = require("../optimization/Optimizer");
 const regularizers_1 = require("../regularizers/regularizers");
 const tensorflow_1 = require("../utils/tensorflow");
+const analysis_1 = require("analysis");
 class MatrixFactorization extends Algorithm_1.UnsupervisedAlgorithm {
     constructor(datasetDescription, opts) {
         super(datasetDescription);
@@ -41,15 +42,14 @@ class MatrixFactorization extends Algorithm_1.UnsupervisedAlgorithm {
             : tf.onesLike(X));
     }
     async _train(X, o) {
-        const optimizer = new Optimizer_1.Optimizer(o);
         const mask = this.buildMask(X);
-        return optimizer.minimize(() => this.loss(X, this.h, this.d, mask), [this.d, this.h]);
+        const losses = await Optimizer.minimize(() => this.loss(X, this.h, this.d, mask), o, [this.d, this.h]);
+        return new analysis_1.History('MatrixFactorization', this.opts, losses);
     }
     async _predict(X, o) {
-        const optimizer = new Optimizer_1.Optimizer(o);
         const Htest = tensorflow_1.randomInitVariable([X.shape[0], this.opts.hidden]);
         const mask = this.buildMask(X);
-        await optimizer.minimize(() => this.loss(X, Htest, this.d, mask), [Htest]);
+        await Optimizer.minimize(() => this.loss(X, Htest, this.d, mask), o, [Htest]);
         return tf.tidy(() => Htest.matMul(this.d));
     }
     get D() {

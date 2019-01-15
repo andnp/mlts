@@ -4,7 +4,7 @@ import * as v from 'validtyped';
 
 import { arrays } from 'utilities-ts';
 import { SupervisedAlgorithm } from "../algorithms/Algorithm";
-import { Optimizer } from '../optimization/Optimizer';
+import * as Optimizer from '../optimization/Optimizer';
 import { SupervisedDatasetDescription } from '../data/DatasetDescription';
 import { constructTFNetwork, LayerMetaParametersSchema } from '../algorithms/utils/layers';
 import { RepresentationAlgorithm } from '../algorithms/interfaces/RepresentationAlgorithm';
@@ -82,14 +82,12 @@ export class TwoStageAutoencoder extends SupervisedAlgorithm implements Represen
         // -------
         // Stage 1
         // -------
-        let optimizer = new Optimizer(o);
-
         this.model.compile({
-            optimizer: optimizer.getTfOptimizer(),
+            optimizer: Optimizer.getTfOptimizer(o),
             loss: 'meanSquaredError',
         });
 
-        await optimizer.fit(this.model, X, X, {
+        await Optimizer.fit(this.model, X, X, {
             batchSize: o.batchSize,
             epochs: o.iterations,
             shuffle: true,
@@ -98,8 +96,6 @@ export class TwoStageAutoencoder extends SupervisedAlgorithm implements Represen
         // -------
         // Stage 2
         // -------
-        optimizer = new Optimizer(o);
-
         // transfer weights from learning model to prediction model
         this.predictionModel.layers.forEach((layer, i) => {
             if (i === this.predictionModel.layers.length - 1) return;
@@ -108,11 +104,11 @@ export class TwoStageAutoencoder extends SupervisedAlgorithm implements Represen
         });
 
         this.predictionModel.compile({
-            optimizer: optimizer.getTfOptimizer(),
+            optimizer: Optimizer.getTfOptimizer(o),
             loss: 'binaryCrossentropy',
         });
 
-        return optimizer.fit(this.predictionModel, X, Y, {
+        return Optimizer.fit(this.predictionModel, X, Y, {
             batchSize: o.batchSize,
             epochs: o.iterations,
             shuffle: true,

@@ -3,11 +3,12 @@ import * as _ from 'lodash';
 import * as v from 'validtyped';
 
 import { SupervisedAlgorithm } from "../algorithms/Algorithm";
-import { Optimizer } from '../optimization/Optimizer';
+import * as Optimizer from '../optimization/Optimizer';
 import { autoDispose, randomInitVariable } from '../utils/tensorflow';
 import { regularize, RegularizerParametersSchema } from '../regularizers/regularizers';
 import { SupervisedDictionaryLearningDatasetDescription } from '../data/DatasetDescription';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
+import { History } from 'analysis';
 
 export const SupervisedDictionaryLearningMetaParameterSchema = v.object({
     regularizer: RegularizerParametersSchema,
@@ -44,23 +45,25 @@ export class SupervisedDictionaryLearning extends SupervisedAlgorithm {
         return y_loss.add(x_loss).add(reg);
     });
 
-    protected async _train(X: tf.Tensor2D, Y: tf.Tensor2D, o: OptimizationParameters) {
-        const optimizer = new Optimizer(this.getDefaultOptimizerParameters(o));
+    protected async _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: OptimizationParameters) {
+        const o = this.getDefaultOptimizerParameters(opts);
 
-        return optimizer.minimize(_.partial(this.loss, X, Y), [ this.W, this.D, this.H ]);
+        const loss = await Optimizer.minimize(_.partial(this.loss, X, Y), o, [ this.W, this.D, this.H ]);
+
+        return new History(this.name, this.opts, loss);
     }
 
-    protected async _predict(X: tf.Tensor2D, o?: Partial<OptimizationParameters>) {
-        const optimizer = new Optimizer(this.getDefaultOptimizerParameters(o));
+    protected async _predict(X: tf.Tensor2D, opts?: Partial<OptimizationParameters>) {
+        const o = this.getDefaultOptimizerParameters(opts);
 
         const H_test = (X.shape[0] === this.datasetDescription.samples)
             ? this.H
             : randomInitVariable([this.opts.hidden, X.shape[0]]);
 
-        await optimizer.minimize(() => {
+        await Optimizer.minimize(() => {
             const X_hat = tf.matMul(this.D, H_test);
             return tf.losses.meanSquaredError(X.transpose(), X_hat);
-        }, [ H_test ]);
+        }, o, [ H_test ]);
 
         return tf.tidy(() => {
             return tf.sigmoid(tf.matMul(this.W, H_test)).transpose();

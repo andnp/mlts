@@ -4,9 +4,10 @@ const tf = require("@tensorflow/tfjs");
 const _ = require("lodash");
 const v = require("validtyped");
 const Algorithm_1 = require("../algorithms/Algorithm");
-const Optimizer_1 = require("../optimization/Optimizer");
+const Optimizer = require("../optimization/Optimizer");
 const tensorflow_1 = require("../utils/tensorflow");
 const regularizers_1 = require("../regularizers/regularizers");
+const analysis_1 = require("analysis");
 exports.SupervisedDictionaryLearningMetaParameterSchema = v.object({
     regularizer: regularizers_1.RegularizerParametersSchema,
     hidden: v.number(),
@@ -32,19 +33,20 @@ class SupervisedDictionaryLearning extends Algorithm_1.SupervisedAlgorithm {
             hidden: 2,
         }, opts);
     }
-    async _train(X, Y, o) {
-        const optimizer = new Optimizer_1.Optimizer(this.getDefaultOptimizerParameters(o));
-        return optimizer.minimize(_.partial(this.loss, X, Y), [this.W, this.D, this.H]);
+    async _train(X, Y, opts) {
+        const o = this.getDefaultOptimizerParameters(opts);
+        const loss = await Optimizer.minimize(_.partial(this.loss, X, Y), o, [this.W, this.D, this.H]);
+        return new analysis_1.History(this.name, this.opts, loss);
     }
-    async _predict(X, o) {
-        const optimizer = new Optimizer_1.Optimizer(this.getDefaultOptimizerParameters(o));
+    async _predict(X, opts) {
+        const o = this.getDefaultOptimizerParameters(opts);
         const H_test = (X.shape[0] === this.datasetDescription.samples)
             ? this.H
             : tensorflow_1.randomInitVariable([this.opts.hidden, X.shape[0]]);
-        await optimizer.minimize(() => {
+        await Optimizer.minimize(() => {
             const X_hat = tf.matMul(this.D, H_test);
             return tf.losses.meanSquaredError(X.transpose(), X_hat);
-        }, [H_test]);
+        }, o, [H_test]);
         return tf.tidy(() => {
             return tf.sigmoid(tf.matMul(this.W, H_test)).transpose();
         });
