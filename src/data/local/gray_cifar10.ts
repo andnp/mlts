@@ -4,7 +4,7 @@ import * as downloader from '../../utils/downloader';
 import { csv } from 'utilities-ts';
 import { Data } from '../../data/local/Data';
 import { Matrix } from '../../utils/matrix';
-import * as idx from '../utils/idx';
+import * as idx from 'idx-data';
 
 const dataRemoteLocation = 'https://rawgit.com/andnp/ml_data/master/gs_cifar10.tar.gz';
 

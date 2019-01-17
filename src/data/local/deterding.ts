@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as downloader from '../../utils/downloader';
 import { Data } from '../../data/local/Data';
 import { Matrix } from '../../utils/matrix';
-import * as idx from '../utils/idx';
+import * as idx from 'idx-data';
 
 const dataRemoteLocation = 'https://rawgit.com/andnp/ml_data/master/deterding.tar.gz';
 
