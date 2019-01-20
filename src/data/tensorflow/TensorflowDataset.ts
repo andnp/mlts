@@ -97,8 +97,12 @@ export class TensorflowDataset implements Dataset<tf.Tensor2D> {
     crossValidate(folds: number, index: number) {
         const bins = binSizes(this._x.shape[0], folds);
 
-        const x = this._x.split(bins);
-        const y = this._y.split(bins);
+        const [X, Y] = this.shouldStratify
+            ? this.roundRobin()
+            : [this._x, this._y];
+
+        const x = X.split(bins);
+        const y = Y.split(bins);
 
         return new TensorflowDataset(
             tf.concat2d(arrays.leaveOut(x, index), 0),

@@ -102,8 +102,11 @@ class TensorflowDataset {
     }
     crossValidate(folds, index) {
         const bins = binSizes(this._x.shape[0], folds);
-        const x = this._x.split(bins);
-        const y = this._y.split(bins);
+        const [X, Y] = this.shouldStratify
+            ? this.roundRobin()
+            : [this._x, this._y];
+        const x = X.split(bins);
+        const y = Y.split(bins);
         return new TensorflowDataset(tf.concat2d(utilities_ts_1.arrays.leaveOut(x, index), 0), tf.concat2d(utilities_ts_1.arrays.leaveOut(y, index), 0), x[index], y[index]);
     }
     get train() {
