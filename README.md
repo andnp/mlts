@@ -1,4 +1,7 @@
 # MLTS
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/andnp/mlts.svg)](https://greenkeeper.io/)
+
 Machine Learning in TypeScript.
 
 A machine learning research utility framework.
