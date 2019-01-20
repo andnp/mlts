@@ -1,7 +1,7 @@
 "use strict";
 // tslint:disable no-console
 Object.defineProperty(exports, "__esModule", { value: true });
-const idx = require("../src/data/utils/idx");
+const idx = require("idx-data");
 const utilities_ts_1 = require("utilities-ts");
 async function run() {
     const csvPath = process.argv[2];

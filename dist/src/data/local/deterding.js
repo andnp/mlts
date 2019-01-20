@@ -4,7 +4,7 @@ const path = require("path");
 const downloader = require("../../utils/downloader");
 const Data_1 = require("../../data/local/Data");
 const matrix_1 = require("../../utils/matrix");
-const idx = require("../utils/idx");
+const idx = require("idx-data");
 const dataRemoteLocation = 'https://rawgit.com/andnp/ml_data/master/deterding.tar.gz';
 function download(location = '.tmp') {
     return downloader.download(dataRemoteLocation, location);

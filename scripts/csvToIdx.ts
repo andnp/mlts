@@ -1,6 +1,6 @@
 // tslint:disable no-console
 
-import * as idx from '../src/data/utils/idx';
+import * as idx from 'idx-data';
 import { csv } from 'utilities-ts';
 
 async function run() {
