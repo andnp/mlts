@@ -5,7 +5,7 @@
   "main": "dist/src/index.js",
   "types": "src/index.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist && tsc",
     "lint": "tslint --config tslint.json --project . --format stylish",
     "test": "export RNG=`node -e 'console.log(Math.random())'` && echo $RNG && jest tests/unit",
     "test:all": "export RNG=`node -e 'console.log(Math.random())'` && echo $RNG && jest",
