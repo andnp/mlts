@@ -1,13 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
-const downloader = require("../../utils/downloader");
 const utilities_ts_1 = require("utilities-ts");
-const Data_1 = require("../../data/local/Data");
-const matrix_1 = require("../../utils/matrix");
+const mlts_experiment_data_1 = require("mlts-experiment-data");
 const dataRemoteLocation = 'https://rawgit.com/andnp/ml_data/master/susycomplete.tar.gz';
 function download(location = '.tmp') {
-    return downloader.download(dataRemoteLocation, location);
+    return mlts_experiment_data_1.download(dataRemoteLocation, location);
 }
 exports.download = download;
 async function load(location = '.tmp') {
@@ -30,7 +28,7 @@ async function load(location = '.tmp') {
     const y = dataY.slice(0, targets * trainSamples);
     const t = dataX.slice(features * trainSamples, (features * trainSamples) + (features * testSamples));
     const ty = dataY.slice(targets * trainSamples, (targets * trainSamples) + (targets * testSamples));
-    return new Data_1.Data(new matrix_1.Matrix(trainSamples, features, x), new matrix_1.Matrix(trainSamples, targets, y), new matrix_1.Matrix(testSamples, features, t), new matrix_1.Matrix(testSamples, targets, ty));
+    return new mlts_experiment_data_1.Dataset({ data: x, shape: [trainSamples, features], type: 'float32' }, { data: y, shape: [trainSamples, targets], type: 'int32' }, { data: t, shape: [testSamples, features], type: 'float32' }, { data: ty, shape: [testSamples, targets], type: 'int32' });
 }
 exports.load = load;
 //# sourceMappingURL=susy_complete.js.map

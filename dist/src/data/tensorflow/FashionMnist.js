@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const TensorflowDataset_1 = require("../tensorflow/TensorflowDataset");
-const fashion_mnist = require("../local/fashion_mnist");
+const mlts_experiment_data_1 = require("mlts-experiment-data");
 class FashionMnist extends TensorflowDataset_1.TensorflowDataset {
     static async load(location) {
-        const d = await fashion_mnist.load(location);
+        const d = await mlts_experiment_data_1.FashionMnist.load(location);
         return FashionMnist.fromDataset(d);
     }
     static fromTensorflowDataset(d) {

@@ -1,4 +1,3 @@
-/// <reference path="../../src/types/inly.d.ts" />
 import './registry';
 import * as commandLine_i from './utils/commandLine';
 export declare const commandLine: typeof commandLine_i;
@@ -21,4 +20,3 @@ export * from './analysis';
 export * from './algorithms';
 export * from './plotting';
 export { flattenToArray } from './utils/flatten';
-export { Matrix } from './utils/matrix';

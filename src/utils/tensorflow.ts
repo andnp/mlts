@@ -1,14 +1,15 @@
 import * as _ from 'lodash';
 import * as tf from '@tensorflow/tfjs';
+import { Dataset } from 'mlts-experiment-data';
 import { AnyFunc } from 'simplytyped';
 import { BaseCallback } from '@tensorflow/tfjs-layers/dist/base_callbacks';
 import { UnresolvedLogs } from '@tensorflow/tfjs-layers/dist/logs';
 
 import * as random from './random';
-import { Data } from '../data/local/Data';
-import { Matrix } from './matrix';
-import { csv } from 'utilities-ts';
+import { csv, Matrix } from 'utilities-ts';
 import { Printer } from './printer';
+import { DataTensor } from 'mlts-experiment-data/dist/src/Data';
+import { BufferType } from 'utilities-ts/src/buffers';
 
 export function autoDispose<F extends AnyFunc>(f: F): F {
     const g = (...args: any[]) => {
@@ -20,19 +21,29 @@ export function autoDispose<F extends AnyFunc>(f: F): F {
     return g as F;
 }
 
-export const matrixToTensor = (m: Matrix) => tf.tensor2d(m.raw, [ m.rows, m.cols ]);
+const product = (arr: number[]) => arr.reduce((x, y) => x * y, 1);
+export const dataToTensor2d = (m: DataTensor) => tf.tensor2d(m.data, [m.shape[0], product(m.shape.slice(1))]);
 
-export const datasetToTFDataset = (dataset: Data) => {
+export const datasetToTFDataset = (dataset: Dataset) => {
     return {
-        train: dataset.train.map(matrixToTensor),
-        test: dataset.test.map(matrixToTensor),
+        train: dataset.train.map(dataToTensor2d),
+        test: dataset.test.map(dataToTensor2d),
     };
 };
 
 export async function writeTensorToCsv(location: string, tensor: tf.Tensor2D) {
     const buf = await tensor.data();
-    return csv.writeCsv(location, new Matrix(tensor.shape[0], tensor.shape[1], buf));
+    return csv.writeCsv(location, new Matrix(getBufferConstructor(buf), { rows: tensor.shape[0], cols: tensor.shape[1] },  buf));
 }
+
+function getBufferConstructor<B extends BufferType>(buffer?: B): BufferConstructor {
+    if (buffer instanceof Float32Array) return Float32Array;
+    if (buffer instanceof Int32Array) return Int32Array;
+    if (buffer instanceof Uint8Array) return Uint8Array;
+
+    return Float32Array;
+}
+
 
 type BufferConstructor = Float32ArrayConstructor | Int32ArrayConstructor | Uint8ArrayConstructor;
 export async function loadTensorFromCsv(location: string, shape: [number, number] , Buffer: BufferConstructor = Float32Array) {

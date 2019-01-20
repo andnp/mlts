@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const tf = require("@tensorflow/tfjs");
 const base_callbacks_1 = require("@tensorflow/tfjs-layers/dist/base_callbacks");
 const random = require("./random");
-const matrix_1 = require("./matrix");
 const utilities_ts_1 = require("utilities-ts");
 function autoDispose(f) {
     const g = (...args) => {
@@ -14,18 +13,28 @@ function autoDispose(f) {
     return g;
 }
 exports.autoDispose = autoDispose;
-exports.matrixToTensor = (m) => tf.tensor2d(m.raw, [m.rows, m.cols]);
+const product = (arr) => arr.reduce((x, y) => x * y, 1);
+exports.dataToTensor2d = (m) => tf.tensor2d(m.data, [m.shape[0], product(m.shape.slice(1))]);
 exports.datasetToTFDataset = (dataset) => {
     return {
-        train: dataset.train.map(exports.matrixToTensor),
-        test: dataset.test.map(exports.matrixToTensor),
+        train: dataset.train.map(exports.dataToTensor2d),
+        test: dataset.test.map(exports.dataToTensor2d),
     };
 };
 async function writeTensorToCsv(location, tensor) {
     const buf = await tensor.data();
-    return utilities_ts_1.csv.writeCsv(location, new matrix_1.Matrix(tensor.shape[0], tensor.shape[1], buf));
+    return utilities_ts_1.csv.writeCsv(location, new utilities_ts_1.Matrix(getBufferConstructor(buf), { rows: tensor.shape[0], cols: tensor.shape[1] }, buf));
 }
 exports.writeTensorToCsv = writeTensorToCsv;
+function getBufferConstructor(buffer) {
+    if (buffer instanceof Float32Array)
+        return Float32Array;
+    if (buffer instanceof Int32Array)
+        return Int32Array;
+    if (buffer instanceof Uint8Array)
+        return Uint8Array;
+    return Float32Array;
+}
 async function loadTensorFromCsv(location, shape, Buffer = Float32Array) {
     const buffer = new Buffer(shape[0] * shape[1]);
     const data = await utilities_ts_1.csv.loadCsvToBuffer({

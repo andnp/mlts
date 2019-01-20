@@ -7,7 +7,7 @@ const Algorithm_1 = require("../algorithms/Algorithm");
 const Optimizer = require("../optimization/Optimizer");
 const regularizers_1 = require("../regularizers/regularizers");
 const tensorflow_1 = require("../utils/tensorflow");
-const analysis_1 = require("analysis");
+const analysis_1 = require("../analysis");
 class MatrixFactorization extends Algorithm_1.UnsupervisedAlgorithm {
     constructor(datasetDescription, opts) {
         super(datasetDescription);

@@ -1,13 +1,13 @@
 import * as tf from '@tensorflow/tfjs';
+import { Dataset } from 'mlts-experiment-data';
 import { AnyFunc } from 'simplytyped';
 import { BaseCallback } from '@tensorflow/tfjs-layers/dist/base_callbacks';
 import { UnresolvedLogs } from '@tensorflow/tfjs-layers/dist/logs';
-import { Data } from '../data/local/Data';
-import { Matrix } from './matrix';
 import { Printer } from './printer';
+import { DataTensor } from 'mlts-experiment-data/dist/src/Data';
 export declare function autoDispose<F extends AnyFunc>(f: F): F;
-export declare const matrixToTensor: (m: Matrix) => tf.Tensor<tf.Rank.R2>;
-export declare const datasetToTFDataset: (dataset: Data) => {
+export declare const dataToTensor2d: (m: DataTensor) => tf.Tensor<tf.Rank.R2>;
+export declare const datasetToTFDataset: (dataset: Dataset) => {
     train: tf.Tensor<tf.Rank.R2>[];
     test: tf.Tensor<tf.Rank.R2>[];
 };

@@ -1,6 +1,4 @@
 "use strict";
-// tslint:disable no-reference
-/// <reference path="./types/inly.d.ts" />
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
@@ -28,6 +26,4 @@ __export(require("./algorithms"));
 __export(require("./plotting"));
 var flatten_1 = require("./utils/flatten");
 exports.flattenToArray = flatten_1.flattenToArray;
-var matrix_1 = require("./utils/matrix");
-exports.Matrix = matrix_1.Matrix;
 //# sourceMappingURL=index.js.map

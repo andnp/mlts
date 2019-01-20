@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const TensorflowDataset_1 = require("../tensorflow/TensorflowDataset");
-const cifar = require("../local/gray_cifar10");
+const mlts_experiment_data_1 = require("mlts-experiment-data");
 class GreyCifar10 extends TensorflowDataset_1.TensorflowDataset {
     static async load(location) {
-        const d = await cifar.load(location);
+        const d = await mlts_experiment_data_1.GrayCifar10.load(location);
         return GreyCifar10.fromDataset(d);
     }
     static fromTensorflowDataset(d) {

@@ -1,6 +1,3 @@
-// tslint:disable no-reference
-/// <reference path="./types/inly.d.ts" />
-
 import './registry';
 
 import * as commandLine_i from './utils/commandLine';
@@ -26,4 +23,3 @@ export * from './algorithms';
 export * from './plotting';
 
 export { flattenToArray } from './utils/flatten';
-export { Matrix } from './utils/matrix';

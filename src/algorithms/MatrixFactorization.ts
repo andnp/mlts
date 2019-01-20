@@ -8,7 +8,7 @@ import { RegularizerParametersSchema, regularize } from '../regularizers/regular
 import { MatrixFactorizationDatasetDescription } from '../data/DatasetDescription';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 import { randomInitVariable } from '../utils/tensorflow';
-import { History } from 'analysis';
+import { History } from '../analysis';
 
 export class MatrixFactorization extends UnsupervisedAlgorithm {
     protected readonly name = MatrixFactorization.name;

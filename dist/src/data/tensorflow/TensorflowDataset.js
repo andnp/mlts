@@ -133,7 +133,7 @@ class TensorflowDataset {
         };
     }
     static fromDataset(dataset) {
-        return new TensorflowDataset(tfUtil.matrixToTensor(dataset.train[0]), tfUtil.matrixToTensor(dataset.train[1]), tfUtil.matrixToTensor(dataset.test[0]), tfUtil.matrixToTensor(dataset.test[1]));
+        return new TensorflowDataset(tfUtil.dataToTensor2d(dataset.train[0]), tfUtil.dataToTensor2d(dataset.train[1]), tfUtil.dataToTensor2d(dataset.test[0]), tfUtil.dataToTensor2d(dataset.test[1]));
     }
     static async load() {
         throw new Error('Should implement the static "load" method for all datasets extending TensorflowDataset');

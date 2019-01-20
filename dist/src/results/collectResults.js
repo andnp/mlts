@@ -6,7 +6,6 @@ const path = require("path");
 const tsplot = require("tsplot");
 const _ = require("lodash");
 const utilities_ts_1 = require("utilities-ts");
-const matrix_1 = require("../utils/matrix");
 async function collectResults(rootPath, resultFileNames) {
     const hashDirectories = await utilities_ts_1.Observable.fromArray(await utilities_ts_1.files.readdir(rootPath))
         .map(n => path.join(rootPath, n))
@@ -62,7 +61,7 @@ async function describeResultFiles(resultFilePaths, resultFileName) {
     if (results.length === 0)
         return;
     // create an 1*n matrix so that we can use description utility methods
-    const resMatrix = matrix_1.Matrix.fromData([results]);
+    const resMatrix = utilities_ts_1.Matrix.fromData([results]);
     return {
         // describeRows will get mean/stderr over columns for each row
         // since we only have one row, grab only that description

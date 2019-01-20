@@ -1,7 +1,7 @@
+import { Dataset } from 'mlts-experiment-data';
 import * as tf from '@tensorflow/tfjs';
-import { Dataset, Data } from '../local/Data';
 import { Transformation } from '../../transformations/Transformation';
-export declare class TensorflowDataset implements Dataset<tf.Tensor2D> {
+export declare class TensorflowDataset {
     protected _x: tf.Tensor2D;
     protected _y: tf.Tensor2D;
     protected _t: tf.Tensor2D;
@@ -30,7 +30,7 @@ export declare class TensorflowDataset implements Dataset<tf.Tensor2D> {
         classes: number;
         testSamples: number;
     };
-    static fromDataset(dataset: Data): TensorflowDataset;
+    static fromDataset(dataset: Dataset): TensorflowDataset;
     static load(): Promise<TensorflowDataset>;
     private roundRobin;
 }

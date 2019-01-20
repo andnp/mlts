@@ -1,7 +1,7 @@
 import { TensorflowDataset } from '../tensorflow/TensorflowDataset';
-import { Data } from '../local/Data';
+import { Dataset } from 'mlts-experiment-data';
 export declare class FashionMnist extends TensorflowDataset {
     static load(location?: string): Promise<FashionMnist>;
     private static fromTensorflowDataset;
-    static fromDataset(d: Data): FashionMnist;
+    static fromDataset(d: Dataset): FashionMnist;
 }

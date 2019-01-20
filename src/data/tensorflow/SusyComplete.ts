@@ -1,6 +1,6 @@
 import { TensorflowDataset } from '../tensorflow/TensorflowDataset';
 import * as susy from '../local/susy_complete';
-import { Data } from '../local/Data';
+import { Dataset } from 'mlts-experiment-data';
 
 export class SusyComplete extends TensorflowDataset {
     static async load(location?: string) {
@@ -12,7 +12,7 @@ export class SusyComplete extends TensorflowDataset {
         return new SusyComplete(d.train[0], d.train[1], d.test[0], d.test[1]);
     }
 
-    static fromDataset(d: Data) {
+    static fromDataset(d: Dataset) {
         const data = SusyComplete.fromTensorflowDataset(super.fromDataset(d));
 
         return data.scaleColumns().oneHot(2);

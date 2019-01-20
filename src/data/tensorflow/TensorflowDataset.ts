@@ -1,13 +1,13 @@
 import { arrays, tuple } from 'utilities-ts';
+import { Dataset } from 'mlts-experiment-data';
 import * as _ from 'lodash';
 import * as tf from '@tensorflow/tfjs';
 import * as tfUtil from '../../utils/tensorflow';
 import * as random from '../../utils/random';
-import { Dataset, Data } from '../local/Data';
 import { Transformation } from '../../transformations/Transformation';
 
 // TODO: consider that not all datasets will necessarily have in-sample and out-sample data
-export class TensorflowDataset implements Dataset<tf.Tensor2D> {
+export class TensorflowDataset {
     private limitedSamples: number;
     private shouldStratify = false;
 
@@ -139,12 +139,12 @@ export class TensorflowDataset implements Dataset<tf.Tensor2D> {
         };
     }
 
-    static fromDataset(dataset: Data): TensorflowDataset {
+    static fromDataset(dataset: Dataset): TensorflowDataset {
         return new TensorflowDataset(
-            tfUtil.matrixToTensor(dataset.train[0]),
-            tfUtil.matrixToTensor(dataset.train[1]),
-            tfUtil.matrixToTensor(dataset.test[0]),
-            tfUtil.matrixToTensor(dataset.test[1]),
+            tfUtil.dataToTensor2d(dataset.train[0]),
+            tfUtil.dataToTensor2d(dataset.train[1]),
+            tfUtil.dataToTensor2d(dataset.test[0]),
+            tfUtil.dataToTensor2d(dataset.test[1]),
         );
     }
 

@@ -1,14 +1,12 @@
 import * as path from 'path';
 
-import * as downloader from '../../utils/downloader';
 import { csv } from 'utilities-ts';
-import { Data } from '../../data/local/Data';
-import { Matrix } from '../../utils/matrix';
+import { Dataset, download as downloader } from 'mlts-experiment-data';
 
 const dataRemoteLocation = 'https://rawgit.com/andnp/ml_data/master/susycomplete.tar.gz';
 
 export function download(location = '.tmp') {
-    return downloader.download(dataRemoteLocation, location);
+    return downloader(dataRemoteLocation, location);
 }
 
 export async function load(location = '.tmp') {
@@ -37,10 +35,10 @@ export async function load(location = '.tmp') {
     const t = dataX.slice(features * trainSamples, (features * trainSamples) + (features * testSamples));
     const ty = dataY.slice(targets * trainSamples, (targets * trainSamples) + (targets * testSamples));
 
-    return new Data(
-        new Matrix(trainSamples, features, x),
-        new Matrix(trainSamples, targets, y),
-        new Matrix(testSamples, features, t),
-        new Matrix(testSamples, targets, ty),
+    return new Dataset(
+        { data: x, shape: [trainSamples, features], type: 'float32' },
+        { data: y, shape: [trainSamples, targets], type: 'int32' },
+        { data: t, shape: [testSamples, features], type: 'float32' },
+        { data: ty, shape: [testSamples, targets], type: 'int32' },
     );
 }

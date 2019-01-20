@@ -3,7 +3,7 @@ import * as v from 'validtyped';
 import { UnsupervisedAlgorithm } from "../algorithms/Algorithm";
 import { MatrixFactorizationDatasetDescription } from '../data/DatasetDescription';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
-import { History } from 'analysis';
+import { History } from '../analysis';
 export declare class MatrixFactorization extends UnsupervisedAlgorithm {
     protected datasetDescription: MatrixFactorizationDatasetDescription;
     protected readonly name: string;
