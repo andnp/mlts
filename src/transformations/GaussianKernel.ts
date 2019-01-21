@@ -1,10 +1,10 @@
 import * as v from 'validtyped';
 import * as tf from '@tensorflow/tfjs';
+import { Matrix } from 'utilities-ts';
 
 import * as tfUtils from '../utils/tensorflow';
 import { Transformation } from '../transformations/Transformation';
 import { TensorflowDataset } from '../data/tensorflow/TensorflowDataset';
-import { Matrix } from '../utils/matrix';
 
 export class GaussianKernelTransformation extends Transformation {
     constructor(private params: GaussianKernelParameters) {
@@ -39,7 +39,8 @@ export class GaussianKernelTransformation extends Transformation {
 
 function transformGaussian(X: tf.Tensor2D, C: tf.Tensor2D, bandwidths: tf.Tensor1D) {
     const centers = C.shape[0];
-    const m = new Matrix(X.shape[0], centers);
+    const rows = X.shape[0];
+    const m = new Matrix(Float32Array, { rows, cols: centers});
     for (let i = 0; i < X.shape[0]; ++i) {
         tf.tidy(() => {
             const row = X.slice(i, 1);
@@ -52,7 +53,7 @@ function transformGaussian(X: tf.Tensor2D, C: tf.Tensor2D, bandwidths: tf.Tensor
             }
         });
     }
-    return m.asTensor();
+    return tf.tensor2d(m.raw, [m.rows, m.cols]);
 }
 
 function getBandwidths(X: tf.Tensor2D, overlap: number) {

@@ -3,7 +3,7 @@ import * as v from 'validtyped';
 import { SupervisedAlgorithm } from "../algorithms/Algorithm";
 import { SupervisedDatasetDescription } from '../data/DatasetDescription';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
-export declare const LogisticRegressionMetaParameterSchema: v.Validator<import("simplytyped/types/objects").ObjectType<{
+export declare const LogisticRegressionMetaParameterSchema: v.Validator<import("simplytyped").ObjectType<{
     regularizer?: v.ObjectValidator<{
         type: v.Validator<"l1">;
         weight: v.Validator<number>;

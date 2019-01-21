@@ -8,7 +8,7 @@ export declare class GaussianKernelTransformation extends Transformation {
     applyTransformation(data: TensorflowDataset): Promise<TensorflowDataset>;
     transformTensor(X: tf.Tensor2D): Promise<tf.Tensor<tf.Rank.R2>>;
 }
-export declare const GaussianKernelParametersSchema: v.Validator<import("simplytyped/types/objects").ObjectType<{
+export declare const GaussianKernelParametersSchema: v.Validator<import("simplytyped").ObjectType<{
     overlap?: number | undefined;
 } & Pick<v.ObjectValidator<{
     type: v.Validator<"GaussianKernel">;

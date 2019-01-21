@@ -1,6 +1,6 @@
 import * as v from 'validtyped';
 import * as tf from '@tensorflow/tfjs';
-export declare const LayerMetaParametersSchema: v.Validator<import("simplytyped/types/objects").ObjectType<{
+export declare const LayerMetaParametersSchema: v.Validator<import("simplytyped").ObjectType<{
     name?: string | undefined;
     regularizer?: v.ObjectValidator<{
         type: v.Validator<"l1">;
@@ -18,12 +18,12 @@ export declare const LayerMetaParametersSchema: v.Validator<import("simplytyped/
         weight: v.Validator<number>;
     }>>;
     units: v.Validator<number>;
-    activation: v.Validator<"linear" | "elu" | "relu" | "sigmoid" | "tanh">;
+    activation: v.Validator<"linear" | "relu" | "elu" | "sigmoid" | "tanh">;
     type: v.Validator<"dense">;
     name: v.Validator<string>;
 }>, "type" | "units" | "activation">>>;
 export declare type LayerMetaParameters = v.ValidType<typeof LayerMetaParametersSchema>;
-export declare const constructTFLayer: (layerDef: import("simplytyped/types/objects").ObjectType<{
+export declare const constructTFLayer: (layerDef: import("simplytyped").ObjectType<{
     name?: string | undefined;
     regularizer?: v.ObjectValidator<{
         type: v.Validator<"l1">;
@@ -41,11 +41,11 @@ export declare const constructTFLayer: (layerDef: import("simplytyped/types/obje
         weight: v.Validator<number>;
     }>>;
     units: v.Validator<number>;
-    activation: v.Validator<"linear" | "elu" | "relu" | "sigmoid" | "tanh">;
+    activation: v.Validator<"linear" | "relu" | "elu" | "sigmoid" | "tanh">;
     type: v.Validator<"dense">;
     name: v.Validator<string>;
 }>, "type" | "units" | "activation">>) => tf.layers.Layer;
-export declare const constructTFNetwork: (layerDefs: import("simplytyped/types/objects").ObjectType<{
+export declare const constructTFNetwork: (layerDefs: import("simplytyped").ObjectType<{
     name?: string | undefined;
     regularizer?: v.ObjectValidator<{
         type: v.Validator<"l1">;
@@ -63,7 +63,7 @@ export declare const constructTFNetwork: (layerDefs: import("simplytyped/types/o
         weight: v.Validator<number>;
     }>>;
     units: v.Validator<number>;
-    activation: v.Validator<"linear" | "elu" | "relu" | "sigmoid" | "tanh">;
+    activation: v.Validator<"linear" | "relu" | "elu" | "sigmoid" | "tanh">;
     type: v.Validator<"dense">;
     name: v.Validator<string>;
 }>, "type" | "units" | "activation">>[], input: tf.SymbolicTensor) => tf.SymbolicTensor[];

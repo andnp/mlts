@@ -7,5 +7,5 @@ interface LearningCurveOptions {
     lineFile: string;
     results: Result[];
 }
-export declare function learningCurve(o: LearningCurveOptions): Promise<import("tsplot/src/utils/PlotlyCharts").Chart>;
+export declare function learningCurve(o: LearningCurveOptions): Promise<import("tsplot").Chart>;
 export {};

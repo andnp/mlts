@@ -1,5 +1,5 @@
 import * as v from 'validtyped';
-export declare const AdadeltaParametersSchema: v.Validator<import("simplytyped/types/objects").ObjectType<{
+export declare const AdadeltaParametersSchema: v.Validator<import("simplytyped").ObjectType<{
     rho?: number | undefined;
     epsilon?: number | undefined;
 } & Pick<v.ObjectValidator<{
@@ -16,14 +16,14 @@ export declare const RMSPropParametersSchema: v.Validator<v.ObjectValidator<{
     type: v.Validator<"rmsprop">;
     learningRate: v.Validator<number>;
 }>>;
-export declare const OptimizationParametersSchema: v.Validator<(import("simplytyped/types/objects").ObjectType<{
+export declare const OptimizationParametersSchema: v.Validator<(import("simplytyped").ObjectType<{
     threshold?: number | undefined;
     batchSize?: number | undefined;
 } & Pick<v.ObjectValidator<{
     threshold: v.Validator<number>;
     iterations: v.Validator<number>;
     batchSize: v.Validator<number>;
-}>, "iterations">> & import("simplytyped/types/objects").ObjectType<{
+}>, "iterations">> & import("simplytyped").ObjectType<{
     rho?: number | undefined;
     epsilon?: number | undefined;
 } & Pick<v.ObjectValidator<{
@@ -31,7 +31,7 @@ export declare const OptimizationParametersSchema: v.Validator<(import("simplyty
     learningRate: v.Validator<number>;
     rho: v.Validator<number>;
     epsilon: v.Validator<number>;
-}>, "type" | "learningRate">>) | (import("simplytyped/types/objects").ObjectType<{
+}>, "type" | "learningRate">>) | (import("simplytyped").ObjectType<{
     threshold?: number | undefined;
     batchSize?: number | undefined;
 } & Pick<v.ObjectValidator<{
@@ -41,7 +41,7 @@ export declare const OptimizationParametersSchema: v.Validator<(import("simplyty
 }>, "iterations">> & v.ObjectValidator<{
     type: v.Validator<"adagrad">;
     learningRate: v.Validator<number>;
-}>) | (import("simplytyped/types/objects").ObjectType<{
+}>) | (import("simplytyped").ObjectType<{
     threshold?: number | undefined;
     batchSize?: number | undefined;
 } & Pick<v.ObjectValidator<{

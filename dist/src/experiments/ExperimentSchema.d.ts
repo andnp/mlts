@@ -1,19 +1,19 @@
 import * as v from 'validtyped';
-export declare const getExperimentSchema: () => v.Validator<import("simplytyped/types/objects").ObjectType<{
+export declare const getExperimentSchema: () => v.Validator<import("simplytyped").ObjectType<{
     transformation?: any;
 } & Pick<v.ObjectValidator<{
     algorithm: v.Validator<string>;
     dataset: v.Validator<string>;
     metaParameters: v.Validator<Record<string, any>>;
     transformation: v.Validator<any>;
-    optimization: v.Validator<(import("simplytyped/types/objects").ObjectType<{
+    optimization: v.Validator<(import("simplytyped").ObjectType<{
         threshold?: number | undefined;
         batchSize?: number | undefined;
     } & Pick<v.ObjectValidator<{
         threshold: v.Validator<number>;
         iterations: v.Validator<number>;
         batchSize: v.Validator<number>;
-    }>, "iterations">> & import("simplytyped/types/objects").ObjectType<{
+    }>, "iterations">> & import("simplytyped").ObjectType<{
         rho?: number | undefined;
         epsilon?: number | undefined;
     } & Pick<v.ObjectValidator<{
@@ -21,7 +21,7 @@ export declare const getExperimentSchema: () => v.Validator<import("simplytyped/
         learningRate: v.Validator<number>;
         rho: v.Validator<number>;
         epsilon: v.Validator<number>;
-    }>, "type" | "learningRate">>) | (import("simplytyped/types/objects").ObjectType<{
+    }>, "type" | "learningRate">>) | (import("simplytyped").ObjectType<{
         threshold?: number | undefined;
         batchSize?: number | undefined;
     } & Pick<v.ObjectValidator<{
@@ -31,7 +31,7 @@ export declare const getExperimentSchema: () => v.Validator<import("simplytyped/
     }>, "iterations">> & v.ObjectValidator<{
         type: v.Validator<"adagrad">;
         learningRate: v.Validator<number>;
-    }>) | (import("simplytyped/types/objects").ObjectType<{
+    }>) | (import("simplytyped").ObjectType<{
         threshold?: number | undefined;
         batchSize?: number | undefined;
     } & Pick<v.ObjectValidator<{

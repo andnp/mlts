@@ -2,10 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const v = require("validtyped");
 const tf = require("@tensorflow/tfjs");
+const utilities_ts_1 = require("utilities-ts");
 const tfUtils = require("../utils/tensorflow");
 const Transformation_1 = require("../transformations/Transformation");
 const TensorflowDataset_1 = require("../data/tensorflow/TensorflowDataset");
-const matrix_1 = require("../utils/matrix");
 class GaussianKernelTransformation extends Transformation_1.Transformation {
     constructor(params) {
         super();
@@ -31,7 +31,8 @@ class GaussianKernelTransformation extends Transformation_1.Transformation {
 exports.GaussianKernelTransformation = GaussianKernelTransformation;
 function transformGaussian(X, C, bandwidths) {
     const centers = C.shape[0];
-    const m = new matrix_1.Matrix(X.shape[0], centers);
+    const rows = X.shape[0];
+    const m = new utilities_ts_1.Matrix(Float32Array, { rows, cols: centers });
     for (let i = 0; i < X.shape[0]; ++i) {
         tf.tidy(() => {
             const row = X.slice(i, 1);
@@ -44,7 +45,7 @@ function transformGaussian(X, C, bandwidths) {
             }
         });
     }
-    return m.asTensor();
+    return tf.tensor2d(m.raw, [m.rows, m.cols]);
 }
 function getBandwidths(X, overlap) {
     const [rows] = X.shape;

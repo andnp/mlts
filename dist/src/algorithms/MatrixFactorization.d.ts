@@ -20,7 +20,7 @@ export declare class MatrixFactorization extends UnsupervisedAlgorithm {
     readonly H: tf.Variable<tf.Rank.R2>;
     setD(tensor: tf.Tensor2D): void;
 }
-export declare const MatrixFactorizationMetaParametersSchema: v.Validator<import("simplytyped/types/objects").ObjectType<{
+export declare const MatrixFactorizationMetaParametersSchema: v.Validator<import("simplytyped").ObjectType<{
     regularizerD?: v.ObjectValidator<{
         type: v.Validator<"l1">;
         weight: v.Validator<number>;

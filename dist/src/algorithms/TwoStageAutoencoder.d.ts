@@ -5,7 +5,7 @@ import { SupervisedDatasetDescription } from '../data/DatasetDescription';
 import { RepresentationAlgorithm } from '../algorithms/interfaces/RepresentationAlgorithm';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 export declare const TwoStageAutoencoderMetaParameterSchema: v.Validator<v.ObjectValidator<{
-    layers: v.Validator<import("simplytyped/types/objects").ObjectType<{
+    layers: v.Validator<import("simplytyped").ObjectType<{
         name?: string | undefined;
         regularizer?: v.ObjectValidator<{
             type: v.Validator<"l1">;
@@ -23,7 +23,7 @@ export declare const TwoStageAutoencoderMetaParameterSchema: v.Validator<v.Objec
             weight: v.Validator<number>;
         }>>;
         units: v.Validator<number>;
-        activation: v.Validator<"linear" | "elu" | "relu" | "sigmoid" | "tanh">;
+        activation: v.Validator<"linear" | "relu" | "elu" | "sigmoid" | "tanh">;
         type: v.Validator<"dense">;
         name: v.Validator<string>;
     }>, "type" | "units" | "activation">>[]>;
