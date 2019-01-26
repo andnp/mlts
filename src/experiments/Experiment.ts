@@ -1,7 +1,9 @@
 // tslint:disable no-console
-import { Observable, RawObservable, Matrix, files, csv, assertNever } from "utilities-ts";
+import * as fs from 'fs';
+import { Observable, RawObservable, files, csv, assertNever } from "utilities-ts";
 import { ExperimentDescription } from "./ExperimentDescription";
 import { ExperimentJson } from "./ExperimentSchema";
+import { interpolateResultsPath } from './fileSystem';
 
 export interface ExperimentResultMessage {
     tag: string;
@@ -39,26 +41,26 @@ export abstract class Experiment {
             creator.next({
                 tag: 'params',
                 type: 'json',
-                path: `params.json`,
+                path: `../params.json`,
                 data: params,
             });
 
             creator.next({
                 tag: 'experiment',
                 type: 'json',
-                path: `experiment.json`,
+                path: `../experiment.json`,
                 data: this.description.definition,
             });
         });
 
         const resultsBase = this.description.resultsBase || '';
-        const path = this.description.path || 'unnamedExperiment';
+        const path = interpolateResultsPath(this.description);
 
         // prefix all of the paths with the root path
         // before passing the message on to the consumer
         return obs.map(msg => ({
             ...msg,
-            path: `${resultsBase}/${root}/${path}/${msg.path}`,
+            path: [resultsBase, root, path, msg.path].filter(s => s !== '').join('/'),
         }));
     }
 

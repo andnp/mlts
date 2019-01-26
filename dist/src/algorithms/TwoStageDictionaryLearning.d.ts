@@ -9,7 +9,7 @@ import { SupervisedDictionaryLearningDatasetDescription } from '../data/DatasetD
 import { RepresentationAlgorithm } from '../algorithms/interfaces/RepresentationAlgorithm';
 export declare class TwoStageDictionaryLearning extends SupervisedAlgorithm implements RepresentationAlgorithm {
     protected datasetDescription: SupervisedDictionaryLearningDatasetDescription;
-    protected readonly name: string;
+    readonly name: string;
     readonly stage1: MatrixFactorization;
     readonly stage2: LogisticRegression;
     protected opts: TwoStageDictionaryLearningMetaParameters;

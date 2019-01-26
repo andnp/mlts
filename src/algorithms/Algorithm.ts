@@ -8,7 +8,7 @@ import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 
 export abstract class Algorithm {
     protected opts: object = {};
-    protected abstract name: string;
+    abstract name: string;
     constructor (
         protected datasetDescription: DatasetDescription,
     ) {}

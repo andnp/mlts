@@ -35,12 +35,14 @@ export async function collectResults(rootPath: string, resultFileNames: string[]
                 .collect();
 
             const params = await files.globObservable(path.join(hashDir, '*', 'params.json'))
+                .concat(files.globObservable(path.join(hashDir, 'params.json')))
                 .take(1)
                 .map(loc => files.readJson(loc, v.any()))
                 .collect()
                 .then(arrays.getFirst);
 
             const experiment = await files.globObservable(path.join(hashDir, '*', 'experiment.json'))
+                .concat(files.globObservable(path.join(hashDir, 'experiment.json')))
                 .take(1)
                 .map(loc => files.readJson(loc, v.any()))
                 .collect()

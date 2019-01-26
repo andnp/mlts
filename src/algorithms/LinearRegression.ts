@@ -19,7 +19,7 @@ export const LinearRegressionMetaParameterSchema = v.object({
 export type LinearRegressionMetaParameters = v.ValidType<typeof LinearRegressionMetaParameterSchema>;
 
 export class LinearRegression extends SupervisedAlgorithm {
-    protected readonly name = LinearRegression.name;
+    readonly name = LinearRegression.name;
     protected readonly opts: LinearRegressionMetaParameters;
     readonly model: tf.Model;
 

@@ -23,7 +23,7 @@ export declare const LogisticRegressionMetaParameterSchema: v.Validator<import("
 export declare type LogisticRegressionMetaParameters = v.ValidType<typeof LogisticRegressionMetaParameterSchema>;
 export declare class LogisticRegression extends SupervisedAlgorithm {
     protected datasetDescription: SupervisedDatasetDescription;
-    protected readonly name: string;
+    readonly name: string;
     protected readonly opts: LogisticRegressionMetaParameters;
     protected model: tf.Model;
     constructor(datasetDescription: SupervisedDatasetDescription, opts?: Partial<LogisticRegressionMetaParameters>);

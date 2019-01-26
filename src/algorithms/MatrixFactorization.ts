@@ -11,7 +11,7 @@ import { randomInitVariable } from '../utils/tensorflow';
 import { History } from '../analysis';
 
 export class MatrixFactorization extends UnsupervisedAlgorithm {
-    protected readonly name = MatrixFactorization.name;
+    readonly name = MatrixFactorization.name;
     protected opts: MatrixFactorizationMetaParameters;
 
     d: tf.Variable<tf.Rank.R2>;

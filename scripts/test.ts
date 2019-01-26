@@ -1,9 +1,10 @@
 // tslint:disable no-console
 import { getFakeClassificationDataset } from "../tests/utils";
-import { ANN } from "algorithms";
-import { getClassificationError } from "analysis";
-import { Deterding } from "data";
+import { ANN } from "../src/algorithms";
+import { getClassificationError } from "../src/analysis";
+import { Deterding } from "../src/data";
 import { time } from "utilities-ts";
+import { ClassificationErrorExperiment, ExperimentDescription } from "../src/index";
 
 async function exec() {
     const dataset = await Deterding.load();
@@ -20,25 +21,20 @@ async function exec() {
         ],
     });
 
-    const [X, Y] = dataset.train;
-    X.print(true);
-    Y.print(true);
-    await alg.train(X, Y, {
+    const desc = ExperimentDescription.fromManualSetup(alg, dataset, {
         iterations: 100,
         batchSize: 10,
         type: 'rmsprop',
         learningRate: 0.001,
-    });
+    }, 'results');
 
-    const Y_hat = await alg.predict(X);
+    const exp = new ClassificationErrorExperiment(desc);
 
-    const [T, TY] = dataset.test;
-    const TY_hat = await alg.predict(T);
+    const obs = exp.run();
 
-    const train_err = getClassificationError(Y_hat, Y);
-    const test_err = getClassificationError(TY_hat, TY);
+    ClassificationErrorExperiment.saveResults(obs);
 
-    console.log(train_err, test_err);
+    await obs;
 }
 
 exec().catch(console.log);

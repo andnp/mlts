@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const algorithms_1 = require("algorithms");
-const analysis_1 = require("analysis");
-const data_1 = require("data");
+const algorithms_1 = require("../src/algorithms");
+const data_1 = require("../src/data");
+const index_1 = require("../src/index");
 async function exec() {
     const dataset = await data_1.Deterding.load();
     // const dataset = getFakeClassificationDataset({
@@ -16,21 +16,16 @@ async function exec() {
             { type: 'dense', units: 7, activation: 'relu' },
         ],
     });
-    const [X, Y] = dataset.train;
-    X.print(true);
-    Y.print(true);
-    await alg.train(X, Y, {
+    const desc = index_1.ExperimentDescription.fromManualSetup(alg, dataset, {
         iterations: 100,
         batchSize: 10,
         type: 'rmsprop',
         learningRate: 0.001,
-    });
-    const Y_hat = await alg.predict(X);
-    const [T, TY] = dataset.test;
-    const TY_hat = await alg.predict(T);
-    const train_err = analysis_1.getClassificationError(Y_hat, Y);
-    const test_err = analysis_1.getClassificationError(TY_hat, TY);
-    console.log(train_err, test_err);
+    }, 'results');
+    const exp = new index_1.ClassificationErrorExperiment(desc);
+    const obs = exp.run();
+    index_1.ClassificationErrorExperiment.saveResults(obs);
+    await obs;
 }
 exec().catch(console.log);
 //# sourceMappingURL=test.js.map

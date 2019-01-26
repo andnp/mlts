@@ -12,7 +12,7 @@ import { RepresentationAlgorithm } from '../algorithms/interfaces/Representation
 import { LinearRegression } from './LinearRegression';
 
 export class TwoStageDictionaryLearning extends SupervisedAlgorithm implements RepresentationAlgorithm {
-    protected readonly name = TwoStageDictionaryLearning.name;
+    readonly name = TwoStageDictionaryLearning.name;
     readonly stage1: MatrixFactorization;
     readonly stage2: LogisticRegression;
 

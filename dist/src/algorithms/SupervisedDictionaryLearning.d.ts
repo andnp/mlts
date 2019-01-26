@@ -3,7 +3,7 @@ import * as v from 'validtyped';
 import { SupervisedAlgorithm } from "../algorithms/Algorithm";
 import { SupervisedDictionaryLearningDatasetDescription } from '../data/DatasetDescription';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
-import { History } from 'analysis';
+import { History } from '../analysis';
 export declare const SupervisedDictionaryLearningMetaParameterSchema: v.Validator<v.ObjectValidator<{
     regularizer: v.Validator<v.ObjectValidator<{
         type: v.Validator<"l1">;
@@ -17,7 +17,7 @@ export declare const SupervisedDictionaryLearningMetaParameterSchema: v.Validato
 export declare type SupervisedDictionaryLearningMetaParameters = v.ValidType<typeof SupervisedDictionaryLearningMetaParameterSchema>;
 export declare class SupervisedDictionaryLearning extends SupervisedAlgorithm {
     protected datasetDescription: SupervisedDictionaryLearningDatasetDescription;
-    protected readonly name: string;
+    readonly name: string;
     protected readonly opts: SupervisedDictionaryLearningMetaParameters;
     readonly w: tf.Variable<tf.Rank.R2>;
     readonly h: tf.Variable<tf.Rank.R2>;

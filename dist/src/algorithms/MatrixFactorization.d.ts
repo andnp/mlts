@@ -6,7 +6,7 @@ import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 import { History } from '../analysis';
 export declare class MatrixFactorization extends UnsupervisedAlgorithm {
     protected datasetDescription: MatrixFactorizationDatasetDescription;
-    protected readonly name: string;
+    readonly name: string;
     protected opts: MatrixFactorizationMetaParameters;
     d: tf.Variable<tf.Rank.R2>;
     h: tf.Variable<tf.Rank.R2>;

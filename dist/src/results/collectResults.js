@@ -23,11 +23,13 @@ async function collectResults(rootPath, resultFileNames) {
             .filterUndefined()
             .collect();
         const params = await utilities_ts_1.files.globObservable(path.join(hashDir, '*', 'params.json'))
+            .concat(utilities_ts_1.files.globObservable(path.join(hashDir, 'params.json')))
             .take(1)
             .map(loc => utilities_ts_1.files.readJson(loc, v.any()))
             .collect()
             .then(utilities_ts_1.arrays.getFirst);
         const experiment = await utilities_ts_1.files.globObservable(path.join(hashDir, '*', 'experiment.json'))
+            .concat(utilities_ts_1.files.globObservable(path.join(hashDir, 'experiment.json')))
             .take(1)
             .map(loc => utilities_ts_1.files.readJson(loc, v.any()))
             .collect()

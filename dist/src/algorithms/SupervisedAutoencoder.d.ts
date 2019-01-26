@@ -31,7 +31,7 @@ export declare const SupervisedAutoencoderMetaParameterSchema: v.Validator<v.Obj
 export declare type SupervisedAutoencoderMetaParameters = v.ValidType<typeof SupervisedAutoencoderMetaParameterSchema>;
 export declare class SupervisedAutoencoder extends SupervisedAlgorithm implements RepresentationAlgorithm {
     protected datasetDescription: SupervisedDatasetDescription;
-    protected readonly name: string;
+    readonly name: string;
     protected readonly opts: SupervisedAutoencoderMetaParameters;
     readonly model: tf.Model;
     protected representationLayer: tf.SymbolicTensor | undefined;

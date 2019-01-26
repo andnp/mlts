@@ -8,11 +8,11 @@ export declare class ExperimentDescription {
     readonly optimization: OptimizationParameters;
     readonly definition: ExperimentJson | undefined;
     readonly metaParameters: Record<string, any> | undefined;
-    readonly resultsBase: string | undefined;
-    readonly path: string | undefined;
+    readonly resultsBase: string;
+    readonly run: number;
+    readonly resultsTemplate: string;
     private constructor();
-    static getResultsPath(data: ExperimentJson, index: number): string;
-    static fromManualSetup(algorithm: Algorithm, dataset: TensorflowDataset, optimization: OptimizationParameters, resultsBase?: string, path?: string): ExperimentDescription;
+    static fromManualSetup(algorithm: Algorithm, dataset: TensorflowDataset, optimization: OptimizationParameters, resultsBase?: string, run?: number): ExperimentDescription;
     static fromJson(location: string, index: number, resultsPath?: string): Promise<ExperimentDescription>;
     static fromCommandLine(): Promise<ExperimentDescription>;
 }

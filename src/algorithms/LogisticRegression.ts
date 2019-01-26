@@ -15,7 +15,7 @@ export const LogisticRegressionMetaParameterSchema = v.object({
 export type LogisticRegressionMetaParameters = v.ValidType<typeof LogisticRegressionMetaParameterSchema>;
 
 export class LogisticRegression extends SupervisedAlgorithm {
-    protected readonly name = LogisticRegression.name;
+    readonly name = LogisticRegression.name;
     protected readonly opts: LogisticRegressionMetaParameters;
     protected model: tf.Model;
 

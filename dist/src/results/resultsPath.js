@@ -8,7 +8,14 @@ async function findResultsPath(rootPath, experimentPath, run) {
     const ExperimentSchema = ExperimentSchema_1.getExperimentSchema();
     const experiment = await utilities_ts_1.files.readJson(experimentPath, ExperimentSchema);
     const metaParameters = metaParameters_1.getParameterPermutation(experiment.metaParameters, run);
-    const path = fileSystem_1.getResultsPath(experiment, metaParameters, run);
+    const path = fileSystem_1.interpolateResultsPath({
+        alg: experiment.algorithm,
+        dataset: experiment.dataset,
+        metaParameters,
+        optimization: experiment.optimization,
+        description: experiment,
+        run,
+    });
     const resultsPath = path.split('/').slice(0, -1).join('/');
     return utilities_ts_1.files.filePath(`${rootPath}/${resultsPath}/results.json`);
 }

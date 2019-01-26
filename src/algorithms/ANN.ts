@@ -16,7 +16,7 @@ export const ANNMetaParameterSchema = v.object({
 export type ANNMetaParameters = v.ValidType<typeof ANNMetaParameterSchema>;
 
 export class ANN extends SupervisedAlgorithm {
-    protected readonly name = ANN.name;
+    readonly name = ANN.name;
     protected readonly opts: ANNMetaParameters;
     readonly model: tf.Model;
 

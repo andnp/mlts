@@ -8,7 +8,7 @@ import { autoDispose, randomInitVariable } from '../utils/tensorflow';
 import { regularize, RegularizerParametersSchema } from '../regularizers/regularizers';
 import { SupervisedDictionaryLearningDatasetDescription } from '../data/DatasetDescription';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
-import { History } from 'analysis';
+import { History } from '../analysis';
 
 export const SupervisedDictionaryLearningMetaParameterSchema = v.object({
     regularizer: RegularizerParametersSchema,
@@ -18,7 +18,7 @@ export const SupervisedDictionaryLearningMetaParameterSchema = v.object({
 export type SupervisedDictionaryLearningMetaParameters = v.ValidType<typeof SupervisedDictionaryLearningMetaParameterSchema>;
 
 export class SupervisedDictionaryLearning extends SupervisedAlgorithm {
-    protected readonly name = SupervisedDictionaryLearning.name;
+    readonly name = SupervisedDictionaryLearning.name;
     protected readonly opts: SupervisedDictionaryLearningMetaParameters;
 
     readonly w = randomInitVariable([this.datasetDescription.classes, this.opts.hidden]);

@@ -5,7 +5,7 @@ import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 export declare abstract class Algorithm {
     protected datasetDescription: DatasetDescription;
     protected opts: object;
-    protected abstract name: string;
+    abstract name: string;
     constructor(datasetDescription: DatasetDescription);
     protected abstract _predict(T: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<tf.Tensor2D>;
     predict(T: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<tf.Tensor2D>;

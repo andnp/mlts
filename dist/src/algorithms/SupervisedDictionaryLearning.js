@@ -7,7 +7,7 @@ const Algorithm_1 = require("../algorithms/Algorithm");
 const Optimizer = require("../optimization/Optimizer");
 const tensorflow_1 = require("../utils/tensorflow");
 const regularizers_1 = require("../regularizers/regularizers");
-const analysis_1 = require("analysis");
+const analysis_1 = require("../analysis");
 exports.SupervisedDictionaryLearningMetaParameterSchema = v.object({
     regularizer: regularizers_1.RegularizerParametersSchema,
     hidden: v.number(),

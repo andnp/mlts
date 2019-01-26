@@ -8,7 +8,6 @@ import { TensorflowDataset } from '../data/tensorflow/TensorflowDataset';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
 import { getNumberOfRuns, getParameterPermutation } from './metaParameters';
 import { getExperimentSchema, ExperimentJson } from './ExperimentSchema';
-import { getResultsPath } from './fileSystem';
 
 import { getDatasetConstructor, getTransformationRegistryData, getAlgorithmRegistryData } from './ExperimentRegistry';
 import { setSeed } from '../utils/random';
@@ -20,18 +19,13 @@ export class ExperimentDescription {
         readonly optimization: OptimizationParameters,
         readonly definition: ExperimentJson | undefined,
         readonly metaParameters: Record<string, any> | undefined,
-        readonly resultsBase: string | undefined,
-        readonly path: string | undefined,
+        readonly resultsBase: string = '',
+        readonly run: number = 0,
+        readonly resultsTemplate: string = '{{dataset}}/{{alg}}/{{params}}/{{run}}',
     ) {}
 
-    static getResultsPath(data: ExperimentJson, index: number) {
-        const permutation = getParameterPermutation(data.metaParameters, index);
-        const run = Math.floor(index / getNumberOfRuns(data.metaParameters));
-        return getResultsPath(data, permutation, run);
-    }
-
-    static fromManualSetup(algorithm: Algorithm, dataset: TensorflowDataset, optimization: OptimizationParameters, resultsBase?: string, path?: string) {
-        return new ExperimentDescription(algorithm, dataset, optimization, undefined, algorithm.getParameters(), resultsBase, path);
+    static fromManualSetup(algorithm: Algorithm, dataset: TensorflowDataset, optimization: OptimizationParameters, resultsBase?: string, run?: number) {
+        return new ExperimentDescription(algorithm, dataset, optimization, undefined, algorithm.getParameters(), resultsBase, run);
     }
 
     static async fromJson(location: string, index: number, resultsPath?: string) {
@@ -72,11 +66,9 @@ export class ExperimentDescription {
             samples: dataset.samples,
         };
 
-        const expLocation = ExperimentDescription.getResultsPath(data, index);
-
         const algorithm = new algData.constructor(datasetDescriptor, metaParameters);
 
-        return new ExperimentDescription(algorithm, dataset, data.optimization, data, metaParameters, resultsPath || 'results', expLocation);
+        return new ExperimentDescription(algorithm, dataset, data.optimization, data, metaParameters, resultsPath || 'results', run);
     }
 
     static async fromCommandLine() {

@@ -31,7 +31,7 @@ export declare const LinearRegressionMetaParameterSchema: v.Validator<import("si
 export declare type LinearRegressionMetaParameters = v.ValidType<typeof LinearRegressionMetaParameterSchema>;
 export declare class LinearRegression extends SupervisedAlgorithm {
     protected datasetDescription: SupervisedDatasetDescription;
-    protected readonly name: string;
+    readonly name: string;
     protected readonly opts: LinearRegressionMetaParameters;
     readonly model: tf.Model;
     constructor(datasetDescription: SupervisedDatasetDescription, opts?: Partial<LinearRegressionMetaParameters>);

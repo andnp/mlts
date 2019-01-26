@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// tslint:disable no-console
 const utilities_ts_1 = require("utilities-ts");
+const fileSystem_1 = require("./fileSystem");
 class Experiment {
     constructor(description) {
         this.description = description;
@@ -14,23 +14,23 @@ class Experiment {
             creator.next({
                 tag: 'params',
                 type: 'json',
-                path: `params.json`,
+                path: `../params.json`,
                 data: params,
             });
             creator.next({
                 tag: 'experiment',
                 type: 'json',
-                path: `experiment.json`,
+                path: `../experiment.json`,
                 data: this.description.definition,
             });
         });
         const resultsBase = this.description.resultsBase || '';
-        const path = this.description.path || 'unnamedExperiment';
+        const path = fileSystem_1.interpolateResultsPath(this.description);
         // prefix all of the paths with the root path
         // before passing the message on to the consumer
         return obs.map(msg => ({
             ...msg,
-            path: `${resultsBase}/${root}/${path}/${msg.path}`,
+            path: [resultsBase, root, path, msg.path].filter(s => s !== '').join('/'),
         }));
     }
     static saveResults(obs) {

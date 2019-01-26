@@ -32,7 +32,7 @@ export declare const TwoStageAutoencoderMetaParameterSchema: v.Validator<v.Objec
 export declare type TwoStageAutoencoderMetaParameters = v.ValidType<typeof TwoStageAutoencoderMetaParameterSchema>;
 export declare class TwoStageAutoencoder extends SupervisedAlgorithm implements RepresentationAlgorithm {
     protected datasetDescription: SupervisedDatasetDescription;
-    protected readonly name: string;
+    readonly name: string;
     protected readonly opts: TwoStageAutoencoderMetaParameters;
     readonly model: tf.Model;
     readonly predictionModel: tf.Model;

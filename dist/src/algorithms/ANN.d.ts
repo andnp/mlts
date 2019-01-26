@@ -33,7 +33,7 @@ export declare const ANNMetaParameterSchema: v.Validator<import("simplytyped").O
 export declare type ANNMetaParameters = v.ValidType<typeof ANNMetaParameterSchema>;
 export declare class ANN extends SupervisedAlgorithm {
     protected datasetDescription: SupervisedDatasetDescription;
-    protected readonly name: string;
+    readonly name: string;
     protected readonly opts: ANNMetaParameters;
     readonly model: tf.Model;
     constructor(datasetDescription: SupervisedDatasetDescription, opts?: Partial<ANNMetaParameters>);

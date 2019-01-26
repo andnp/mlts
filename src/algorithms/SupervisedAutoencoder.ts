@@ -17,7 +17,7 @@ export const SupervisedAutoencoderMetaParameterSchema = v.object({
 export type SupervisedAutoencoderMetaParameters = v.ValidType<typeof SupervisedAutoencoderMetaParameterSchema>;
 
 export class SupervisedAutoencoder extends SupervisedAlgorithm implements RepresentationAlgorithm {
-    protected readonly name = SupervisedAutoencoder.name;
+    readonly name = SupervisedAutoencoder.name;
     protected readonly opts: SupervisedAutoencoderMetaParameters;
     readonly model: tf.Model;
 

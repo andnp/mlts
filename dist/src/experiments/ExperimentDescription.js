@@ -4,26 +4,21 @@ const commandLine = require("../utils/commandLine");
 const utilities_ts_1 = require("utilities-ts");
 const metaParameters_1 = require("./metaParameters");
 const ExperimentSchema_1 = require("./ExperimentSchema");
-const fileSystem_1 = require("./fileSystem");
 const ExperimentRegistry_1 = require("./ExperimentRegistry");
 const random_1 = require("../utils/random");
 class ExperimentDescription {
-    constructor(algorithm, dataset, optimization, definition, metaParameters, resultsBase, path) {
+    constructor(algorithm, dataset, optimization, definition, metaParameters, resultsBase = '', run = 0, resultsTemplate = '{{dataset}}/{{alg}}/{{params}}/{{run}}') {
         this.algorithm = algorithm;
         this.dataset = dataset;
         this.optimization = optimization;
         this.definition = definition;
         this.metaParameters = metaParameters;
         this.resultsBase = resultsBase;
-        this.path = path;
+        this.run = run;
+        this.resultsTemplate = resultsTemplate;
     }
-    static getResultsPath(data, index) {
-        const permutation = metaParameters_1.getParameterPermutation(data.metaParameters, index);
-        const run = Math.floor(index / metaParameters_1.getNumberOfRuns(data.metaParameters));
-        return fileSystem_1.getResultsPath(data, permutation, run);
-    }
-    static fromManualSetup(algorithm, dataset, optimization, resultsBase, path) {
-        return new ExperimentDescription(algorithm, dataset, optimization, undefined, algorithm.getParameters(), resultsBase, path);
+    static fromManualSetup(algorithm, dataset, optimization, resultsBase, run) {
+        return new ExperimentDescription(algorithm, dataset, optimization, undefined, algorithm.getParameters(), resultsBase, run);
     }
     static async fromJson(location, index, resultsPath) {
         const ExperimentSchema = ExperimentSchema_1.getExperimentSchema();
@@ -56,9 +51,8 @@ class ExperimentDescription {
             classes: dataset.classes,
             samples: dataset.samples,
         };
-        const expLocation = ExperimentDescription.getResultsPath(data, index);
         const algorithm = new algData.constructor(datasetDescriptor, metaParameters);
-        return new ExperimentDescription(algorithm, dataset, data.optimization, data, metaParameters, resultsPath || 'results', expLocation);
+        return new ExperimentDescription(algorithm, dataset, data.optimization, data, metaParameters, resultsPath || 'results', run);
     }
     static async fromCommandLine() {
         const cla = commandLine.parseArgs();
