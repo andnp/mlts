@@ -1,8 +1,7 @@
 import * as _ from 'lodash';
 import { files, arrays, Observable } from 'utilities-ts';
-import { getNumberOfRuns, getExperimentSchema, ExperimentJson, getParameterPermutation } from '../experiments';
+import { getNumberOfRuns, getExperimentSchema, ExperimentJson, getParameterPermutation, interpolateResultsPath, experimentJsonToContext } from '../experiments';
 import { printProgress } from '../utils/printer';
-import { interpolateResultsPath, experimentJsonToContext } from 'experiments/fileSystem';
 
 export function findMissing(base_path: string, path: string, runs: number) {
     return printProgress(print => {

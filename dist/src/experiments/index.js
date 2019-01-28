@@ -9,4 +9,5 @@ __export(require("./ExperimentSchema"));
 __export(require("./ClassificationError"));
 __export(require("./metaParameters"));
 __export(require("./Experiment"));
+__export(require("./fileSystem"));
 //# sourceMappingURL=index.js.map
