@@ -7,9 +7,9 @@ const tsplot = require("tsplot");
 const _ = require("lodash");
 const utilities_ts_1 = require("utilities-ts");
 async function collectResults(rootPath, resultFileNames) {
-    const hashDirectories = await utilities_ts_1.Observable.fromArray(await utilities_ts_1.files.readdir(rootPath))
-        .map(n => path.join(rootPath, n))
-        .collect();
+    const hashDepth = await findHashDirectoryDepth(rootPath);
+    const hashPath = path.join(rootPath, '/*'.repeat(hashDepth));
+    const hashDirectories = await utilities_ts_1.files.glob(hashPath);
     const uncollectedResults = await utilities_ts_1.Observable.fromArray(hashDirectories)
         .filter(dir => utilities_ts_1.files.fileExists(path.join(dir, 'results.json')).then(b => !b))
         .collect();
@@ -55,6 +55,26 @@ async function collectResults(rootPath, resultFileNames) {
     return results;
 }
 exports.collectResults = collectResults;
+// finds the depth for the hash directories.
+// non-trivial now that path can take arbitrary shape
+async function findHashDirectoryDepth(root) {
+    const helper = async (rootPath) => {
+        const subDirs = await utilities_ts_1.files.readdir(rootPath);
+        if (subDirs.length === 0)
+            return 0;
+        const subDir = subDirs[0];
+        if (isNumerical(subDir))
+            return 1;
+        const depth = await helper(path.join(rootPath, subDir));
+        return depth + 1;
+    };
+    // use a helper to find the "numerical" paths
+    // these are the run numbers, and should come just after the hash path
+    // subtract 1 from the run number depth to retrieve the hash depth
+    const depth = await helper(root);
+    return depth - 1;
+}
+const isNumerical = (x) => `${parseInt(x)}` === x;
 async function describeResultFiles(resultFilePaths, resultFileName) {
     const results = await utilities_ts_1.files.globObservable(path.join(resultFilePaths, '*', resultFileName))
         .map(file => utilities_ts_1.files.readFile(file))

@@ -16,9 +16,9 @@ export type Result = {
 } & Record<string, any>;
 
 export async function collectResults(rootPath: string, resultFileNames: string[]) {
-    const hashDirectories = await Observable.fromArray(await files.readdir(rootPath))
-        .map(n => path.join(rootPath, n))
-        .collect();
+    const hashDepth = await findHashDirectoryDepth(rootPath);
+    const hashPath = path.join(rootPath, '/*'.repeat(hashDepth));
+    const hashDirectories = await files.glob(hashPath);
 
     const uncollectedResults = await Observable.fromArray(hashDirectories)
         .filter(dir => files.fileExists(path.join(dir, 'results.json')).then(b => !b))
@@ -74,6 +74,29 @@ export async function collectResults(rootPath: string, resultFileNames: string[]
 
     return results;
 }
+
+// finds the depth for the hash directories.
+// non-trivial now that path can take arbitrary shape
+async function findHashDirectoryDepth(root: string): Promise<number> {
+    const helper = async (rootPath: string): Promise<number> => {
+        const subDirs = await files.readdir(rootPath);
+        if (subDirs.length === 0) return 0;
+        const subDir = subDirs[0];
+
+        if (isNumerical(subDir)) return 1;
+
+        const depth = await helper(path.join(rootPath, subDir));
+        return depth + 1;
+    };
+
+    // use a helper to find the "numerical" paths
+    // these are the run numbers, and should come just after the hash path
+    // subtract 1 from the run number depth to retrieve the hash depth
+    const depth = await helper(root);
+    return depth - 1;
+}
+
+const isNumerical = (x: string) => `${parseInt(x)}` === x;
 
 async function describeResultFiles(resultFilePaths: string, resultFileName: string) {
     const results = await files.globObservable(path.join(resultFilePaths, '*', resultFileName))
