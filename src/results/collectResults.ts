@@ -18,13 +18,12 @@ export type Result = {
 export async function collectResults(rootPath: string, resultFileNames: string[]) {
     const hashDepth = await findHashDirectoryDepth(rootPath);
     const hashPath = path.join(rootPath, '/*'.repeat(hashDepth));
-    const hashDirectories = await files.glob(hashPath);
 
-    const uncollectedResults = await Observable.fromArray(hashDirectories)
-        .filter(dir => files.fileExists(path.join(dir, 'results.json')).then(b => !b))
-        .collect();
+    const [ collectedResults, uncollectedResults ] = files
+        .globObservable(hashPath)
+        .partition(dir => files.fileExists(path.join(dir, 'results.json')));
 
-    const newResultsObservable = Observable.fromArray(uncollectedResults)
+    const newResultsObservable = uncollectedResults
         // to remain scalable to many results files, we must limit the number we process simultaneously
         // this slows down processing a little, but prevents out-of-memory errors
         .bottleneck(6)
@@ -65,9 +64,7 @@ export async function collectResults(rootPath: string, resultFileNames: string[]
             return result;
         });
 
-    const oldResultsHashes = _.difference(hashDirectories, uncollectedResults);
-
-    const results = await Observable.fromArray(oldResultsHashes)
+    const results = await collectedResults
         .map(hashDir => files.readJson(path.join(hashDir, 'results.json'), v.any()) as Promise<Result>)
         .concat(newResultsObservable)
         .collect();
