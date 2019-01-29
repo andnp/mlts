@@ -9,7 +9,6 @@
     "lint": "tslint --config tslint.json --project . --format stylish",
     "test": "export RNG=`node -e 'console.log(Math.random())'` && echo $RNG && jest tests/unit",
     "test:all": "export RNG=`node -e 'console.log(Math.random())'` && echo $RNG && jest",
-    "prepush": "npm run -s lint && npm test",
     "file": "NODE_PATH=src ts-node",
     "tsc": "tsc",
     "start": "npm run -s build; NODE_PATH=dist/src node --max-old-space-size=8192 dist/scripts/test.js",
@@ -37,6 +36,11 @@
     ],
     "testEnvironment": "node",
     "setupFiles": []
+  },
+  "husky": {
+    "hooks": {
+      "pre-push": "npm run -s lint && npm test"
+    }
   },
   "devDependencies": {
     "@types/jest": "^23.3.13",
