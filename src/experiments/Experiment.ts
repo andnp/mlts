@@ -65,7 +65,11 @@ export abstract class Experiment {
     }
 
     static saveResults(obs: Observable<ExperimentResultMessage>) {
-        return obs.subscribe(msg => {
+        return obs.subscribe(async (msg) => {
+            // reduce chances of accidentally double writing a file
+            const exists = await files.fileExists(msg.path);
+            if (exists) return;
+
             if (msg.type === 'txt') return files.writeFile(msg.path, msg.data);
             if (msg.type === 'json') return files.writeJson(msg.path, msg.data);
             if (msg.type === 'csv') return csv.writeCsv(msg.path, msg.data);

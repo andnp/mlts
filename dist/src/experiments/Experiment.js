@@ -34,7 +34,11 @@ class Experiment {
         }));
     }
     static saveResults(obs) {
-        return obs.subscribe(msg => {
+        return obs.subscribe(async (msg) => {
+            // reduce chances of accidentally double writing a file
+            const exists = await utilities_ts_1.files.fileExists(msg.path);
+            if (exists)
+                return;
             if (msg.type === 'txt')
                 return utilities_ts_1.files.writeFile(msg.path, msg.data);
             if (msg.type === 'json')
