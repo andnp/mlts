@@ -4,6 +4,7 @@ import { strings } from 'utilities-ts';
 import { ExperimentDescription } from './ExperimentDescription';
 import { ExperimentJson } from './ExperimentSchema';
 import { OptimizationParameters } from '../optimization';
+import { getAlgorithmRegistryData, getDatasetConstructor } from './ExperimentRegistry';
 
 const DEFAULT_PATH_TEMPLATE = '{{dataset}}/{{alg}}/{{params}}/{{run}}';
 
@@ -65,9 +66,11 @@ function descriptionToContext(exp: ExperimentDescription): ExperimentContext {
 }
 
 export function experimentJsonToContext(exp: ExperimentJson) {
+    const alg = getAlgorithmRegistryData(exp.algorithm).constructor.name;
+    const dataset = getDatasetConstructor(exp.dataset).name;
     return {
-        alg: exp.algorithm,
-        dataset: exp.dataset,
+        alg,
+        dataset,
         description: exp,
         optimization: exp.optimization,
     };
