@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const hash = require("object-hash");
 const utilities_ts_1 = require("utilities-ts");
 const ExperimentDescription_1 = require("./ExperimentDescription");
-const ExperimentRegistry_1 = require("./ExperimentRegistry");
 const DEFAULT_PATH_TEMPLATE = '{{dataset}}/{{alg}}/{{params}}/{{run}}';
 /**
  * An alias for interpolateResultsPath. This defines the previous
@@ -40,8 +39,8 @@ exports.interpolateResultsPath = (exp, template = DEFAULT_PATH_TEMPLATE) => {
 };
 function descriptionToContext(exp) {
     return {
-        alg: exp.algorithm.name,
-        dataset: exp.dataset.constructor.name,
+        alg: exp.definition.algorithm,
+        dataset: exp.definition.dataset,
         metaParameters: exp.metaParameters,
         description: exp.definition,
         run: exp.run,
@@ -49,11 +48,9 @@ function descriptionToContext(exp) {
     };
 }
 function experimentJsonToContext(exp) {
-    const alg = ExperimentRegistry_1.getAlgorithmRegistryData(exp.algorithm).constructor.name;
-    const dataset = ExperimentRegistry_1.getDatasetConstructor(exp.dataset).name;
     return {
-        alg,
-        dataset,
+        alg: exp.algorithm,
+        dataset: exp.dataset,
         description: exp,
         optimization: exp.optimization,
     };

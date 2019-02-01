@@ -4,7 +4,6 @@ import { strings } from 'utilities-ts';
 import { ExperimentDescription } from './ExperimentDescription';
 import { ExperimentJson } from './ExperimentSchema';
 import { OptimizationParameters } from '../optimization';
-import { getAlgorithmRegistryData, getDatasetConstructor } from './ExperimentRegistry';
 
 const DEFAULT_PATH_TEMPLATE = '{{dataset}}/{{alg}}/{{params}}/{{run}}';
 
@@ -56,8 +55,8 @@ export const interpolateResultsPath = (exp: ExperimentContext | ExperimentDescri
 
 function descriptionToContext(exp: ExperimentDescription): ExperimentContext {
     return {
-        alg: exp.algorithm.name,
-        dataset: exp.dataset.constructor.name,
+        alg: exp.definition!.algorithm,
+        dataset: exp.definition!.dataset,
         metaParameters: exp.metaParameters,
         description: exp.definition,
         run: exp.run,
@@ -66,11 +65,9 @@ function descriptionToContext(exp: ExperimentDescription): ExperimentContext {
 }
 
 export function experimentJsonToContext(exp: ExperimentJson) {
-    const alg = getAlgorithmRegistryData(exp.algorithm).constructor.name;
-    const dataset = getDatasetConstructor(exp.dataset).name;
     return {
-        alg,
-        dataset,
+        alg: exp.algorithm,
+        dataset: exp.dataset,
         description: exp,
         optimization: exp.optimization,
     };
