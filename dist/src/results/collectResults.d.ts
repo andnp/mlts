@@ -4,6 +4,7 @@ export declare type Result = {
     algorithm: string;
     dataset: string;
     path: string;
+    hashPath: string;
     optimization: Partial<OptimizationParameters>;
 } & Record<string, any>;
 export declare function collectResults(rootPath: string, resultFileNames: string[]): Promise<Result[]>;

@@ -37,6 +37,7 @@ async function collectResults(rootPath, resultFileNames) {
         const result = {
             ...description,
             path: resultPath,
+            hashPath: hashDir,
             metaParameters: params,
             algorithm: experiment.algorithm,
             dataset: experiment.dataset,

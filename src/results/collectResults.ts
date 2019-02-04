@@ -12,6 +12,7 @@ export type Result = {
     algorithm: string;
     dataset: string;
     path: string;
+    hashPath: string;
     optimization: Partial<OptimizationParameters>
 } & Record<string, any>;
 
@@ -53,6 +54,7 @@ export async function collectResults(rootPath: string, resultFileNames: string[]
             const result: Result = {
                 ...description,
                 path: resultPath,
+                hashPath: hashDir,
                 metaParameters: params,
                 algorithm: experiment.algorithm,
                 dataset: experiment.dataset,
