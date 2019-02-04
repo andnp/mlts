@@ -1,4 +1,3 @@
-import { PlainObject } from 'simplytyped';
 import { Result } from './collectResults';
 import { lens as lens_t, Lens as Lens_t } from '../utils/fp';
 
@@ -43,6 +42,15 @@ export const createMinMeanReducer: ResultReducerCreator = (file: string) => {
             ? a
             : b;
     };
+};
+
+export const createMaxMeanReducer: ResultReducerCreator = (file: string) => {
+    const maxMeanLens = _.flow(
+        lens(file),
+        meanLens,
+    );
+
+    return (a, b) => maxMeanLens(a) > maxMeanLens(b) ? a : b;
 };
 
 export function group(p_lens: Lens, reducer: ResultReducer, res: Result[]) {

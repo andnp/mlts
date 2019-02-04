@@ -9,5 +9,6 @@ export declare const parameterLens: Lens_t;
 declare type ResultReducer = (a: Result, b: Result) => Result;
 declare type ResultReducerCreator = (name: string) => ResultReducer;
 export declare const createMinMeanReducer: ResultReducerCreator;
+export declare const createMaxMeanReducer: ResultReducerCreator;
 export declare function group(p_lens: Lens, reducer: ResultReducer, res: Result[]): Result[];
 export {};

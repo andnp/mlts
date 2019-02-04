@@ -23,6 +23,10 @@ exports.createMinMeanReducer = (file) => {
             : b;
     };
 };
+exports.createMaxMeanReducer = (file) => {
+    const maxMeanLens = _.flow(exports.lens(file), meanLens);
+    return (a, b) => maxMeanLens(a) > maxMeanLens(b) ? a : b;
+};
 function group(p_lens, reducer, res) {
     const values = res.map(p_lens);
     const uniqueValues = _.uniq(values).sort(numericAscending);
