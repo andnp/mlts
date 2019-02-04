@@ -14,7 +14,6 @@ export function randomInteger(min?: number, max?: number) {
 }
 
 export function setSeed(s: string) {
-    if (seed !== undefined) throw new Error('Tried to change the random seed after it was already set');
     seed = s;
     seedRandom(s, { global: true });
 }
