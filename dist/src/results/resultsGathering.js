@@ -15,7 +15,7 @@ const collect = _.memoize((path, resultFiles) => {
     return collectResults_1.collectResults(path, resultFiles);
 });
 exports.collectAndFilter = async (path, resultFiles, filter) => {
-    const res = await collect(path, resultFiles);
+    const res = await collect(path, resultFiles).collect();
     console.log(`Found <${res.length}> result files`);
     const countLens = _.flow(processing_1.lens('train.csv'), processing_1.lens('description'), processing_1.lens('count'));
     const filtered = filter(res);

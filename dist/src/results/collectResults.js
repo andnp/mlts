@@ -5,11 +5,10 @@ const v = require("validtyped");
 const path = require("path");
 const tsplot = require("tsplot");
 const utilities_ts_1 = require("utilities-ts");
-async function collectResults(rootPath, resultFileNames) {
-    const hashDepth = await findHashDirectoryDepth(rootPath);
-    const hashPath = path.join(rootPath, '/*'.repeat(hashDepth));
-    const [collectedResults, uncollectedResults] = utilities_ts_1.files
-        .globObservable(hashPath)
+function collectResults(rootPath, resultFileNames) {
+    const [collectedResults, uncollectedResults] = utilities_ts_1.Observable.fromPromises([findHashDirectoryDepth(rootPath)])
+        .map(hashDepth => path.join(rootPath, '/*'.repeat(hashDepth)))
+        .flatMap(hashPath => utilities_ts_1.files.globObservable(hashPath))
         .partition(dir => utilities_ts_1.files.fileExists(path.join(dir, 'results.json')));
     const newResultsObservable = uncollectedResults
         // to remain scalable to many results files, we must limit the number we process simultaneously
@@ -46,11 +45,9 @@ async function collectResults(rootPath, resultFileNames) {
         await utilities_ts_1.files.writeJson(resultPath, result);
         return result;
     });
-    const results = await collectedResults
+    return collectedResults
         .map(hashDir => utilities_ts_1.files.readJson(path.join(hashDir, 'results.json'), v.any()))
-        .concat(newResultsObservable)
-        .collect();
-    return results;
+        .concat(newResultsObservable);
 }
 exports.collectResults = collectResults;
 // finds the depth for the hash directories.

@@ -1,3 +1,4 @@
+import { Observable } from 'utilities-ts';
 import { OptimizationParameters } from '../optimization';
 export declare type Result = {
     metaParameters: any;
@@ -7,4 +8,4 @@ export declare type Result = {
     hashPath: string;
     optimization: Partial<OptimizationParameters>;
 } & Record<string, any>;
-export declare function collectResults(rootPath: string, resultFileNames: string[]): Promise<Result[]>;
+export declare function collectResults(rootPath: string, resultFileNames: string[]): Observable<Result>;

@@ -22,7 +22,7 @@ const collect = _.memoize((path: string, resultFiles: string[]) => {
 });
 
 export const collectAndFilter = async (path: string, resultFiles: string[], filter: Filter) => {
-    const res = await collect(path, resultFiles);
+    const res = await collect(path, resultFiles).collect();
     console.log(`Found <${res.length}> result files`);
 
     const countLens = _.flow(

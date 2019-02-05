@@ -16,13 +16,12 @@ export type Result = {
     optimization: Partial<OptimizationParameters>
 } & Record<string, any>;
 
-export async function collectResults(rootPath: string, resultFileNames: string[]) {
-    const hashDepth = await findHashDirectoryDepth(rootPath);
-    const hashPath = path.join(rootPath, '/*'.repeat(hashDepth));
-
-    const [ collectedResults, uncollectedResults ] = files
-        .globObservable(hashPath)
+export function collectResults(rootPath: string, resultFileNames: string[]): Observable<Result> {
+    const [ collectedResults, uncollectedResults ] = Observable.fromPromises([ findHashDirectoryDepth(rootPath) ])
+        .map(hashDepth => path.join(rootPath, '/*'.repeat(hashDepth)))
+        .flatMap(hashPath => files.globObservable(hashPath))
         .partition(dir => files.fileExists(path.join(dir, 'results.json')));
+
 
     const newResultsObservable = uncollectedResults
         // to remain scalable to many results files, we must limit the number we process simultaneously
@@ -66,12 +65,9 @@ export async function collectResults(rootPath: string, resultFileNames: string[]
             return result;
         });
 
-    const results = await collectedResults
+    return collectedResults
         .map(hashDir => files.readJson(path.join(hashDir, 'results.json'), v.any()) as Promise<Result>)
-        .concat(newResultsObservable)
-        .collect();
-
-    return results;
+        .concat(newResultsObservable);
 }
 
 // finds the depth for the hash directories.

@@ -8,7 +8,7 @@ import { Result } from "../src/results";
 const resultFiles = ['test.csv', 'train.csv'];
 
 async function execute() {
-    const res = await results.collectResults('results', resultFiles);
+    const res = await results.collectResults('results', resultFiles).collect();
     console.log(`Found <${res.length}> total results`);
     // const { e: expPath, i: index } = commandLine.parseArgs();
     // if (!expPath) throw new Error("Expected to be called with -e parameter");
