@@ -14,6 +14,6 @@ exports.getExperimentSchema = () => {
         metaParameters: v.record(v.any()),
         transformation: TransformationSchema,
         optimization: OptimizerSchemas_1.OptimizationParametersSchema,
-    }, { optional: ['transformation'] });
+    }, { optional: ['transformation', 'optimization', 'dataset'] });
 };
 //# sourceMappingURL=ExperimentSchema.js.map

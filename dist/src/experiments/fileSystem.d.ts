@@ -48,6 +48,43 @@ export declare const getResultsPathV1: (exp: ExperimentDescription | Partial<{
     }>);
     description: import("simplytyped").ObjectType<{
         transformation?: any;
+        optimization?: (import("simplytyped").ObjectType<{
+            threshold?: number | undefined;
+            batchSize?: number | undefined;
+        } & Pick<import("validtyped").ObjectValidator<{
+            threshold: import("validtyped").Validator<number>;
+            iterations: import("validtyped").Validator<number>;
+            batchSize: import("validtyped").Validator<number>;
+        }>, "iterations">> & import("simplytyped").ObjectType<{
+            rho?: number | undefined;
+            epsilon?: number | undefined;
+        } & Pick<import("validtyped").ObjectValidator<{
+            type: import("validtyped").Validator<"adadelta">;
+            learningRate: import("validtyped").Validator<number>;
+            rho: import("validtyped").Validator<number>;
+            epsilon: import("validtyped").Validator<number>;
+        }>, "type" | "learningRate">>) | (import("simplytyped").ObjectType<{
+            threshold?: number | undefined;
+            batchSize?: number | undefined;
+        } & Pick<import("validtyped").ObjectValidator<{
+            threshold: import("validtyped").Validator<number>;
+            iterations: import("validtyped").Validator<number>;
+            batchSize: import("validtyped").Validator<number>;
+        }>, "iterations">> & import("validtyped").ObjectValidator<{
+            type: import("validtyped").Validator<"adagrad">;
+            learningRate: import("validtyped").Validator<number>;
+        }>) | (import("simplytyped").ObjectType<{
+            threshold?: number | undefined;
+            batchSize?: number | undefined;
+        } & Pick<import("validtyped").ObjectValidator<{
+            threshold: import("validtyped").Validator<number>;
+            iterations: import("validtyped").Validator<number>;
+            batchSize: import("validtyped").Validator<number>;
+        }>, "iterations">> & import("validtyped").ObjectValidator<{
+            type: import("validtyped").Validator<"rmsprop">;
+            learningRate: import("validtyped").Validator<number>;
+        }>) | undefined;
+        dataset?: string | undefined;
     } & Pick<import("validtyped").ObjectValidator<{
         algorithm: import("validtyped").Validator<string>;
         dataset: import("validtyped").Validator<string>;
@@ -89,7 +126,7 @@ export declare const getResultsPathV1: (exp: ExperimentDescription | Partial<{
             type: import("validtyped").Validator<"rmsprop">;
             learningRate: import("validtyped").Validator<number>;
         }>)>;
-    }>, "algorithm" | "dataset" | "metaParameters" | "optimization">>;
+    }>, "algorithm" | "metaParameters">>;
     run: number;
 }>) => string;
 /**
@@ -147,6 +184,43 @@ export declare const interpolateResultsPath: (exp: ExperimentDescription | Parti
     }>);
     description: import("simplytyped").ObjectType<{
         transformation?: any;
+        optimization?: (import("simplytyped").ObjectType<{
+            threshold?: number | undefined;
+            batchSize?: number | undefined;
+        } & Pick<import("validtyped").ObjectValidator<{
+            threshold: import("validtyped").Validator<number>;
+            iterations: import("validtyped").Validator<number>;
+            batchSize: import("validtyped").Validator<number>;
+        }>, "iterations">> & import("simplytyped").ObjectType<{
+            rho?: number | undefined;
+            epsilon?: number | undefined;
+        } & Pick<import("validtyped").ObjectValidator<{
+            type: import("validtyped").Validator<"adadelta">;
+            learningRate: import("validtyped").Validator<number>;
+            rho: import("validtyped").Validator<number>;
+            epsilon: import("validtyped").Validator<number>;
+        }>, "type" | "learningRate">>) | (import("simplytyped").ObjectType<{
+            threshold?: number | undefined;
+            batchSize?: number | undefined;
+        } & Pick<import("validtyped").ObjectValidator<{
+            threshold: import("validtyped").Validator<number>;
+            iterations: import("validtyped").Validator<number>;
+            batchSize: import("validtyped").Validator<number>;
+        }>, "iterations">> & import("validtyped").ObjectValidator<{
+            type: import("validtyped").Validator<"adagrad">;
+            learningRate: import("validtyped").Validator<number>;
+        }>) | (import("simplytyped").ObjectType<{
+            threshold?: number | undefined;
+            batchSize?: number | undefined;
+        } & Pick<import("validtyped").ObjectValidator<{
+            threshold: import("validtyped").Validator<number>;
+            iterations: import("validtyped").Validator<number>;
+            batchSize: import("validtyped").Validator<number>;
+        }>, "iterations">> & import("validtyped").ObjectValidator<{
+            type: import("validtyped").Validator<"rmsprop">;
+            learningRate: import("validtyped").Validator<number>;
+        }>) | undefined;
+        dataset?: string | undefined;
     } & Pick<import("validtyped").ObjectValidator<{
         algorithm: import("validtyped").Validator<string>;
         dataset: import("validtyped").Validator<string>;
@@ -188,14 +262,51 @@ export declare const interpolateResultsPath: (exp: ExperimentDescription | Parti
             type: import("validtyped").Validator<"rmsprop">;
             learningRate: import("validtyped").Validator<number>;
         }>)>;
-    }>, "algorithm" | "dataset" | "metaParameters" | "optimization">>;
+    }>, "algorithm" | "metaParameters">>;
     run: number;
 }>, template?: string) => string;
 export declare function experimentJsonToContext(exp: ExperimentJson): {
     alg: string;
-    dataset: string;
+    dataset: string | undefined;
     description: import("simplytyped").ObjectType<{
         transformation?: any;
+        optimization?: (import("simplytyped").ObjectType<{
+            threshold?: number | undefined;
+            batchSize?: number | undefined;
+        } & Pick<import("validtyped").ObjectValidator<{
+            threshold: import("validtyped").Validator<number>;
+            iterations: import("validtyped").Validator<number>;
+            batchSize: import("validtyped").Validator<number>;
+        }>, "iterations">> & import("simplytyped").ObjectType<{
+            rho?: number | undefined;
+            epsilon?: number | undefined;
+        } & Pick<import("validtyped").ObjectValidator<{
+            type: import("validtyped").Validator<"adadelta">;
+            learningRate: import("validtyped").Validator<number>;
+            rho: import("validtyped").Validator<number>;
+            epsilon: import("validtyped").Validator<number>;
+        }>, "type" | "learningRate">>) | (import("simplytyped").ObjectType<{
+            threshold?: number | undefined;
+            batchSize?: number | undefined;
+        } & Pick<import("validtyped").ObjectValidator<{
+            threshold: import("validtyped").Validator<number>;
+            iterations: import("validtyped").Validator<number>;
+            batchSize: import("validtyped").Validator<number>;
+        }>, "iterations">> & import("validtyped").ObjectValidator<{
+            type: import("validtyped").Validator<"adagrad">;
+            learningRate: import("validtyped").Validator<number>;
+        }>) | (import("simplytyped").ObjectType<{
+            threshold?: number | undefined;
+            batchSize?: number | undefined;
+        } & Pick<import("validtyped").ObjectValidator<{
+            threshold: import("validtyped").Validator<number>;
+            iterations: import("validtyped").Validator<number>;
+            batchSize: import("validtyped").Validator<number>;
+        }>, "iterations">> & import("validtyped").ObjectValidator<{
+            type: import("validtyped").Validator<"rmsprop">;
+            learningRate: import("validtyped").Validator<number>;
+        }>) | undefined;
+        dataset?: string | undefined;
     } & Pick<import("validtyped").ObjectValidator<{
         algorithm: import("validtyped").Validator<string>;
         dataset: import("validtyped").Validator<string>;
@@ -237,7 +348,7 @@ export declare function experimentJsonToContext(exp: ExperimentJson): {
             type: import("validtyped").Validator<"rmsprop">;
             learningRate: import("validtyped").Validator<number>;
         }>)>;
-    }>, "algorithm" | "dataset" | "metaParameters" | "optimization">>;
+    }>, "algorithm" | "metaParameters">>;
     optimization: (import("simplytyped").ObjectType<{
         threshold?: number | undefined;
         batchSize?: number | undefined;
@@ -273,5 +384,5 @@ export declare function experimentJsonToContext(exp: ExperimentJson): {
     }>, "iterations">> & import("validtyped").ObjectValidator<{
         type: import("validtyped").Validator<"rmsprop">;
         learningRate: import("validtyped").Validator<number>;
-    }>);
+    }>) | undefined;
 };

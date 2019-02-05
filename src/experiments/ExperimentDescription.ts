@@ -38,6 +38,8 @@ export class ExperimentDescription {
         // ---------------------------------
         // Load Constructors from Registries
         // ---------------------------------
+        // TODO: this _whole_ thing needs to be reworked... It should be generic across all types of experiments. ML and RL
+        if (!data.dataset) throw new Error('I only know how to deal with experiments containing datasets');
         const datasetConstructor = getDatasetConstructor(data.dataset);
         const algData = getAlgorithmRegistryData(data.algorithm);
         const transformationData = data.transformation && getTransformationRegistryData(data.transformation.type);
@@ -68,6 +70,7 @@ export class ExperimentDescription {
 
         const algorithm = new algData.constructor(datasetDescriptor, metaParameters);
 
+        if (!data.optimization) throw new Error('I only know how to deal with experiments containing optimization parameters');
         return new ExperimentDescription(algorithm, dataset, data.optimization, data, metaParameters, resultsPath || 'results', run);
     }
 

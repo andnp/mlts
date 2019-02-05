@@ -15,7 +15,7 @@ export const getExperimentSchema = () => {
         metaParameters: v.record(v.any()),
         transformation: TransformationSchema,
         optimization: OptimizationParametersSchema,
-    }, { optional: ['transformation'] });
+    }, { optional: ['transformation', 'optimization', 'dataset'] });
 };
 
 export type ExperimentJson = v.ValidType<ReturnType<typeof getExperimentSchema>>;
