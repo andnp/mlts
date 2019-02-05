@@ -18,4 +18,4 @@ export const getExperimentSchema = () => {
     }, { optional: ['transformation', 'optimization', 'dataset'] });
 };
 
-export type ExperimentJson = v.ValidType<ReturnType<typeof getExperimentSchema>>;
+export interface ExperimentJson extends v.ValidType<ReturnType<typeof getExperimentSchema>> {}

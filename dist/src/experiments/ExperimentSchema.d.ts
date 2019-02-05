@@ -80,4 +80,5 @@ export declare const getExperimentSchema: () => v.Validator<import("simplytyped"
         learningRate: v.Validator<number>;
     }>)>;
 }>, "algorithm" | "metaParameters">>>;
-export declare type ExperimentJson = v.ValidType<ReturnType<typeof getExperimentSchema>>;
+export interface ExperimentJson extends v.ValidType<ReturnType<typeof getExperimentSchema>> {
+}

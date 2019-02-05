@@ -50,7 +50,7 @@ function descriptionToContext(exp) {
 function experimentJsonToContext(exp) {
     return {
         alg: exp.algorithm,
-        dataset: exp.dataset,
+        dataset: exp.dataset || exp.environment,
         description: exp,
         optimization: exp.optimization,
     };

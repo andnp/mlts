@@ -67,7 +67,7 @@ function descriptionToContext(exp: ExperimentDescription): ExperimentContext {
 export function experimentJsonToContext(exp: ExperimentJson) {
     return {
         alg: exp.algorithm,
-        dataset: exp.dataset,
+        dataset: exp.dataset || (exp as any).environment as string | undefined,
         description: exp,
         optimization: exp.optimization,
     };
