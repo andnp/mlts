@@ -18,7 +18,7 @@ export function findMissing(base_path: string, path: string, runs: number) {
                 const res_path = interpolateResultsPath({
                     ...experimentJsonToContext(exp),
                     metaParameters,
-                    run: i % (count / runs),
+                    run: Math.floor(i / (count / runs)),
                 });
                 const full_path = `${base_path}/${res_path}/test.csv`;
                 const found = await files.fileExists(full_path);
