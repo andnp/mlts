@@ -71,6 +71,6 @@
     "simplytyped": "^1.4.0",
     "tsplot": "git+https://github.com/andnp/tsplot.git",
     "utilities-ts": "git+https://github.com/andnp/utilities-ts.git",
-    "validtyped": "^2.0.0"
+    "validtyped": "2.1.1"
   }
 }
