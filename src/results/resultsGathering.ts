@@ -18,11 +18,11 @@ export const createParameterFilter = (fixed: Record<string, string | number>): F
 };
 
 const collect = _.memoize((path: string, resultFiles: string[]) => {
-    return collectResults(path, resultFiles);
+    return collectResults(path, resultFiles).collect();
 });
 
 export const collectAndFilter = async (path: string, resultFiles: string[], filter: Filter) => {
-    const res = await collect(path, resultFiles).collect();
+    const res = await collect(path, resultFiles);
     console.log(`Found <${res.length}> result files`);
 
     const countLens = _.flow(

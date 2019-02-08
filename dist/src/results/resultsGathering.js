@@ -12,10 +12,10 @@ exports.createParameterFilter = (fixed) => {
     return _.flow(...filters);
 };
 const collect = _.memoize((path, resultFiles) => {
-    return collectResults_1.collectResults(path, resultFiles);
+    return collectResults_1.collectResults(path, resultFiles).collect();
 });
 exports.collectAndFilter = async (path, resultFiles, filter) => {
-    const res = await collect(path, resultFiles).collect();
+    const res = await collect(path, resultFiles);
     console.log(`Found <${res.length}> result files`);
     const countLens = _.flow(processing_1.lens('train.csv'), processing_1.lens('description'), processing_1.lens('count'));
     const filtered = filter(res);
