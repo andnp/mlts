@@ -55,8 +55,8 @@ export const interpolateResultsPath = (exp: ExperimentContext | ExperimentDescri
 
 function descriptionToContext(exp: ExperimentDescription): ExperimentContext {
     return {
-        alg: exp.definition!.algorithm,
-        dataset: exp.definition!.dataset,
+        alg: exp.definition && exp.definition.algorithm,
+        dataset: exp.definition && exp.definition.dataset,
         metaParameters: exp.metaParameters,
         description: exp.definition,
         run: exp.run,

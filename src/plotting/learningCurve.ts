@@ -33,5 +33,5 @@ export async function learningCurve(o: LearningCurveOptions) {
         return lossLine;
     });
 
-    return combineTraces(plots, '');
+    return combineTraces(plots);
 }

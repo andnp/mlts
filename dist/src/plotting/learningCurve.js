@@ -21,7 +21,7 @@ async function learningCurve(o) {
             lossLine.label(o.lineNameLens(result));
         return lossLine;
     });
-    return tsplot_1.combineTraces(plots, '');
+    return tsplot_1.combineTraces(plots);
 }
 exports.learningCurve = learningCurve;
 //# sourceMappingURL=learningCurve.js.map

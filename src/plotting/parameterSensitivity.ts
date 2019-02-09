@@ -114,7 +114,7 @@ export function parameterSensitivity(o: ParameterSensitivityOptions): Record<str
 
     return resultFiles.reduce((coll, resultFile) => {
         const resultFileName = resultFile.replace('.csv', '');
-        const comb = combineTraces(traces.map(fp.prop(resultFileName)), 'experiment');
+        const comb = combineTraces(traces.map(fp.prop(resultFileName)));
         return {
             ...coll,
             [resultFileName]: comb,

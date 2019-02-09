@@ -25,7 +25,13 @@ export class ExperimentDescription {
     ) {}
 
     static fromManualSetup(algorithm: Algorithm, dataset: TensorflowDataset, optimization: OptimizationParameters, resultsBase?: string, run?: number) {
-        return new ExperimentDescription(algorithm, dataset, optimization, undefined, algorithm.getParameters(), resultsBase, run);
+        const definition = {
+            algorithm: algorithm.name,
+            dataset: dataset.constructor.name,
+            optimization,
+            metaParameters: {},
+        };
+        return new ExperimentDescription(algorithm, dataset, optimization, definition, algorithm.getParameters(), resultsBase, run);
     }
 
     static async fromJson(location: string, index: number, resultsPath?: string) {

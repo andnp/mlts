@@ -18,7 +18,13 @@ class ExperimentDescription {
         this.resultsTemplate = resultsTemplate;
     }
     static fromManualSetup(algorithm, dataset, optimization, resultsBase, run) {
-        return new ExperimentDescription(algorithm, dataset, optimization, undefined, algorithm.getParameters(), resultsBase, run);
+        const definition = {
+            algorithm: algorithm.name,
+            dataset: dataset.constructor.name,
+            optimization,
+            metaParameters: {},
+        };
+        return new ExperimentDescription(algorithm, dataset, optimization, definition, algorithm.getParameters(), resultsBase, run);
     }
     static async fromJson(location, index, resultsPath) {
         const ExperimentSchema = ExperimentSchema_1.getExperimentSchema();

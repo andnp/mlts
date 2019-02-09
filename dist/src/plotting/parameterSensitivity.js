@@ -57,7 +57,7 @@ function parameterSensitivity(o) {
     const traces = utilities_ts_1.arrays.filterUndefined(tracesOrUndefined);
     return resultFiles.reduce((coll, resultFile) => {
         const resultFileName = resultFile.replace('.csv', '');
-        const comb = tsplot_1.combineTraces(traces.map(utilities_ts_1.fp.prop(resultFileName)), 'experiment');
+        const comb = tsplot_1.combineTraces(traces.map(utilities_ts_1.fp.prop(resultFileName)));
         return {
             ...coll,
             [resultFileName]: comb,
