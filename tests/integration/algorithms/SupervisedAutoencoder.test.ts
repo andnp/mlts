@@ -22,7 +22,7 @@ test('Can separate easy difficulty randomly generated dataset with near perfect 
         iterations: 50,
         batchSize: 10,
         type: 'rmsprop',
-        learningRate: 0.001,
+        learningRate: 0.01,
     },
     error: 0.1,
 }));
@@ -45,7 +45,7 @@ test('Can separate medium difficulty randomly generated dataset with high accura
         iterations: 20,
         batchSize: 10,
         type: 'rmsprop',
-        learningRate: 0.001,
+        learningRate: 0.01,
     },
     error: 0.2,
 }));
@@ -69,7 +69,7 @@ test('Can separate hard difficulty randomly generated dataset with high accuracy
         iterations: 20,
         batchSize: 10,
         type: 'rmsprop',
-        learningRate: 0.001,
+        learningRate: 0.01,
     },
     error: 0.4,
 }));
