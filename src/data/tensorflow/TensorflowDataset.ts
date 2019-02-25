@@ -21,22 +21,24 @@ export class TensorflowDataset {
     }
 
     transpose = tfUtil.autoDispose(() => {
-        this._x = this._x.transpose();
-        this._y = this._y.transpose();
-        this._t = this._t.transpose();
-        this._ty = this._ty.transpose();
-
-        return this;
+        return new TensorflowDataset(
+            this._x.transpose(),
+            this._y.transpose(),
+            this._t.transpose(),
+            this._ty.transpose(),
+        );
     });
 
     oneHot = tfUtil.autoDispose((depth: number) => {
         if (this._y.shape[1] !== 1) throw new Error('Expected Y to have only one column');
         if (this._ty.shape[1] !== 1) throw new Error('Expected TY to have only one column');
 
-        this._y = tf.oneHot(this._y.asType('int32').as1D(), depth).asType('float32');
-        this._ty = tf.oneHot(this._ty.asType('int32').as1D(), depth).asType('float32');
-
-        return this;
+        return new TensorflowDataset(
+            this._x,
+            tf.oneHot(this._y.asType('int32').as1D(), depth).asType('float32'),
+            this._t,
+            tf.oneHot(this._ty.asType('int32').as1D(), depth).asType('float32'),
+        );
     });
 
     scaleColumns = tfUtil.autoDispose(() => {
@@ -46,27 +48,25 @@ export class TensorflowDataset {
 
         const minMaxScale = (x: tf.Tensor2D) => tf.div(tf.sub(x, min), tf.sub(max, min)) as tf.Tensor2D;
 
-        this._x = minMaxScale(this._x);
-        this._t = minMaxScale(this._t);
-
-        return this;
+        return new TensorflowDataset(
+            minMaxScale(this._x),
+            this._y,
+            minMaxScale(this._t),
+            this._ty,
+        );
     });
 
     scaleByConstant = tfUtil.autoDispose((constant: number) => {
-        this._x = this._x.asType('float32').div(tf.scalar(constant, 'float32'));
-        this._t = this._t.asType('float32').div(tf.scalar(constant, 'float32'));
-        return this;
+        return new TensorflowDataset(
+            this._x.asType('float32').div(tf.scalar(constant, 'float32')),
+            this._y,
+            this._t.asType('float32').div(tf.scalar(constant, 'float32')),
+            this._ty,
+        );
     });
 
     async applyTransformation(transform: Transformation) {
-        const newData = await transform.applyTransformation(this);
-
-        this._x = newData._x;
-        this._y = newData._y;
-        this._t = newData._t;
-        this._ty = newData._ty;
-
-        return this;
+        return transform.applyTransformation(this);
     }
 
     limitSamples(samples: number) {
@@ -90,8 +90,12 @@ export class TensorflowDataset {
             y_split.push(this._y.slice(i, 1));
         }
 
-        this._x = tf.concat2d(x_split, 0);
-        this._y = tf.concat2d(y_split, 0);
+        return new TensorflowDataset(
+            tf.concat2d(x_split, 0),
+            tf.concat2d(y_split, 0),
+            this._t,
+            this._ty,
+        );
     }
 
     crossValidate(folds: number, index: number) {
