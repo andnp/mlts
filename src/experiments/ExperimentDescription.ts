@@ -14,14 +14,14 @@ import { setSeed } from '../utils/random';
 
 export class ExperimentDescription {
     private constructor(
-        readonly algorithm: Algorithm,
-        readonly dataset: TensorflowDataset,
-        readonly optimization: OptimizationParameters,
-        readonly definition: ExperimentJson | undefined,
-        readonly metaParameters: Record<string, any> | undefined,
-        readonly resultsBase: string = '',
-        readonly run: number = 0,
-        readonly resultsTemplate: string = '{{dataset}}/{{alg}}/{{params}}/{{run}}',
+        public algorithm: Algorithm,
+        public dataset: TensorflowDataset,
+        public optimization: OptimizationParameters,
+        public definition: ExperimentJson | undefined,
+        public metaParameters: Record<string, any> | undefined,
+        public resultsBase: string = '',
+        public run: number = 0,
+        public resultsTemplate: string = '{{dataset}}/{{alg}}/{{params}}/{{run}}',
     ) {}
 
     static fromManualSetup(algorithm: Algorithm, dataset: TensorflowDataset, optimization: OptimizationParameters, resultsBase?: string, run?: number) {
