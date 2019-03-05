@@ -53,11 +53,11 @@ export class ExperimentDescription {
         // ------------
         // Load Dataset
         // ------------
-        const dataset = await datasetConstructor.load();
+        let dataset = await datasetConstructor.load();
 
         if (transformationData) {
             const Transformation = transformationData.constructor;
-            await dataset.applyTransformation(new Transformation(data.transformation));
+            dataset = await dataset.applyTransformation(new Transformation(data.transformation));
         }
 
         // --------------
