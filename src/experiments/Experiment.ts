@@ -1,5 +1,6 @@
 // tslint:disable no-console
 import * as fs from 'fs';
+import * as idx from 'idx-data';
 import { Observable, RawObservable, files, csv, assertNever } from "utilities-ts";
 import { ExperimentDescription } from "./ExperimentDescription";
 import { ExperimentJson } from "./ExperimentSchema";
@@ -7,7 +8,7 @@ import { interpolateResultsPath } from './fileSystem';
 
 export interface ExperimentResultMessage {
     tag: string;
-    type: 'txt' | 'csv' | 'json';
+    type: 'txt' | 'csv' | 'json' | 'idx';
     path: string;
     data: any;
 }
@@ -70,6 +71,7 @@ export abstract class Experiment {
             const exists = await files.fileExists(msg.path);
             if (exists) return;
 
+            if (msg.type === 'idx') return idx.saveBits(new Float32Array(msg.data.buf), msg.data.shape, msg.path);
             if (msg.type === 'txt') return files.writeFile(msg.path, msg.data);
             if (msg.type === 'json') return files.writeJson(msg.path, msg.data);
             if (msg.type === 'csv') return csv.writeCsv(msg.path, msg.data);

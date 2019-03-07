@@ -3,7 +3,7 @@ import { ExperimentDescription } from "./ExperimentDescription";
 import { ExperimentJson } from "./ExperimentSchema";
 export interface ExperimentResultMessage {
     tag: string;
-    type: 'txt' | 'csv' | 'json';
+    type: 'txt' | 'csv' | 'json' | 'idx';
     path: string;
     data: any;
 }

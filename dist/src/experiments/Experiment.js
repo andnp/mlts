@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const idx = require("idx-data");
 const utilities_ts_1 = require("utilities-ts");
 const fileSystem_1 = require("./fileSystem");
 class Experiment {
@@ -39,6 +40,8 @@ class Experiment {
             const exists = await utilities_ts_1.files.fileExists(msg.path);
             if (exists)
                 return;
+            if (msg.type === 'idx')
+                return idx.saveBits(new Float32Array(msg.data.buf), msg.data.shape, msg.path);
             if (msg.type === 'txt')
                 return utilities_ts_1.files.writeFile(msg.path, msg.data);
             if (msg.type === 'json')
