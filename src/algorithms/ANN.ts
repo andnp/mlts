@@ -7,6 +7,7 @@ import { SupervisedAlgorithm } from "../algorithms/Algorithm";
 import { SupervisedDatasetDescription } from '../data/DatasetDescription';
 import { LayerMetaParametersSchema, constructTFNetwork } from '../algorithms/utils/layers';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
+import { History } from 'analysis';
 
 export const ANNMetaParameterSchema = v.object({
     layers: v.array(LayerMetaParametersSchema),
@@ -58,7 +59,7 @@ export class ANN extends SupervisedAlgorithm {
     // --------
     // Training
     // --------
-    protected async _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>) {
+    protected async _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>, track?: [tf.Tensor2D, tf.Tensor2D]) {
         const o = Optimizer.getDefaultParameters(opts);
 
         this.model.compile({
@@ -66,11 +67,14 @@ export class ANN extends SupervisedAlgorithm {
             loss: this.opts.loss!,
         });
 
-        return Optimizer.fit(this.model, X, Y, {
+        const h = await Optimizer.fit(this.model, X, Y, {
             batchSize: o.batchSize,
             epochs: o.iterations,
             shuffle: true,
+            validationData: track,
         });
+
+        return History.fromTensorflowHistory(this.name, this.opts, h, ['val_out_y_acc', 'out_y_acc']);
     }
 
     protected async _predict(X: tf.Tensor2D) {

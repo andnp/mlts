@@ -6,6 +6,7 @@ const v = require("validtyped");
 const Optimizer = require("../optimization/Optimizer");
 const Algorithm_1 = require("../algorithms/Algorithm");
 const layers_1 = require("../algorithms/utils/layers");
+const analysis_1 = require("analysis");
 exports.ANNMetaParameterSchema = v.object({
     layers: v.array(layers_1.LayerMetaParametersSchema),
     loss: v.string(['categoricalCrossentropy', 'binaryCrossentropy', 'meanSquaredError']),
@@ -40,17 +41,19 @@ class ANN extends Algorithm_1.SupervisedAlgorithm {
     // --------
     // Training
     // --------
-    async _train(X, Y, opts) {
+    async _train(X, Y, opts, track) {
         const o = Optimizer.getDefaultParameters(opts);
         this.model.compile({
             optimizer: Optimizer.getTfOptimizer(o),
             loss: this.opts.loss,
         });
-        return Optimizer.fit(this.model, X, Y, {
+        const h = await Optimizer.fit(this.model, X, Y, {
             batchSize: o.batchSize,
             epochs: o.iterations,
             shuffle: true,
+            validationData: track,
         });
+        return analysis_1.History.fromTensorflowHistory(this.name, this.opts, h, ['val_out_y_acc', 'out_y_acc']);
     }
     async _predict(X) {
         const Y_hat = this.model.predictOnBatch(X);
