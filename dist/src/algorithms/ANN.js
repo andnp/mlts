@@ -6,7 +6,7 @@ const v = require("validtyped");
 const Optimizer = require("../optimization/Optimizer");
 const Algorithm_1 = require("../algorithms/Algorithm");
 const layers_1 = require("../algorithms/utils/layers");
-const analysis_1 = require("analysis");
+const analysis_1 = require("../analysis");
 exports.ANNMetaParameterSchema = v.object({
     layers: v.array(layers_1.LayerMetaParametersSchema),
     loss: v.string(['categoricalCrossentropy', 'binaryCrossentropy', 'meanSquaredError']),

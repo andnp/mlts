@@ -3,7 +3,7 @@ import * as v from 'validtyped';
 import { SupervisedAlgorithm } from "../algorithms/Algorithm";
 import { SupervisedDatasetDescription } from '../data/DatasetDescription';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
-import { History } from 'analysis';
+import { History } from '../analysis';
 export declare const ANNMetaParameterSchema: v.Validator<import("simplytyped").ObjectType<{
     loss?: "binaryCrossentropy" | "meanSquaredError" | "categoricalCrossentropy" | undefined;
 } & Pick<v.ObjectValidator<{

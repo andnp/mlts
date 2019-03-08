@@ -7,7 +7,7 @@ import { SupervisedAlgorithm } from "../algorithms/Algorithm";
 import { SupervisedDatasetDescription } from '../data/DatasetDescription';
 import { LayerMetaParametersSchema, constructTFNetwork } from '../algorithms/utils/layers';
 import { OptimizationParameters } from '../optimization/OptimizerSchemas';
-import { History } from 'analysis';
+import { History } from '../analysis';
 
 export const ANNMetaParameterSchema = v.object({
     layers: v.array(LayerMetaParametersSchema),
