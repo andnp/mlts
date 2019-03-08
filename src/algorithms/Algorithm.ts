@@ -34,10 +34,10 @@ export abstract class SupervisedAlgorithm extends Algorithm {
     // --------
     // Training
     // --------
-    protected abstract async _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<History | tf.History>;
+    protected abstract async _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>, track?: [tf.Tensor2D, tf.Tensor2D]): Promise<History | tf.History>;
 
-    async train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<History> {
-        const history = await this._train(X, Y, opts);
+    async train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>, track?: [tf.Tensor2D, tf.Tensor2D]): Promise<History> {
+        const history = await this._train(X, Y, opts, track);
 
         if (history instanceof History) return history;
         return History.fromTensorflowHistory(this.name, this.opts, history);

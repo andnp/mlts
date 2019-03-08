@@ -23,8 +23,8 @@ class SupervisedAlgorithm extends Algorithm {
         super(datasetDescription);
         this.datasetDescription = datasetDescription;
     }
-    async train(X, Y, opts) {
-        const history = await this._train(X, Y, opts);
+    async train(X, Y, opts, track) {
+        const history = await this._train(X, Y, opts, track);
         if (history instanceof History_1.History)
             return history;
         return History_1.History.fromTensorflowHistory(this.name, this.opts, history);

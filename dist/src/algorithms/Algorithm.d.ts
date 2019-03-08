@@ -14,8 +14,8 @@ export declare abstract class Algorithm {
 export declare abstract class SupervisedAlgorithm extends Algorithm {
     protected datasetDescription: SupervisedDatasetDescription;
     constructor(datasetDescription: SupervisedDatasetDescription);
-    protected abstract _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<History | tf.History>;
-    train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<History>;
+    protected abstract _train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>, track?: [tf.Tensor2D, tf.Tensor2D]): Promise<History | tf.History>;
+    train(X: tf.Tensor2D, Y: tf.Tensor2D, opts?: Partial<OptimizationParameters>, track?: [tf.Tensor2D, tf.Tensor2D]): Promise<History>;
 }
 export declare abstract class UnsupervisedAlgorithm extends Algorithm {
     protected abstract _train(X: tf.Tensor2D, opts?: Partial<OptimizationParameters>): Promise<History | tf.History>;
