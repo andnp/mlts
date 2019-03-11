@@ -65,6 +65,7 @@ export class ANN extends SupervisedAlgorithm {
         this.model.compile({
             optimizer: Optimizer.getTfOptimizer(o),
             loss: this.opts.loss!,
+            metrics: { out_y: 'accuracy' },
         });
 
         const h = await Optimizer.fit(this.model, X, Y, {
@@ -74,7 +75,7 @@ export class ANN extends SupervisedAlgorithm {
             validationData: track,
         });
 
-        return History.fromTensorflowHistory(this.name, this.opts, h, ['val_out_y_acc', 'out_y_acc']);
+        return History.fromTensorflowHistory(this.name, this.opts, h, ['val_loss', 'val_acc', 'acc']);
     }
 
     protected async _predict(X: tf.Tensor2D) {
