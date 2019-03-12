@@ -17,14 +17,24 @@ export interface TrainResultMessage extends ExperimentResultMessage {
 
 export interface LossResultMessage extends ExperimentResultMessage {
     tag: 'loss';
-    type: 'csv';
+    type: 'idx';
     data: Matrix;
+}
+
+export interface AuxiliaryLossResultMessage extends ExperimentResultMessage {
+    tag: 'aux_loss';
+    type: 'idx';
+    data: {
+        buf: number[];
+        shape: [number];
+    };
 }
 
 export type ClassificationErrorResultMessage =
      | TestResultMessage
      | TrainResultMessage
      | LossResultMessage
+     | AuxiliaryLossResultMessage
      | ParamsResultMessage
      | ExperimentJsonResultMessage;
 
@@ -37,7 +47,7 @@ export class ClassificationErrorExperiment extends Experiment {
 
         const [ X, Y ] = d.train;
 
-        const history = await alg.train(X, Y, this.description.optimization);
+        const history = await alg.train(X, Y, this.description.optimization, d.test);
 
         const [ T, TY ] = d.test;
 
@@ -65,9 +75,22 @@ export class ClassificationErrorExperiment extends Experiment {
 
         obs.next({
             tag: 'loss',
-            type: 'csv',
-            path: `loss.csv`,
+            type: 'idx',
+            path: `loss.idx`,
             data: loss,
         });
+
+        for (const k in history.other) {
+            if (k === 'loss') continue;
+
+            const loss = history.other[k];
+
+            obs.next({
+                tag: 'aux_loss',
+                type: 'idx',
+                path: `${k}.idx`,
+                data: { buf: loss, shape: [loss.length] },
+            });
+        }
     }
 }

@@ -11,7 +11,7 @@ class ClassificationErrorExperiment extends Experiment_1.Experiment {
         if (!(alg instanceof Algorithm_1.SupervisedAlgorithm))
             throw new Error('Can only work with supervised algorithms');
         const [X, Y] = d.train;
-        const history = await alg.train(X, Y, this.description.optimization);
+        const history = await alg.train(X, Y, this.description.optimization, d.test);
         const [T, TY] = d.test;
         const Y_hat = await alg.predict(X, this.description.optimization);
         const TY_hat = await alg.predict(T, this.description.optimization);
@@ -32,10 +32,21 @@ class ClassificationErrorExperiment extends Experiment_1.Experiment {
         const loss = utilities_ts_1.Matrix.fromData([history.loss]);
         obs.next({
             tag: 'loss',
-            type: 'csv',
-            path: `loss.csv`,
+            type: 'idx',
+            path: `loss.idx`,
             data: loss,
         });
+        for (const k in history.other) {
+            if (k === 'loss')
+                continue;
+            const loss = history.other[k];
+            obs.next({
+                tag: 'aux_loss',
+                type: 'idx',
+                path: `${k}.idx`,
+                data: { buf: loss, shape: [loss.length] },
+            });
+        }
     }
 }
 exports.ClassificationErrorExperiment = ClassificationErrorExperiment;
