@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const analysis_1 = require("../analysis");
-const utilities_ts_1 = require("utilities-ts");
 const Algorithm_1 = require("../algorithms/Algorithm");
 const Experiment_1 = require("./Experiment");
 class ClassificationErrorExperiment extends Experiment_1.Experiment {
@@ -29,16 +28,14 @@ class ClassificationErrorExperiment extends Experiment_1.Experiment {
             path: `train.csv`,
             data: trainError,
         });
-        const loss = utilities_ts_1.Matrix.fromData([history.loss]);
+        const loss = history.loss;
         obs.next({
-            tag: 'loss',
+            tag: 'aux_loss',
             type: 'idx',
             path: `loss.idx`,
-            data: loss,
+            data: { buf: loss, shape: [loss.length] },
         });
-        for (const k in history.other) {
-            if (k === 'loss')
-                continue;
+        for (const k of Object.keys(history.other)) {
             const loss = history.other[k];
             obs.next({
                 tag: 'aux_loss',

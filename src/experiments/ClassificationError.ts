@@ -71,20 +71,16 @@ export class ClassificationErrorExperiment extends Experiment {
             data: trainError,
         });
 
-        const loss = Matrix.fromData([history.loss]);
-
+        const loss = history.loss;
         obs.next({
-            tag: 'loss',
+            tag: 'aux_loss',
             type: 'idx',
             path: `loss.idx`,
-            data: loss,
+            data: { buf: loss, shape: [loss.length] },
         });
 
-        for (const k in history.other) {
-            if (k === 'loss') continue;
-
+        for (const k of Object.keys(history.other)) {
             const loss = history.other[k];
-
             obs.next({
                 tag: 'aux_loss',
                 type: 'idx',
