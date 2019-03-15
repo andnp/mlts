@@ -27,7 +27,10 @@ class TensorflowDataset {
             const joint = tf.concat([this._x, this._t]);
             const max = tf.max(joint, 0);
             const min = tf.min(joint, 0);
-            const minMaxScale = (x) => tf.div(tf.sub(x, min), tf.sub(max, min));
+            const minMaxScale = (x) => {
+                const s = tf.div(tf.sub(x, min), tf.sub(max, min));
+                return tf.where(s.equal(tf.scalar(NaN)), tf.zerosLike(s), s);
+            };
             return new TensorflowDataset(minMaxScale(this._x), this._y, minMaxScale(this._t), this._ty);
         });
         this.scaleByConstant = tfUtil.autoDispose((constant) => {

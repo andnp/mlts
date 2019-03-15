@@ -46,7 +46,11 @@ export class TensorflowDataset {
         const max = tf.max(joint, 0);
         const min = tf.min(joint, 0);
 
-        const minMaxScale = (x: tf.Tensor2D) => tf.div(tf.sub(x, min), tf.sub(max, min)) as tf.Tensor2D;
+        const minMaxScale = (x: tf.Tensor2D) => {
+            const s = tf.div(tf.sub(x, min), tf.sub(max, min)) as tf.Tensor2D;
+
+            return tf.where(s.equal(tf.scalar(NaN)), tf.zerosLike(s), s);
+        };
 
         return new TensorflowDataset(
             minMaxScale(this._x),
